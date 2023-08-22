@@ -140,36 +140,6 @@ void add_obstacle(std::vector<int> position, std::vector<int> size, std::vector<
     }
 }
 
-// Dataset generate3Ddataset(const std::string& dataset_str) {
-//     Dataset dataset;
-//     // dataset 2: desk dataset for WAM WAMDeskDataset
-//     // params
-//     dataset.cols = 300;
-//     dataset.rows = 300;
-//     dataset.z = 300;
-//     dataset.origin_x = -1.5;
-//     dataset.origin_y = -1.5;
-//     dataset.origin_z = -1.5;
-//     dataset.cell_size = 0.01;
-//     // map
-//     dataset.map = Eigen::ArrayXXXi::Zero(dataset.rows, dataset.cols, dataset.z);
-//     // obstacles
-//     dataset.corner_idx = Eigen::ArrayXXXi();
-//     add_obstacle({170, 220, 130}, {140, 60, 5}, dataset.map, dataset.corner_idx);
-//     add_obstacle({105, 195, 90}, {10, 10, 80}, dataset.map, dataset.corner_idx);
-//     add_obstacle({235, 195, 90}, {10, 10, 80}, dataset.map, dataset.corner_idx);
-//     add_obstacle({105, 245, 90}, {10, 10, 80}, dataset.map, dataset.corner_idx);
-//     add_obstacle({235, 245, 90}, {10, 10, 80}, dataset.map, dataset.corner_idx);
-//     add_obstacle({250, 190, 145}, {60, 5, 190}, dataset.map, dataset.corner_idx);
-//     add_obstacle({250, 90, 145}, {60, 5, 190}, dataset.map, dataset.corner_idx);
-//     add_obstacle({200, 190, 145}, {40, 5, 190}, dataset.map, dataset.corner_idx);
-//     add_obstacle({250, 140, 240}, {60, 100, 5}, dataset.map, dataset.corner_idx);
-//     add_obstacle({250, 140, 190}, {60, 100, 5}, dataset.map, dataset.corner_idx);
-//     add_obstacle({250, 140, 140}, {60, 100, 5}, dataset.map, dataset.corner_idx);
-//     add_obstacle({250, 140, 90}, {60, 100, 5}, dataset.map, dataset.corner_idx);
-    
-//     return dataset;
-// }
 
 double sdf_wrapper(const SignedDistanceField& field, const Point3& p) {
   return field.getSignedDistance(p);
@@ -178,59 +148,24 @@ double sdf_wrapper(const SignedDistanceField& field, const Point3& p) {
 SignedDistanceField generate_sdf(std::vector<gtsam::Matrix>& data){
    
     // params
-    // data.resize(300);
-    // Point3 origin(-0.2, -0.2, -0.1);
-    // const double cell_size = 0.1;
-    // const int cols = 5; 
-    // const int rows = 5; 
-    // const int heights = 3; 
-    // Point3 origin(-1.5, -1.5, -1.5);
-    // double cell_size = 0.01;
     Point3 origin(-1.5, -1.5, -1.5);
     double cell_size = 0.01;
     const int cols = 300;
     const int rows = 300;
     const int heights = 300;
     
+    // constructor
+    // SignedDistanceField sdf(origin, cell_size, data);
+    SignedDistanceField sdf(origin, cell_size, rows, cols, heights);
+
     // map in form of matrix
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> matrix;
-    // Eigen::Matrix<double, rows, cols> matrix = Eigen::Matrix<double, rows, cols>::Zero();
     matrix = Eigen::MatrixXd::Zero(rows, cols);
     data.resize(heights);
     for (int i = 0; i < heights; i++) {
         data[i] = matrix;
     }
-    // std::cout<<"[debug]:zere "<<matrix<<std::endl;
 
-
-    // data[0] <<
-    //     1.7321, 1.4142, 1.4142, 1.4142, 1.7321,
-    //     1.4142, 1, 1, 1, 1.4142,
-    //     1.4142, 1, 1, 1, 1.4142,
-    //     1.4142, 1, 1, 1, 1.4142,
-    //     1.7321, 1.4142, 1.4142, 1.4142, 1.7321;
-    // data[1] <<
-    //     // 1.4142, 1, 1, 1, 1.4142,
-    //     0, 0, 0, 0, 0,
-    //     1, 0, 0, 0, 1,
-    //     1, 0, 0, 0, 1,
-    //     1, 0, 0, 0, 1,
-    //     1.4142, 1, 1, 1,4142;
-    // data[2] <<
-    //     1.7321, 1.4142, 1.4142, 1.4142, 1.7321,
-    //     1.4142, 1, 1, 1, 1.4142,
-    //     1.4142, 1, 1, 1, 1.4142,
-    //     1.4142, 1, 1, 1, 1.4142,
-    //     1.7321, 1.4142, 1.4142, 1.4142, 1.7321;
-    // std::cout<<"[debug]:data 0 "<<data[0]<<std::endl;
-    // std::cout<<"[debug]:data 1: "<<data[1]<<std::endl;
-    // std::cout<<"[debug]:data 2 "<<data[2]<<std::endl;
-    // int z = 1;
-    // int i = 0;
-    // for (int j = 0; j < 5; j++) {
-    //     data[z](i,j) = j; 
-    // }
-    // std::cout<<"[debug]:data 1: "<<data[1]<<std::endl;
 
     std::cout<<"[debug]: construct sdf"<<std::endl;
     add_obstacle({170, 220, 130}, {140, 60, 5}, data);
@@ -245,6 +180,9 @@ SignedDistanceField generate_sdf(std::vector<gtsam::Matrix>& data){
     add_obstacle({250, 140, 190}, {60, 100, 5}, data);
     add_obstacle({250, 140, 140}, {60, 100, 5}, data);
     add_obstacle({250, 140, 90}, {60, 100, 5}, data);
+
+    add_obstacle({150, 10, 10}, {20, 10, 10}, data);
+
     std::cout<<"[debug]: construct sdf End"<<std::endl;
 
     std::cout<<"sdf dataset: "<<std::endl;
@@ -256,8 +194,7 @@ SignedDistanceField generate_sdf(std::vector<gtsam::Matrix>& data){
     }
     std::cout<<std::endl;
 
-    // constructor
-    SignedDistanceField sdf(origin, cell_size, data);
+    
     
     return sdf;
 }
@@ -379,12 +316,7 @@ int main(int argc, char** argv){
     }
 
     /* debug sdf内容 */
-    // size
-    std::cout<<"[debug]:sdf size "<<sdf.x_count()<<","<<sdf.y_count()<<","<<sdf.z_count()<<","<<std::endl;
-    std::cout<<"[debug]:sdf cell size "<<sdf.cell_size()<<","<<std::endl;
-    std::cout<<"[debug]:sdf origin"<<sdf.origin().x()<<","<<sdf.origin().y()<<","<<sdf.origin().z()<<","<<std::endl;
-
-
+ 
     // access
     SignedDistanceField::float_index idx;
     idx = sdf.convertPoint3toCell(Point3(0, 0, 0));
@@ -393,7 +325,7 @@ int main(int argc, char** argv){
     std::cout<<"[debug]:idx "<<idx.get<0>()<<","<<idx.get<1>()<<","<<idx.get<2>()<<","<<std::endl;
     std::cout<<"[debug]:sdf signed distance "<<sdf.signed_distance(idx)<<","<<std::endl;
     idx = boost::make_tuple(1.0, 2.0, 3.0);
-    // EXPECT(assert_equal(Point3(0.0, -0.1, 0.2), sdf.convertCelltoPoint3(idx)));
+
 
     // gradient
     Vector3 grad_act, grad_exp;

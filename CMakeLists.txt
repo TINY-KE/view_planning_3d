@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(view_planning)
 
+ SET(CMAKE_BUILD_TYPE Debug)  #zhjd
+
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
@@ -46,6 +48,17 @@ include(GtsamTesting)
 
 find_package(gpmp2 REQUIRED)
 include_directories(${gpmp2_INCLUDE_DIR})
+
+
+set(OpenCV_DIR "/home/zhjd/thirdparty/opencv3.4.10/opencv-3.4.10/build/")
+find_package(OpenCV 3.0 QUIET)
+if(NOT OpenCV_FOUND)
+   find_package(OpenCV 2.4.3 QUIET)
+   if(NOT OpenCV_FOUND)
+      message(FATAL_ERROR "OpenCV > 2.4.3 not found.")
+   endif()
+endif()
+set(cv_bridge_DIR "/home/zhjd/thirdparty/vision_opencv-indigo/cv_bridge/cmake")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -216,3 +229,19 @@ target_link_libraries(candidate_ik_fabo ${catkin_LIBRARIES} ${EIGEN3_LIBS})
 message(STATUS "Fabo Arm Test")
 add_executable(fabo_test src/test.cpp)
 target_link_libraries(fabo_test   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 )  #${Boost_LIBRARIES}
+
+
+add_executable(test_bwdist src/test_bwdist.cpp)
+target_link_libraries(test_bwdist   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LIBS})  #${Boost_LIBRARIES}
+
+
+
+add_executable(test_dist src/test_dis.cpp)
+target_link_libraries(test_dist   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LIBS})
+
+
+add_executable(test_copycvmat src/test_copycvmat.cpp)
+target_link_libraries(test_copycvmat   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LIBS})
+
+
+
