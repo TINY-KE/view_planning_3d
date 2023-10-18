@@ -791,7 +791,7 @@ int main(int argc, char** argv){
     std::cout << "initial error=" << graph.error(init_values) << std::endl;
     std::cout << "final error=" << graph.error(results) << std::endl;
     std::cout << "Optimization Result:"  <<std::endl;
-    results.print();
+    // results.print();
     // std::cout << "Init values:"  <<std::endl;
     // init_values.print();
 
@@ -819,17 +819,24 @@ int main(int argc, char** argv){
     
     
     // 关节量 
-    std::vector<double> target_joint_group_positions;
+    std::vector<std::vector<double> > target_joint_group_positions;
     Vector target_joint_group_positions_eigen;
     for(int i=0; i<=total_time_step; i++){
         target_joint_group_positions_eigen = results.at<Vector>(symbol('x', i));
-        std::cout<<" moveit关节量输出 "<<i<<": "<< target_joint_group_positions_eigen[0] 
+        std::cout<<" gpmp计算结果 "<<i<<": "<< target_joint_group_positions_eigen[0] 
                                         <<", "<< target_joint_group_positions_eigen[1] 
                                         <<", "<< target_joint_group_positions_eigen[2]
                                         <<", "<< target_joint_group_positions_eigen[3]
                                         <<", "<< target_joint_group_positions_eigen[4]
                                         <<", "<< target_joint_group_positions_eigen[5]
                                         <<", "<< target_joint_group_positions_eigen[6]        <<std::endl;
+        target_joint_group_positions[i].push_back(target_joint_group_positions_eigen[0]);
+        target_joint_group_positions[i].push_back(target_joint_group_positions_eigen[1]);
+        target_joint_group_positions[i].push_back(target_joint_group_positions_eigen[2]);
+        target_joint_group_positions[i].push_back(target_joint_group_positions_eigen[3]);
+        target_joint_group_positions[i].push_back(target_joint_group_positions_eigen[4]);
+        target_joint_group_positions[i].push_back(target_joint_group_positions_eigen[5]);
+        target_joint_group_positions[i].push_back(target_joint_group_positions_eigen[6]);
     }
 
     // // 启动movegroup
