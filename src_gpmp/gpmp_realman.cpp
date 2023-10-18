@@ -68,6 +68,21 @@
 
 // #include "sdf.h"
 
+
+// moveit
+#include <moveit/move_group_interface/move_group_interface.h>
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
+
+#include <moveit_msgs/DisplayRobotState.h>
+#include <moveit_msgs/DisplayTrajectory.h>
+
+#include <moveit_msgs/AttachedCollisionObject.h>
+#include <moveit_msgs/CollisionObject.h>
+
+#include <moveit_visual_tools/moveit_visual_tools.h>
+
+
+
 using namespace std;
 using namespace gtsam;
 using namespace gpmp2;
@@ -791,12 +806,52 @@ int main(int argc, char** argv){
     opt_setting.set_conf_prior_model(fix_sigma);
     opt_setting.set_vel_prior_model(fix_sigma);
     opt_setting.set_Qc_model(Qc);
-    if(CollisionCost3DArm(*arm_model, sdf, results, opt_setting))
+    if(CollisionCost3DArm(*arm_model, sdf, results, opt_setting)){
         std::cout<<"Trajectory is in collision!"<<std::endl;
+        // return 0;
+    }
     else
         std::cout<<"Trajectory is collision free."<<std::endl;
 
+
+
     // 五、moveit控制及rviz可视化
+    
+    
+    // 关节量 
+    std::vector<double> target_joint_group_positions;
+    Vector target_joint_group_positions_eigen;
+    for(int i=0; i<=total_time_step; i++){
+        target_joint_group_positions_eigen = results.at<Vector>(symbol('x', i));
+        std::cout<<" moveit关节量输出 "<<i<<": "<< target_joint_group_positions_eigen[0] 
+                                        <<", "<< target_joint_group_positions_eigen[1] 
+                                        <<", "<< target_joint_group_positions_eigen[2]
+                                        <<", "<< target_joint_group_positions_eigen[3]
+                                        <<", "<< target_joint_group_positions_eigen[4]
+                                        <<", "<< target_joint_group_positions_eigen[5]
+                                        <<", "<< target_joint_group_positions_eigen[6]        <<std::endl;
+    }
+
+    // // 启动movegroup
+    // static const std::string PLANNING_GROUP = "panda_arm";
+    // moveit::planning_interface::MoveGroupInterface move_group(PLANNING_GROUP);
+    // move_group.setJointValueTarget(target_joint_group_positions);    
+    
+    // // 规划
+    // moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+    // bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    // ROS_INFO_NAMED("tutorial", "Visualizing plan 2 (joint space goal) %s", success ? "" : "FAILED");
+
+    
+    
+    // // # 设置机械臂和夹爪的允许误差值
+    // // arm.set_goal_joint_tolerance(0.001)
+    // // # arm.set_planner_id("RRTConnectkConfigDefault")
+    // // arm.set_planner_id("RRTstar")
+
+    // // reference_frame = 'base_link'
+
+
 
     return 0;
 }

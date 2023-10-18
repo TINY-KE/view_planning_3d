@@ -38,7 +38,11 @@
 
 // sdf
 #include <gpmp2/obstacle/ObstacleSDFFactor.h>
+<<<<<<< HEAD
 #include <gpmp2/obstacle/ObstacleSDFFactorGP.h>
+=======
+
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 
 // 优化器
 #include <gtsam/base/Matrix.h>
@@ -51,26 +55,37 @@
 
 #include <gpmp2/kinematics/GaussianPriorWorkspacePoseArm.h>
 #include <gpmp2/kinematics/ArmModel.h>
+<<<<<<< HEAD
 #include <gtsam/nonlinear/DoglegOptimizer.h>
 
 // 关节之间的连续性？ GP prior
 #include <gpmp2/gp/GaussianProcessPriorLinear.h>
+=======
+
+#include <gtsam/nonlinear/DoglegOptimizer.h>
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 
 // ros
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
+<<<<<<< HEAD
 #include "sdf.h"
 
+=======
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 using namespace std;
 using namespace gtsam;
 using namespace gpmp2;
 
+<<<<<<< HEAD
 typedef ObstacleSDFFactor<ArmModel> ObstacleSDFFactorArm;
 typedef ObstacleSDFFactorGP<ArmModel, GaussianProcessInterpolatorLinear>   ObstacleSDFFactorGPArm;
 
 
+=======
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 class Dataset {
     public:
         Dataset(){};
@@ -87,6 +102,7 @@ class Dataset {
         // float map;
         std::vector<std::vector<std::vector<int>>> map;
         int corner_idx;
+<<<<<<< HEAD
 
     public: 
         void bwdist(){
@@ -103,6 +119,8 @@ class Dataset {
                 }
             }
         }
+=======
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 };
 
 
@@ -169,7 +187,11 @@ double sdf_wrapper(const SignedDistanceField& field, const Point3& p) {
   return field.getSignedDistance(p);
 }
 
+<<<<<<< HEAD
 SignedDistanceField generate3Ddataset_addObstacle(std::vector<gtsam::Matrix>& data){
+=======
+SignedDistanceField generate_sdf(std::vector<gtsam::Matrix>& data){
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
    
     // params
     Point3 origin(-1.5, -1.5, -1.5);
@@ -311,7 +333,11 @@ int main(int argc, char** argv){
 
     // 三、障碍物sdf
     vector<Matrix> sdf_data;
+<<<<<<< HEAD
     SignedDistanceField sdf = generate3Ddataset_addObstacle(sdf_data);
+=======
+    SignedDistanceField sdf = generate_sdf(sdf_data);
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
     visualization_msgs::Marker marker;
     marker.header.frame_id = "base_link";  // 设置坐标系，根据需要进行修改
     marker.header.stamp = ros::Time::now();
@@ -390,10 +416,17 @@ int main(int argc, char** argv){
     // 五、优化
     // 1.传感器模型
     Eigen::MatrixXd Qc = 0.1 * Eigen::MatrixXd::Identity(arm_model.dof(), arm_model.dof());
+<<<<<<< HEAD
     std::cout<<"协方差矩阵："<<std::endl<<Qc<<std::endl;
     
     noiseModel::Gaussian::shared_ptr Qc_model = noiseModel::Gaussian::Covariance(Qc);// noiseModel是命名空间，Gaussian是类，Covariance是类的成员函数
     std::cout<<"高斯噪声模型："<<std::endl<<Qc_model<<std::endl;
+=======
+    // std::cout<<"协方差矩阵："<<std::endl<<Qc<<std::endl;
+    
+    noiseModel::Gaussian::shared_ptr Qc_model = noiseModel::Gaussian::Covariance(Qc);// noiseModel是命名空间，Gaussian是类，Covariance是类的成员函数
+    // std::cout<<"高斯噪声模型："<<std::endl<<Qc_model<<std::endl;
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 
     // 2.图优化
     // % algo settings
@@ -408,6 +441,11 @@ int main(int argc, char** argv){
         Key key_pos = Symbol('x', i);
         Key key_vel = Symbol('v', i);
 
+<<<<<<< HEAD
+=======
+        
+
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
         if(i==0){
             // 2.1 起始位置约束
             graph.add(PriorFactor<Vector>(key_pos, start_conf,  noiseModel::Isotropic::Sigma(arm_model.dof(), fix_sigma)));
@@ -428,6 +466,7 @@ int main(int argc, char** argv){
         }
 
         if(i>0){
+<<<<<<< HEAD
             // 初始化变量
             // key_pos1 = symbol('x', i-1);
             // key_pos2 = symbol('x', i);
@@ -453,6 +492,9 @@ int main(int argc, char** argv){
                     graph.add(ObstacleSDFFactorGPArm(key_pos1, key_vel1, key_pos2, key_vel2, arm_model, sdf, obs_sigma, epsilon_dist, Qc_model, delta_t, tau));
                 }
             }
+=======
+            
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
         }
         
     }

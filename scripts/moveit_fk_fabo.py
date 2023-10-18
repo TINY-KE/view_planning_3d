@@ -104,6 +104,7 @@ class MoveItFkDemo:
         rospy.sleep(2)
         
 
+<<<<<<< HEAD
         # # 2
         # joint_positions = [0.15429766211377594, 1.9428643302179047, 1.3212791520088896, 1.185550295316868, -0.2827506656051826, -0.7501207356122999, -1.610228840959067]
         # arm.set_joint_value_target(joint_positions)
@@ -126,6 +127,30 @@ class MoveItFkDemo:
         # arm.go()
         # rospy.loginfo("4 success")
         # rospy.sleep(2)
+=======
+        # 2
+        joint_positions = [0.15429766211377594, 1.9428643302179047, 1.3212791520088896, 1.185550295316868, -0.2827506656051826, -0.7501207356122999, -1.610228840959067]
+        arm.set_joint_value_target(joint_positions)
+        arm.go()
+        rospy.loginfo("2 success")
+        rospy.sleep(2)
+
+
+        # 3
+        joint_positions = [0.6895338466671843, 1.2981909214886596, 0.4686369008918829, 0.7887113470731757, 0.4142731190759852, -0.7193586341411624, -0.8285427573325324]
+        arm.set_joint_value_target(joint_positions)
+        arm.go()
+        rospy.loginfo("3 success")
+        rospy.sleep(2)
+
+
+        # 4
+        joint_positions = [0.6730145154199345, 0.7794910672257949, 0.7014144811786318, -0.6941860106717108, -0.7017467132517936, 0.5753590178416159, 0.7277143943471058]
+        arm.set_joint_value_target(joint_positions)
+        arm.go()
+        rospy.loginfo("4 success")
+        rospy.sleep(2)
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 
 
 

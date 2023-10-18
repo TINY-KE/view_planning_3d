@@ -6,6 +6,7 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+<<<<<<< HEAD
 #include <Eigen/Dense>
 #include <vector>
 
@@ -234,6 +235,15 @@ Eigen::Quaterniond ExtractQuaterniond(const cv::Mat &mat ){
 
 
 
+=======
+#include <vector>
+
+// #include <active_slam_msg/object_map>
+
+// double M_PI = 3.1415926;
+
+//define a new class called object_cluster
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 class object_cluster{
     public:
         //define a default constructor
@@ -288,8 +298,11 @@ class candidate{
         Eigen::Vector3d start;
         Eigen::Vector3d end;
         Eigen::Quaterniond q;
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
     public:
         // 构造函数
         candidate(){
@@ -340,6 +353,7 @@ class candidate{
             z = start(2);
         }
 
+<<<<<<< HEAD
         cv::Mat GetPose(){
             // cv::Mat pose = cv::Mat::ones(4,4,CV_32F);
             // pose.at<float>(0,3) = x;
@@ -386,6 +400,10 @@ class candidate{
 
 
 
+=======
+};
+
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 // Eigen::Vector3d 到 geometry_msgs::Point 的转换函数
 geometry_msgs::Point eigen_to_point(Eigen::Vector3d &v){
     geometry_msgs::Point p;
@@ -395,6 +413,7 @@ geometry_msgs::Point eigen_to_point(Eigen::Vector3d &v){
     return p;
 }
 
+<<<<<<< HEAD
 
 // void PublishKeyFrames(const std::vector<KeyFrame*> &vpKFs)
 // {
@@ -495,22 +514,39 @@ std::vector<candidate> CandidatesInterpolation(const std::vector<candidate> &can
     return candidates_insert;
 }
 
+=======
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 int main(int argc, char** argv){
 
 
     ros::init(argc, argv, "vector_display_node");
     ros::NodeHandle nh;
+<<<<<<< HEAD
     ros::Publisher marker_pub = nh.advertise<visualization_msgs::Marker>("/candidate", 10);
     ros::Publisher publisher_mam_rviz = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("/local_nbv", 1000);
     ros::Publisher publisher_KF = nh.advertise<visualization_msgs::Marker>("KeyFrame", 1000);
     ros::Publisher marker_object_pub = nh.advertise<visualization_msgs::Marker>("/object_marker", 10);
     
     object ob(  0.68888+0.1, -0.317092, 0.467195,
+=======
+    ros::Publisher marker_pub = nh.advertise<visualization_msgs::Marker>("vector_marker", 10);
+    ros::Publisher publisher_mam_rviz = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("/local_nbv", 1000);
+    
+
+
+    object ob(  0.68888, -0.317092, 0.467195,
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
                 0.368233, 0.400311, 0.245264,
                 0.000000, 0.000000, 0.000000   );
     std::vector<candidate> candidates;
 
 
+<<<<<<< HEAD
+=======
+    int i = 0;
+
+
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
     // 60度。未来如果60度达不到，则降低坡度。
     // 距离应该是根据fov的宽度选择
     double th = 45.0/180.0*M_PI; //60的坡度
@@ -531,6 +567,7 @@ int main(int argc, char** argv){
         candidates.push_back(cand);
     }
 
+<<<<<<< HEAD
     // 插值算法
     // 0.291, -0.400, 0.702
     candidate candidate_init(Eigen::Vector3d(0.291, -0.400, 0.702), Eigen::Vector3d(ob.x, ob.y, ob.z));
@@ -563,10 +600,17 @@ int main(int argc, char** argv){
         marker_object_pub.publish(marker_object);
         std::cout<<"物体cube" <<std::endl;
 
+=======
+
+    ros::Rate rate(10);  // 发布频率为10Hz
+    while (ros::ok())
+    {
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
         // v1: 以始末坐标点的方式显示
         for (size_t i = 0; i < candidates.size(); i++)
         {
             visualization_msgs::Marker marker;
+<<<<<<< HEAD
             marker.header.frame_id = "odom";  // 假设您的世界坐标系为"world"
             marker.id = i;
             marker.type = visualization_msgs::Marker::ARROW;
@@ -574,10 +618,20 @@ int main(int argc, char** argv){
             marker.scale.x = 0.03;  // 箭头的尺寸
             marker.scale.y = 0.03;
             // marker.scale.z = 0.02;
+=======
+            marker.header.frame_id = "map";  // 假设您的世界坐标系为"world"
+            marker.id = i;
+            marker.type = visualization_msgs::Marker::ARROW;
+            marker.action = visualization_msgs::Marker::ADD;
+            marker.scale.x = 0.1;  // 箭头的尺寸
+            marker.scale.y = 0.2;
+            marker.scale.z = 0.2;
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 
             // 设置箭头的起点和终点
             geometry_msgs::Point start = eigen_to_point(candidates[i].start);
             marker.points.push_back(start);
+<<<<<<< HEAD
             Eigen::Vector3d end_new = (candidates[i].end - candidates[i].start).normalized() * 0.2 + candidates[i].start;
             geometry_msgs::Point end = eigen_to_point(end_new);
             marker.points.push_back(end);
@@ -632,6 +686,32 @@ int main(int argc, char** argv){
 
 
         // // v2: 以“四元数”的方式显示
+=======
+
+            geometry_msgs::Point end = eigen_to_point(candidates[i].end);
+            marker.points.push_back(end);
+
+            // 设置箭头的颜色
+            if(i==0){
+                marker.color.a = 1.0;  // 不透明度
+                marker.color.r = 1.0;  // 红色分量
+                marker.color.g = 0.0;  // 绿色分量
+                marker.color.b = 0.0;  // 蓝色分量
+            }
+            else{
+                marker.color.a = 1.0;  // 不透明度
+                marker.color.r = 0.0;  // 红色分量
+                marker.color.g = 1.0;  // 绿色分量
+                marker.color.b = 0.0;  // 蓝色分量
+            }
+            
+
+            marker_pub.publish(marker);
+            rate.sleep();
+        }
+
+        // v2: 以“四元数”的方式显示
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
         // for (size_t i = 0; i < candidates.size(); i++)
         // {
         //     geometry_msgs::PoseWithCovarianceStamped can;
@@ -639,7 +719,11 @@ int main(int argc, char** argv){
         //     can.pose.pose.position.y = candidates[i].y;
         //     can.pose.pose.position.z = candidates[i].z;
 
+<<<<<<< HEAD
         //     // Eigen::Quaterniond q_w_body = ExtractQuaterniond(T_w_basefootprint);
+=======
+        //     // Eigen::Quaterniond q_w_body = Converter::ExtractQuaterniond(T_w_basefootprint);
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
         //     // Eigen::Quaterniond q_body_rotate = Eigen::Quaterniond( Eigen::AngleAxisd( mGreat_angle*M_PI/180.0, Eigen::Vector3d ( 0,0,1 ) )  );     //沿 Z 轴旋转 45 度
         //     // Eigen::Quaterniond q = q_w_body * q_body_rotate;
         //     can.pose.pose.orientation.w = candidates[i].q.w();
@@ -648,12 +732,16 @@ int main(int argc, char** argv){
         //     can.pose.pose.orientation.z = candidates[i].q.z();
         //     can.header.frame_id= "map";
         //     can.header.stamp=ros::Time::now();
+<<<<<<< HEAD
 
+=======
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
         //     std::cout<<"end: "<<candidates[i].end.transpose()<<std::endl;
 
         //     publisher_mam_rviz.publish(can);
         //     rate.sleep();
         // }
+<<<<<<< HEAD
 
         // // v3: 以“四元数”的方式显示
         // for (size_t i = 0; i < candidates.size(); i++)
@@ -765,6 +853,8 @@ int main(int argc, char** argv){
         publisher_KF.publish(mKeyFrames);
         rate.sleep();
         std::cout<<"锥形相机"<<std::endl;
+=======
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
     }
 
     return 0;

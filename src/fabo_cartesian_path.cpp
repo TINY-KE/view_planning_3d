@@ -127,6 +127,7 @@ int main(int argc, char **argv)
 
 	
 	
+<<<<<<< HEAD
 	// // 设置一个目标位置（路点）
 	// geometry_msgs::Pose target_pose2;
 	
@@ -140,6 +141,21 @@ int main(int argc, char **argv)
 	// target_pose2.position.z = 0.889;
 
 	// waypoints.push_back(target_pose2);
+=======
+	// 设置一个目标位置（路点）
+	geometry_msgs::Pose target_pose2;
+	
+	target_pose2.orientation.x = -0.176;
+	target_pose2.orientation.y = 0.417;
+	target_pose2.orientation.z = -0.077;
+	target_pose2.orientation.w = 0.888;
+
+	target_pose2.position.x = 0.440;
+	target_pose2.position.y = -0.151;
+	target_pose2.position.z = 0.889;
+
+	waypoints.push_back(target_pose2);
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 	
 	
 	// 设置一个目标位置（路点）
@@ -174,8 +190,12 @@ int main(int argc, char **argv)
 
 
 	// // 笛卡尔空间下的路径规划与执行
+<<<<<<< HEAD
 	ROS_INFO("Start planning");
 	
+=======
+
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 	// v1：简单版本
 	// moveit_msgs::RobotTrajectory trajectory;
 	// const double jump_threshold = 0.0;
@@ -191,11 +211,17 @@ int main(int argc, char **argv)
 
 	// v2：
 	// 笛卡尔空间下的路径规划
+<<<<<<< HEAD
 	move_group.setMaxVelocityScalingFactor(0.1);
 
 	moveit_msgs::RobotTrajectory trajectory;
 	const double jump_threshold = 2.0;
 	const double eef_step = 0.01; //05;  //步长
+=======
+	moveit_msgs::RobotTrajectory trajectory;
+	const double jump_threshold = 2.0;
+	const double eef_step = 0.005;  //步长
+>>>>>>> 08c1266182c2a3e9324b4c06027860246ab60b14
 	double fraction = 0.0;
 	int maxtries = 100; //最大尝试规划次数
 	int attempts = 0; //已经尝试规划次数

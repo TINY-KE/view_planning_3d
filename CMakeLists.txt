@@ -213,18 +213,19 @@ include_directories(
 add_executable(test_cartesian_path_node src/test_cartesian_path.cpp)
 target_link_libraries(test_cartesian_path_node ${catkin_LIBRARIES} ${EIGEN3_LIBS})
 
-add_executable(fabo_cartesian_path_node src/fabo_cartesian_path.cpp)
-target_link_libraries(fabo_cartesian_path_node ${catkin_LIBRARIES} ${EIGEN3_LIBS})
+# add_executable(fabo_cartesian_path_node src/fabo_cartesian_path.cpp)
+# target_link_libraries(fabo_cartesian_path_node ${catkin_LIBRARIES} ${EIGEN3_LIBS})
 
 add_executable(fabo_ik_tf   src/fabo_ik_tf.cpp)
 target_link_libraries(fabo_ik_tf ${catkin_LIBRARIES} ${EIGEN3_LIBS})
 
-add_executable(fabo_cartesian_path_one src/fabo_cartesian_path_one.cpp)
-target_link_libraries(fabo_cartesian_path_one ${catkin_LIBRARIES} ${EIGEN3_LIBS})
 
-add_executable(generate_candidate src/generate_candidate.cpp )
+# add_executable(fabo_cartesian_path_one src/fabo_cartesian_path_one.cpp)
+# target_link_libraries(fabo_cartesian_path_one ${catkin_LIBRARIES} ${EIGEN3_LIBS})
+
+# add_executable(generate_candidate src/generate_candidate.cpp )
 # src/Converter.cc
-target_link_libraries(generate_candidate ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LIBS})
+# target_link_libraries(generate_candidate ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LIBS})
 
 add_executable(cartesian_candidate src/cartesian_candidate.cpp )
 target_link_libraries(cartesian_candidate ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LIBS})
@@ -235,10 +236,11 @@ target_link_libraries(candidate_ik_fabo ${catkin_LIBRARIES} ${EIGEN3_LIBS})
 add_executable(fabo_init src/fabo_init.cpp)
 target_link_libraries(fabo_init ${catkin_LIBRARIES} ${EIGEN3_LIBS})
 
+
 # target_link_libraries(${YOUR_BUILD_TARGET} gpmp2)
-message(STATUS "Fabo Arm Test")
-add_executable(fabo_test src/test.cpp)
-target_link_libraries(fabo_test   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 )  #${Boost_LIBRARIES}
+# message(STATUS "Fabo Arm Test")
+# add_executable(fabo_test src/test.cpp)
+# target_link_libraries(fabo_test   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 )  #${Boost_LIBRARIES}
 
 message(STATUS "Fabo Arm Test")
 add_executable(gpmp_realman src_gpmp/gpmp_realman.cpp)
@@ -259,6 +261,5 @@ target_link_libraries(test_dist   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LI
 
 # add_executable(test_copycvmat src/test_copycvmat.cpp)
 # target_link_libraries(test_copycvmat   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LIBS})
-
 
 
