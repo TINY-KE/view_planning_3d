@@ -82,9 +82,6 @@
 // tf
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
-// geometry_msgs::PoseStamped
-// #include <geometry_msgs/PoseStamped.h>
-
 #include <tf/transform_listener.h>
 
 // opencv
@@ -132,22 +129,21 @@ class object{
         }
 };
 
-
 class candidate{
     public:
-        double centor_x,centor_y,centor_z;
+        double x,y,z;
         double roll,pitch,yaw;
         Eigen::Vector3d start;
         Eigen::Vector3d end;
-        Eigen::Quaterniond oritention_quaterniond;
-        Eigen::Isometry3d  pose_isometry3d;
+        Eigen::Quaterniond q;
+
 
     public:
         // 构造函数
         candidate(){
-            centor_x = 0;
-            centor_y = 0;
-            centor_z = 0;
+            x = 0;
+            y = 0;
+            z = 0;
             roll = 0;
             pitch = 0;
             yaw = 0;
@@ -162,43 +158,11 @@ class candidate{
 
             Eigen::Quaterniond quaternion;
             quaternion.setFromTwoVectors(Eigen::Vector3d::UnitX(), direction);
-            oritention_quaterniond = quaternion;
-            // std::cout<<"quaternion.setFromTwoVectors: x "<<quaterniond_.x()
-            //                                         <<"  y "<<quaterniond_.y()
-            //                                         <<"  z "<<quaterniond_.z()
-            //                                         <<"  w "<<quaterniond_.w()<<std::endl;
-            // 以下注销的部分是自行计算ypr。经过我的验证，和quaternion.setFromTwoVectors的计算结果一致
-            // cv::Point3f v =  cv::Point3f(end.x(),  end.y(),  end.z()) - cv::Point3f(start.x(),  start.y(),  start.z());
-            // yaw = std::atan2(v.y, v.x);  // 绕Z轴的旋转角度
-            // pitch = std::atan2(-v.z, v.x);  // 绕y轴的旋转角度
-            // // roll = std::atan2 因为要让相机视线（机械臂末端的x轴）与目标向量相同，有很多选择，因此我选择了限制roll=0
-            // // 计算旋转矩阵
-            // Eigen::Matrix3d rotation_matrix_;
-            // rotation_matrix_ = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())
-            //                 * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY());
-            // quaterniond_ = Eigen::Quaterniond(rotation_matrix_);
-            // std::cout<<"Eigen::AngleAxisd: x "<<quaterniond_.x()
-            //                             <<"  y "<<quaterniond_.y()
-            //                             <<"  z "<<quaterniond_.z()
-            //                             <<"  w "<<quaterniond_.w()<<std::endl;
-            // std::cout<<std::endl;
-            // std::cout<<std::endl;
+            q = quaternion;
 
-
-            // //转换成  cvmat矩阵
-            // cv::Mat rotate_mat = Converter::toCvMat(rotation_matrix);
-            // cv::Mat t_mat = (cv::Mat_<float>(3, 1) << x, y, 0);
-            // cv::Mat T_world_to_baselink = cv::Mat::eye(4, 4, CV_32F);
-            // rotate_mat.copyTo(T_world_to_baselink.rowRange(0, 3).colRange(0, 3));
-            // t_mat.copyTo(T_world_to_baselink.rowRange(0, 3).col(3));
-            // cv::Mat Camera_mat = T_world_to_baselink * mT_basefootprint_cam;
-
-
-            centor_x = start(0);
-            centor_y = start(1);
-            centor_z = start(2);
-            pose_isometry3d = Eigen::Translation3d(centor_x, centor_y, centor_z) * oritention_quaterniond;
-
+            x = start(0);
+            y = start(1);
+            z = start(2);
         }
 
         // cv::Mat GetPose(){
@@ -644,13 +608,8 @@ int main(int argc, char** argv){
     ros::Publisher pub_field = nh.advertise<visualization_msgs::Marker>("field", 1);
     ros::Publisher pub_sdf = nh.advertise<visualization_msgs::Marker>("sdf", 1);
     ros::Publisher joint_values_pub = nh.advertise<std_msgs::Float64MultiArray>("joint_values_gpmp", 10);
-    ros::Publisher candidate_pub = nh.advertise<visualization_msgs::Marker>("/candidate", 10);
-    // ros::Publisher candidate_quaterniond_pub = nh.advertise<geometry_msgs::PoseStamped>("output", 1);
+    ros::Publisher marker_pub = nh.advertise<visualization_msgs::Marker>("/candidate", 10);
 
-
-    // 启动movegroup
-    static const std::string PLANNING_GROUP = "arm";
-    moveit::planning_interface::MoveGroupInterface move_group(PLANNING_GROUP);
 
     ros::Rate loop_rate(5);  // 设置发布频率
 
@@ -683,18 +642,7 @@ int main(int argc, char** argv){
         marker.color.g = 0.0;  // 绿色分量
         marker.color.b = 1.0;  // 蓝色分量
         
-        candidate_pub.publish(marker);
-        
-        // geometry_msgs::PoseStamped target;
-        // target.header.frame_id = "base_link";	//设置了消息的头部信息
-        // //通过将四元数的分量（x、y、z、w）设置为transDockPos变量中存储的旋转四元数分量。这些分量描述了箭头方向的旋转。
-        // target.pose.orientation.x = candidates[i].quaterniond.x();
-        // target.pose.orientation.y = candidates[i].quaterniond.y();
-        // target.pose.orientation.z = candidates[i].quaterniond.z();
-        // target.pose.orientation.w = candidates[i].quaterniond.w();
-        // target.pose.position
-        // candidate_quaterniond_pub.publish(target);
-
+        marker_pub.publish(marker);
         loop_rate.sleep();
     }
 
@@ -730,14 +678,30 @@ int main(int argc, char** argv){
     int i = 0;
     for(auto candidate: candidates)
     {
+        cv::Point3f v =  cv::Point3f(candidate.end.x(),  candidate.end.y(),  candidate.end.z()) - cv::Point3f(candidate.start.x(),  candidate.start.y(),  candidate.start.z());
+        float angle_yaw = std::atan2(v.y, v.x);  // 绕Z轴的旋转角度
+        float angle_pitch = std::atan2(-v.z, v.x);  // 绕y轴的旋转角度
+
         #ifdef DEBUG
-            std::cout<<"候选点" << i <<"的目标朝向偏转（ypr）："<<candidate.yaw<<","<< candidate.pitch<<", 0"<< std::endl;
-            i++;
-            // 朝向角度：1.57184,0.0207701,1.62101  说明先再绕着z转了90度，又绕着x轴转了90度。
+        std::cout<<"候选点" << i <<"的目标朝向偏转（ypr）："<<angle_yaw<<","<< angle_pitch<<", 0"<< std::endl;
+        i++;
+        // 朝向角度：1.57184,0.0207701,1.62101  说明先再绕着z转了90度，又绕着x轴转了90度。
         #endif
 
+        // // 计算旋转矩阵
+        // Eigen::Matrix3d rotation_matrix;
+        // rotation_matrix = Eigen::AngleAxisd(angle_yaw, Eigen::Vector3d::UnitZ())
+        //                 * Eigen::AngleAxisd(angle_pitch, Eigen::Vector3d::UnitY());
 
-        Rot3 traj_orien = Rot3::Ypr(candidate.yaw, candidate.pitch, 0.0);
+        // //转换成  cvmat矩阵
+        // cv::Mat rotate_mat = Converter::toCvMat(rotation_matrix);
+        // cv::Mat t_mat = (cv::Mat_<float>(3, 1) << x, y, 0);
+        // cv::Mat T_world_to_baselink = cv::Mat::eye(4, 4, CV_32F);
+        // rotate_mat.copyTo(T_world_to_baselink.rowRange(0, 3).colRange(0, 3));
+        // t_mat.copyTo(T_world_to_baselink.rowRange(0, 3).col(3));
+        // cv::Mat Camera_mat = T_world_to_baselink * mT_basefootprint_cam;
+
+        Rot3 traj_orien = Rot3::Ypr(angle_yaw, angle_pitch, 0.0);
         Pose3 traj_pose = Pose3(traj_orien, Point3(candidate.start.x(), candidate.start.y(), candidate.start.z()));
 
         candidates_rot3.push_back(traj_orien);
@@ -745,7 +709,13 @@ int main(int argc, char** argv){
     }
     
     
+    auto jposes = arm_model->fk_model().forwardKinematicsPose(end_conf);
+    Pose3 end_pose = Pose3(Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6)), Point3(jposes(3, 6), jposes(4, 6), jposes(5, 6)));
     
+    #ifdef DEBUG
+        end_pose.print("终点位姿：\n");
+        std::cout<<std::endl<<std::endl;
+    #endif
 
     
 
@@ -755,73 +725,6 @@ int main(int argc, char** argv){
     int check_inter = 0;
     double delta_t = real(total_time_sec) / real(total_time_step);
     double total_check_step = (check_inter + 1)*total_time_step;
-
-
-
-    // 四、轨迹初值  TODO: 使用moveit compute_ik或者其他机器人工具箱，计算candidates的运动学逆解来作为轨迹初值。问题在于candidates大部分是无法解出逆解的，需要进行筛选
-    // version1： 直接使用直线插值
-    // gtsam::Values init_values = gpmp2::initArmTrajStraightLine(start_conf, end_conf, total_time_step);
-    // version2： 使用moveit compute_ik或者其他机器人工具箱
-    gtsam::Values init_values;
-    //1.RobotModelPtr，robot_model指针
-    robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
-    robot_model::RobotModelPtr kinematic_model_RobotModelPtr = robot_model_loader.getModel();
-    ROS_INFO("Model frame: %s", kinematic_model_RobotModelPtr->getModelFrame().c_str());
-    robot_state::RobotStatePtr kinematic_state_RobotStatePtr(new robot_state::RobotState(kinematic_model_RobotModelPtr));
-    kinematic_state_RobotStatePtr->setToDefaultValues();  //将机器人的状态都设为默认值，根据setToDefaultValues()定义，默认位置为0或者是最大界限和最小界限之间。
-    const robot_state::JointModelGroup* joint_model_group = kinematic_model_RobotModelPtr->getJointModelGroup("arm");
-    int candidate_num=0;
-    init_values.clear();
-    for(auto candidate: candidates){
-        // 调用setFromIK解当前规划组arm的逆运动学问题，返回一个bool量。在解决该问题之前，需要如下条件：
-        // end_effector_state: 末端执行器的期望位姿（一般情况下为当前规划组chain的最后一个连杆，本文为gripper_link）：也就是上面已经计算得到的齐次变换矩阵end_effector_state；
-        Eigen::Isometry3d end_effector_state_my = Eigen::Isometry3d::Identity();
-        Eigen::Vector3d translation(candidate.centor_x, candidate.centor_y, candidate.centor_z);
-        end_effector_state_my.pretranslate(translation);
-        Eigen::Matrix3d rotation_matrix = candidate.oritention_quaterniond.toRotationMatrix();
-        end_effector_state_my.rotate(rotation_matrix);
-        
-        // 10：  尝试解决IK的次数
-        // 0.1s：   每次尝试的时间
-        std::size_t attempts = 10;
-        double timeout = 0.1;
-        bool found_ik = kinematic_state_RobotStatePtr->setFromIK(joint_model_group, end_effector_state_my /* bug */, attempts, timeout);   //bug
-        // 如果IK得到解，则驱动机器人按照计算得到的关节值进行运动，同时，打印计算结果。
-        if (found_ik){
-            std::vector<double> joint_values;
-            kinematic_state_RobotStatePtr->copyJointGroupPositions(joint_model_group, joint_values);
-            Eigen::VectorXd joint_values_gpmp(7), avg_vel_gpmp(7);
-            for(int i=0; i<joint_values.size(); i++){
-                joint_values_gpmp[i] = joint_values[i];   
-                avg_vel_gpmp[i] = 0; 
-            }
-            init_values.insert(Symbol('x', candidate_num),  joint_values_gpmp);
-            // TODO: 自己插入一个为0的速度。之后根据候选点ik之间的变化量，计算速度  Vector avg_vel = (end_conf - init_conf) / static_cast<double>(total_step);
-            init_values.insert(Symbol('v', candidate_num),  avg_vel_gpmp);
-
-            ROS_INFO_STREAM("Find IK solution for "<<candidate_num<<" and success to store");
-        }
-        else{
-            ROS_INFO("Did not find IK solution");
-        }
-        candidate_num++;
-    }
-    ROS_ERROR_STREAM("Find IK: "<<candidate_num<<"/"<<candidates.size());
-
-    // TODO: end pose用candidates的最后一个。
-    auto jposes = arm_model->fk_model().forwardKinematicsPose(end_conf);
-    Pose3 end_pose = Pose3(Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6)), Point3(jposes(3, 6), jposes(4, 6), jposes(5, 6)));
-    
-    #ifdef DEBUG
-        end_pose.print("终点位姿：\n");
-        candidates_pose3[candidates_pose3.size()-1].print("最后候选点位姿：\n");
-        std::cout<<std::endl<<std::endl;
-    #endif
-    
-    // std::cout<<"轨迹初值，10个插值："<<std::endl;
-    // 【已经验证过了，没有问题】： init_values.print();
-
-
 
 
     // 三、障碍物sdf
@@ -1009,7 +912,10 @@ int main(int argc, char** argv){
         loop_rate.sleep();
     }
     
-    
+    // 四、轨迹初值
+    gtsam::Values init_values = gpmp2::initArmTrajStraightLine(start_conf, end_conf, total_time_step);
+    // std::cout<<"轨迹初值，10个插值："<<std::endl;
+    // 【已经验证过了，没有问题】： init_values.print();
     
 
 
@@ -1032,7 +938,6 @@ int main(int argc, char** argv){
     double epsilon_dist = 0.15;
     double fix_sigma = 1e-4;
     double end_pose_sigma = 1e-4;
-    double pose_sigma = 1e-4;
     double orien_sigma = 1e-2;
     
     NonlinearFactorGraph graph;
@@ -1042,22 +947,20 @@ int main(int argc, char** argv){
 
         if(i==0){
             // 2.1 起始位置约束
-            // graph.add(PriorFactor<Vector>(key_pos, start_conf,  noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
-            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, pose_sigma)));
+            graph.add(PriorFactor<Vector>(key_pos, start_conf,  noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
             graph.add(PriorFactor<Vector>(key_vel, start_vel,   noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
         }
         else if(i==total_time_step){
             // 2.2 终止位置约束
             // goal pose for end effector in workspace
-            // graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, end_pose, noiseModel::Isotropic::Sigma(6, pose_sigma)));
+            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, end_pose, noiseModel::Isotropic::Sigma(6, end_pose_sigma)));
             // 为什么是dof-1
-            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, pose_sigma)));
+            
             // fix goal velocity
             graph.add(PriorFactor<Vector>(key_vel, end_vel, noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
         }
         else{
             // 2.3 运动学约束 fix end effector orientation in workspace to be horizontal
-            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, pose_sigma)));
             graph.add(GaussianPriorWorkspaceOrientationArm(key_pos, *arm_model, arm_model->dof()-1, candidates_rot3[i]/* traj_orien */, noiseModel::Isotropic::Sigma(3, orien_sigma)));
         }
 
@@ -1096,30 +999,26 @@ int main(int argc, char** argv){
     // parameters.setlambdaInitial(1000.0);
     // optimizer = LevenbergMarquardtOptimizer(graph, init_values, parameters);
 
-    bool opt_type = false;
+    bool type = true;
     
     Values results;
-    if(opt_type){
-        LevenbergMarquardtParams parameters;
-        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
-        parameters.setAbsoluteErrorTol(1e-12);
-        // parameters.setlambdaInitial(1000.0);
-        LevenbergMarquardtOptimizer optimizer(graph, init_values, parameters);
-        // LevenbergMarquardtOptimizer类的定义
-        // #include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
-        // virtual class LevenbergMarquardtOptimizer : gtsam::NonlinearOptimizer {
-        //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues);
-        //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues, const gtsam::LevenbergMarquardtParams& params);
-        //     double lambda() const;
-        //     void print(string str) const;
-        results = optimizer.optimize();
-    }
-    else{
-        GaussNewtonParams parameters;
-        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
-        GaussNewtonOptimizer optimizer(graph, init_values, parameters);
-        results = optimizer.optimize();
-    }
+    Values cout_results;
+    // if(type){
+    LevenbergMarquardtParams parameters;
+    parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
+    parameters.setAbsoluteErrorTol(1e-12);
+    parameters.setlambdaInitial(1000.0);
+    LevenbergMarquardtOptimizer optimizer(graph, init_values, parameters);
+    // LevenbergMarquardtOptimizer类的定义
+    // #include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
+    // virtual class LevenbergMarquardtOptimizer : gtsam::NonlinearOptimizer {
+    //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues);
+    //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues, const gtsam::LevenbergMarquardtParams& params);
+    //     double lambda() const;
+    //     void print(string str) const;
+    // };
+    results = optimizer.optimize();
+    // }
     // else{
     //     DoglegParams parameters;
     //     parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
@@ -1176,7 +1075,9 @@ int main(int argc, char** argv){
 
 
     // 五、moveit控制及rviz可视化
-    
+    // 启动movegroup
+    static const std::string PLANNING_GROUP = "arm";
+    moveit::planning_interface::MoveGroupInterface move_group(PLANNING_GROUP);
     
     // 关节量 
     bool pub_form = true;

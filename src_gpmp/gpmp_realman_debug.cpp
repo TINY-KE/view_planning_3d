@@ -82,8 +82,9 @@
 // tf
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
-// geometry_msgs::PoseStamped
-// #include <geometry_msgs/PoseStamped.h>
+// geometry_msgs::PoseWithCovarianceStamped
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 
 #include <tf/transform_listener.h>
 
@@ -131,7 +132,6 @@ class object{
             yo = yo_;
         }
 };
-
 
 class candidate{
     public:
@@ -645,7 +645,7 @@ int main(int argc, char** argv){
     ros::Publisher pub_sdf = nh.advertise<visualization_msgs::Marker>("sdf", 1);
     ros::Publisher joint_values_pub = nh.advertise<std_msgs::Float64MultiArray>("joint_values_gpmp", 10);
     ros::Publisher candidate_pub = nh.advertise<visualization_msgs::Marker>("/candidate", 10);
-    // ros::Publisher candidate_quaterniond_pub = nh.advertise<geometry_msgs::PoseStamped>("output", 1);
+    ros::Publisher candidate_quaterniond_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("output", 1);
 
 
     // 启动movegroup
@@ -685,69 +685,74 @@ int main(int argc, char** argv){
         
         candidate_pub.publish(marker);
         
-        // geometry_msgs::PoseStamped target;
-        // target.header.frame_id = "base_link";	//设置了消息的头部信息
-        // //通过将四元数的分量（x、y、z、w）设置为transDockPos变量中存储的旋转四元数分量。这些分量描述了箭头方向的旋转。
-        // target.pose.orientation.x = candidates[i].quaterniond.x();
-        // target.pose.orientation.y = candidates[i].quaterniond.y();
-        // target.pose.orientation.z = candidates[i].quaterniond.z();
-        // target.pose.orientation.w = candidates[i].quaterniond.w();
-        // target.pose.position
-        // candidate_quaterniond_pub.publish(target);
+        geometry_msgs::PoseWithCovarianceStamped target;
+        target.header.frame_id = "base_link";	//设置了消息的头部信息
+        //通过将四元数的分量（x、y、z、w）设置为transDockPos变量中存储的旋转四元数分量。这些分量描述了箭头方向的旋转。
+        target.pose.pose.orientation.x = candidates[i].oritention_quaterniond.x();
+        target.pose.pose.orientation.y = candidates[i].oritention_quaterniond.y();
+        target.pose.pose.orientation.z = candidates[i].oritention_quaterniond.z();
+        target.pose.pose.orientation.w = candidates[i].oritention_quaterniond.w();
+        target.pose.pose.position.x = candidates[i].centor_x;
+        target.pose.pose.position.y = candidates[i].centor_y;
+        target.pose.pose.position.z = candidates[i].centor_z;
+
+        candidate_quaterniond_pub.publish(target);
 
         loop_rate.sleep();
     }
 
-    // 一、构建机械臂模型
-    // ArmModel* arm_model = generateArm("WAMArm");
-        ArmModel* arm_model = generateArm("realman");
+
+
+
+    // // 一、构建机械臂模型
+    // // ArmModel* arm_model = generateArm("WAMArm");
+    //     ArmModel* arm_model = generateArm("realman");
     
-    #ifdef DEBUG
-        std::cout<<"[debug arm]: 自由度"<<arm_model->dof()<<std::endl;
-    #endif
+    // #ifdef DEBUG
+    //     std::cout<<"[debug arm]: 自由度"<<arm_model->dof()<<std::endl;
+    // #endif
     
 
     
     
     
 
-    // 二、指定始末状态
-    // TODO:  用moveit计算初始位置，当前先使用全0的初始值
-    // gtsam::Vector start_conf = (Vector(7) << -3.084730575741016, -1.763304599691998, 1.8552083929655296, 0.43301604856981246, -2.672461979658843, 0.46925065047728776, 4.000864693936108).finished();
-    // gtsam::Vector end_conf = (Vector(7) << -2.018431036907354, -1.4999897089911451, 1.4046777996889483, -1.3707039693409548, -3.0999924865261397, -0.8560425214202461, 4.8622166345079165).finished();
-    gtsam::Vector start_conf = (Vector(7) << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0).finished();
-    gtsam::Vector end_conf = (Vector(7) << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0).finished();
+    // // 二、指定始末状态
+    // // TODO:  用moveit计算初始位置，当前先使用全0的初始值
+    // // gtsam::Vector start_conf = (Vector(7) << -3.084730575741016, -1.763304599691998, 1.8552083929655296, 0.43301604856981246, -2.672461979658843, 0.46925065047728776, 4.000864693936108).finished();
+    // // gtsam::Vector end_conf = (Vector(7) << -2.018431036907354, -1.4999897089911451, 1.4046777996889483, -1.3707039693409548, -3.0999924865261397, -0.8560425214202461, 4.8622166345079165).finished();
+    // gtsam::Vector start_conf = (Vector(7) << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0).finished();
+    // gtsam::Vector end_conf = (Vector(7) << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0).finished();
 
-    gtsam::Vector start_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();
-    gtsam::Vector end_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();
+    // gtsam::Vector start_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();
+    // gtsam::Vector end_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();
     
-    // TODO:  将candidates转变为rot3
-    // auto jposes = arm_model->fk_model().forwardKinematicsPose(start_conf); //???
-    // Rot3 traj_orien = Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6));
-    // 已知空间中的两点，怎么计算向量的yaw-z pitch-y roll-x
-    std::vector<Rot3> candidates_rot3;
-    std::vector<Pose3> candidates_pose3;
-    int i = 0;
-    for(auto candidate: candidates)
-    {
-        #ifdef DEBUG
-            std::cout<<"候选点" << i <<"的目标朝向偏转（ypr）："<<candidate.yaw<<","<< candidate.pitch<<", 0"<< std::endl;
-            i++;
-            // 朝向角度：1.57184,0.0207701,1.62101  说明先再绕着z转了90度，又绕着x轴转了90度。
-        #endif
+    // // TODO:  将candidates转变为rot3
+    // // auto jposes = arm_model->fk_model().forwardKinematicsPose(start_conf); //???
+    // // Rot3 traj_orien = Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6));
+    // // 已知空间中的两点，怎么计算向量的yaw-z pitch-y roll-x
+    // std::vector<Rot3> candidates_rot3;
+    // std::vector<Pose3> candidates_pose3;
+    // int i = 0;
+    // for(auto candidate: candidates)
+    // {
+    //     #ifdef DEBUG
+    //         std::cout<<"候选点" << i <<"的目标朝向偏转（ypr）："<<candidate.yaw<<","<< candidate.pitch<<", 0"<< std::endl;
+    //         i++;
+    //         // 朝向角度：1.57184,0.0207701,1.62101  说明先再绕着z转了90度，又绕着x轴转了90度。
+    //     #endif
 
 
-        Rot3 traj_orien = Rot3::Ypr(candidate.yaw, candidate.pitch, 0.0);
-        Pose3 traj_pose = Pose3(traj_orien, Point3(candidate.start.x(), candidate.start.y(), candidate.start.z()));
+    //     Rot3 traj_orien = Rot3::Ypr(candidate.yaw, candidate.pitch, 0.0);
+    //     Pose3 traj_pose = Pose3(traj_orien, Point3(candidate.start.x(), candidate.start.y(), candidate.start.z()));
 
-        candidates_rot3.push_back(traj_orien);
-        candidates_pose3.push_back(traj_pose);
-    }
+    //     candidates_rot3.push_back(traj_orien);
+    //     candidates_pose3.push_back(traj_pose);
+    // }
     
     
     
 
-    
 
 
     int total_time_sec = candidates.size() * 0.2; //2;
@@ -760,9 +765,8 @@ int main(int argc, char** argv){
 
     // 四、轨迹初值  TODO: 使用moveit compute_ik或者其他机器人工具箱，计算candidates的运动学逆解来作为轨迹初值。问题在于candidates大部分是无法解出逆解的，需要进行筛选
     // version1： 直接使用直线插值
-    // gtsam::Values init_values = gpmp2::initArmTrajStraightLine(start_conf, end_conf, total_time_step);
+    gtsam::Values init_values; // = gpmp2::initArmTrajStraightLine(start_conf, end_conf, total_time_step);
     // version2： 使用moveit compute_ik或者其他机器人工具箱
-    gtsam::Values init_values;
     //1.RobotModelPtr，robot_model指针
     robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
     robot_model::RobotModelPtr kinematic_model_RobotModelPtr = robot_model_loader.getModel();
@@ -773,6 +777,7 @@ int main(int argc, char** argv){
     int candidate_num=0;
     init_values.clear();
     for(auto candidate: candidates){
+
         // 调用setFromIK解当前规划组arm的逆运动学问题，返回一个bool量。在解决该问题之前，需要如下条件：
         // end_effector_state: 末端执行器的期望位姿（一般情况下为当前规划组chain的最后一个连杆，本文为gripper_link）：也就是上面已经计算得到的齐次变换矩阵end_effector_state；
         Eigen::Isometry3d end_effector_state_my = Eigen::Isometry3d::Identity();
@@ -783,9 +788,19 @@ int main(int argc, char** argv){
         
         // 10：  尝试解决IK的次数
         // 0.1s：   每次尝试的时间
-        std::size_t attempts = 10;
+        std::size_t attempts = 4;
         double timeout = 0.1;
-        bool found_ik = kinematic_state_RobotStatePtr->setFromIK(joint_model_group, end_effector_state_my /* bug */, attempts, timeout);   //bug
+        std::cout<<"候选点"<<candidate_num+1<<"的位姿"
+                            <<",x "<<candidate.centor_x
+                            <<",y "<<candidate.centor_y
+                            <<",z "<<candidate.centor_z
+                            <<",qx "<<candidate.oritention_quaterniond.x()
+                            <<",qy "<<candidate.oritention_quaterniond.y()
+                            <<",qz "<<candidate.oritention_quaterniond.z()
+                            <<",qw "<<candidate.oritention_quaterniond.w()<<std::endl;
+        bool found_ik = kinematic_state_RobotStatePtr->setFromIK
+                        (joint_model_group, end_effector_state_my, attempts, timeout);   //bug
+
         // 如果IK得到解，则驱动机器人按照计算得到的关节值进行运动，同时，打印计算结果。
         if (found_ik){
             std::vector<double> joint_values;
@@ -800,454 +815,12 @@ int main(int argc, char** argv){
             init_values.insert(Symbol('v', candidate_num),  avg_vel_gpmp);
 
             ROS_INFO_STREAM("Find IK solution for "<<candidate_num<<" and success to store");
-        }
-        else{
+        }else{
             ROS_INFO("Did not find IK solution");
         }
         candidate_num++;
     }
     ROS_ERROR_STREAM("Find IK: "<<candidate_num<<"/"<<candidates.size());
-
-    // TODO: end pose用candidates的最后一个。
-    auto jposes = arm_model->fk_model().forwardKinematicsPose(end_conf);
-    Pose3 end_pose = Pose3(Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6)), Point3(jposes(3, 6), jposes(4, 6), jposes(5, 6)));
-    
-    #ifdef DEBUG
-        end_pose.print("终点位姿：\n");
-        candidates_pose3[candidates_pose3.size()-1].print("最后候选点位姿：\n");
-        std::cout<<std::endl<<std::endl;
-    #endif
-    
-    // std::cout<<"轨迹初值，10个插值："<<std::endl;
-    // 【已经验证过了，没有问题】： init_values.print();
-
-
-
-
-    // 三、障碍物sdf
-    // params
-    Point3 origin(-1.5, -1.5, -1.5);
-    double cell_size = 0.01;
-    const int cols = 300;
-    const int rows = 300;
-    const int heights = 300;
-    vector<Matrix> dataset;   // 用于存储地图数据。有障碍物的是1，无障碍物的是0
-    // SignedDistanceField sdf = 
-    generate3Ddataset_addObstacle(dataset,origin,cell_size,cols,rows,heights);
-
-    std::cout<<"calculating signed distance field ... "<<std::endl;
-    std::vector<gtsam::Matrix> field;
-    if(field_type)
-        field = signedDistanceField3D(dataset, cell_size);
-    else{
-        Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> matrix;
-        matrix = Eigen::MatrixXd::Zero(rows, cols);
-        field.resize(heights);
-        for (int i = 0; i < heights; i++) {
-            field[i] = matrix;
-        }
-
-        std::cout<<"读取本地txt"<<std::endl;
-        std::string filename = "/home/zhjd/ws_3d_vp/src/view_planning/txt_sdf/sdf.txt";
-        // filename的数据格式：
-        // 针对filed第1行的1~300列，将每一竖排的栅格数据放在txt的一行中，以空格分隔
-        // 因此txt第一行，代表field的0行0列，
-        // txt第二行，代表field的0行1列，
-        std::ifstream file(filename); // 打开文件
-
-        if (file.is_open()) {
-            std::string line;
-            int i =0;
-            while (std::getline(file, line)) { // 每一行代表一竖列
-                i ++;
-                int row =  (i-1) % cols;
-                int col = (i-1) / rows;
-                
-                std::istringstream iss(line); // 使用字符串流处理当前行
-                double number;
-                int z = 0;
-                while (iss >> number) { // 从字符串流中逐个读取数字
-                    // std::cout<<"z"<<z<<"  ,row"<<row<<"  ,col"<<col<<"  ,number"<<number<<std::endl;
-                    field[z](row, col) = number;
-                    z++;
-                }
-            }
-
-            file.close(); // 关闭文件
-        } else {
-            std::cout << "无法打开文件：" << filename << std::endl;
-        }
-        std::cout<<"结束读取本地txt"<<std::endl;
-
-    }
-
-    std::cout<<"calculating signed distance field done"<<std::endl;
-    SignedDistanceField sdf(origin, cell_size, field);
-    #ifdef DEBUG
-        std::cout<<"[debug sdf origin x]:"<<origin.x()<<std::endl;
-        std::cout<<"[debug sdf origin y]:"<<origin.y()<<std::endl;
-        std::cout<<"[debug sdf origin z]:"<<origin.z()<<std::endl;
-        std::cout<<"[debug sdf cell_size]:"<<cell_size<<std::endl;
-        std::cout<<"[debug sdf height]:"<<field.size()<<std::endl;
-        std::cout<<"[debug sdf length]:"<<field[0].rows()<<std::endl;
-        std::cout<<"[debug sdf width]:"<<field[0].cols()<<std::endl;
-        
-        std::cout<<"[debug sdf origin x]:"<<sdf.origin().x()<<std::endl;
-        std::cout<<"[debug sdf origin y]:"<<sdf.origin().y()<<std::endl;
-        std::cout<<"[debug sdf origin z]:"<<sdf.origin().z()<<std::endl;
-        std::cout<<"[debug sdf cell_size]:"<<sdf.cell_size()<<std::endl;
-        std::cout<<"[debug sdf height]:"<<sdf.z_count()<<std::endl;
-        std::cout<<"[debug sdf length]:"<<sdf.x_count()<<std::endl;
-        std::cout<<"[debug sdf width]:"<<sdf.y_count()<<std::endl;
-    #endif
-    // SignedDistanceField sdf(origin, cell_size, rows, cols, heights);
-
-
-    // sdf可视化
-    visualization_msgs::Marker marker;
-    marker.header.frame_id = "base_link";  // 设置坐标系，根据需要进行修改
-    marker.header.stamp = ros::Time::now();
-    marker.ns = "sdf_field";
-    marker.id = 0;
-    marker.type = visualization_msgs::Marker::POINTS;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.1;  // 设置点的尺寸，根据需要进行修改
-    marker.scale.y = 0.1;
-    marker.color.r = 1.0;  // 设置点的颜色，根据需要进行修改
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
-    marker.color.a = 1.0;
-
-    for (int z=0; z<sdf.z_count(); z++) 
-        for (int r=0; r<sdf.y_count(); r++) 
-            for (int c=0; c<sdf.x_count(); c++) {
-            // std::cout<<"point coordinate: "<<c<<","<<r<<","<<z<<std::endl;
-            geometry_msgs::Point point;
-            point.x = r*sdf.cell_size()+sdf.origin().x();  // 假设矩阵中的数据是点的坐标
-            point.y = c*sdf.cell_size()+sdf.origin().y();
-            point.z = z*sdf.cell_size()+sdf.origin().z();
-            if(dataset[z](r, c))
-                marker.points.push_back(point);
-    }
-    std::cout<<"marker_field赋值完毕"<<std::endl;
-
-    visualization_msgs::Marker marker2;
-    marker2.header.frame_id = "base_link";  // 设置坐标系，根据需要进行修改
-    marker2.header.stamp = ros::Time::now();
-    marker2.ns = "sdf_field";
-    marker2.id = 1;
-    marker2.type = visualization_msgs::Marker::POINTS;
-    marker2.action = visualization_msgs::Marker::ADD;
-    marker2.pose.orientation.w = 1.0;
-    marker2.scale.x = 0.1;  // 设置点的尺寸，根据需要进行修改
-    marker2.scale.y = 0.1;
-    marker2.color.r = 0.0;  // 设置点的颜色，根据需要进行修改
-    marker2.color.g = 1.0;
-    marker2.color.b = 0.0;
-    marker2.color.a = 1.0;
-
-    for (int z=10; z<sdf.z_count()-10; z++) 
-        for (int r=10; r<sdf.y_count()-10; r++) 
-            for (int c=10; c<sdf.x_count()-10; c++) {
-            // std::cout<<"point coordinate: "<<c<<","<<r<<","<<z<<std::endl;
-            geometry_msgs::Point point;
-            point.x = r*sdf.cell_size()+sdf.origin().x();  // 假设矩阵中的数据是点的坐标
-            point.y = c*sdf.cell_size()+sdf.origin().y();
-            point.z = z*sdf.cell_size()+sdf.origin().z();
-            if(sdf.getSignedDistance(Point3(point.x, point.y, point.z))<0.05)
-                marker2.points.push_back(point);
-    }
-    std::cout<<"marker_sdf赋值完毕"<<std::endl;
-
-
-    
-    #ifdef DEBUG
-        // debug sdf内容
-        // access
-        SignedDistanceField::float_index idx;
-        idx = sdf.convertPoint3toCell(Point3(0, 0, 0));
-        idx = sdf.convertPoint3toCell(Point3(0.18, -0.18, 0.07));   // tri-linear interpolation
-        idx = boost::make_tuple(1.0, 2.0, 3.0);
-
-
-        // gradient
-        Vector3 grad_act, grad_exp;
-        Point3 p;
-        p = Point3(-0.13, -0.14, 0.06);
-        idx = sdf.convertPoint3toCell(p);   // tri-linear interpolation
-        double signed_distance = sdf.getSignedDistance(p, grad_act);    //matlab  0.5951
-        std::cout<<"[debug sdf]:(-0.13, -0.14, 0.06) sdf值： "<<signed_distance<<std::endl;
-        grad_exp = numericalDerivative11(boost::function<double(const Point3&)>(
-            boost::bind(sdf_wrapper, sdf, _1)), p, 1e-6);
-
-        p = Point3(0.18, 0.12, 0.01);
-        signed_distance = sdf.getSignedDistance(p, grad_act);       //matlab  0.2773
-        std::cout<<"[debug sdf]:(0.18, 0.12, 0.01) sdf值： "<<signed_distance<<std::endl;
-        grad_exp = numericalDerivative11(boost::function<double(const Point3&)>(
-            boost::bind(sdf_wrapper, sdf, _1)), p, 1e-6);
-        std::cout<<"[debug sdf]:(0.18, 0.12, 0.01) sdf梯度"<<grad_act<<std::endl;
-        std::cout<<"[debug sdf]:(0.18, 0.12, 0.01) 数值梯度"<<grad_exp<<std::endl;
-
-        
-    #endif
-
-    int counter = 0;  // 定义计数器变量
-    while (ros::ok()) {
-        // std::cout<<"point num:"<<marker.points.size()<<std::endl;
-        marker.header.stamp = ros::Time::now();  // 更新时间戳
-        pub_field.publish(marker);
-        pub_sdf.publish(marker2);
-
-        if (counter > 15) {
-            // 达到指定次数后，取消定时器
-            ROS_INFO("发送sdf marker");
-            break;
-        }
-        counter++;  // 每次触发定时器，计数器加1
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
-    
-    
-    
-
-
-
-    // 五、优化
-    // 1.传感器模型
-    Eigen::MatrixXd Qc = 0.1 * Eigen::MatrixXd::Identity(arm_model->dof(), arm_model->dof());
-    #ifdef DEBUG
-        std::cout<<"[debug协方差矩阵]:"<<std::endl<<Qc<<std::endl<<std::endl;
-    #endif
-    noiseModel::Gaussian::shared_ptr Qc_model = noiseModel::Gaussian::Covariance(Qc);// noiseModel是命名空间，Gaussian是类，Covariance是类的成员函数
-    #ifdef DEBUG
-        Qc_model->print("[debug高斯噪声模型]:\n");
-        std::cout<<std::endl<<std::endl;
-    #endif
-
-    // 2.图优化
-    // % algo settings
-    double obs_sigma = 0.005;
-    double epsilon_dist = 0.15;
-    double fix_sigma = 1e-4;
-    double end_pose_sigma = 1e-4;
-    double pose_sigma = 1e-4;
-    double orien_sigma = 1e-2;
-    
-    NonlinearFactorGraph graph;
-    for(int i=0; i<=total_time_step; i++){
-        Key key_pos = symbol('x', i);
-        Key key_vel = symbol('v', i);
-
-        if(i==0){
-            // 2.1 起始位置约束
-            // graph.add(PriorFactor<Vector>(key_pos, start_conf,  noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
-            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, pose_sigma)));
-            graph.add(PriorFactor<Vector>(key_vel, start_vel,   noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
-        }
-        else if(i==total_time_step){
-            // 2.2 终止位置约束
-            // goal pose for end effector in workspace
-            // graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, end_pose, noiseModel::Isotropic::Sigma(6, pose_sigma)));
-            // 为什么是dof-1
-            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, pose_sigma)));
-            // fix goal velocity
-            graph.add(PriorFactor<Vector>(key_vel, end_vel, noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
-        }
-        else{
-            // 2.3 运动学约束 fix end effector orientation in workspace to be horizontal
-            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, pose_sigma)));
-            graph.add(GaussianPriorWorkspaceOrientationArm(key_pos, *arm_model, arm_model->dof()-1, candidates_rot3[i]/* traj_orien */, noiseModel::Isotropic::Sigma(3, orien_sigma)));
-        }
-
-        if(i>0){
-            // 初始化变量
-            // key_pos1 = symbol('x', i-1);
-            // key_pos2 = symbol('x', i);
-            // key_vel1 = symbol('v', i-1);
-            // key_vel2 = symbol('v', i);
-            Key key_pos1 = symbol('x', i-1);
-            Key key_pos2 = symbol('x', i);
-            Key key_vel1 = symbol('v', i-1);
-            Key key_vel2 = symbol('v', i);
-            
-            // % GP prior
-            // 学习/home/zhjd/work/gpmp2/gpmp2/gp/tests/testGaussianProcessPriorLinear.cpp
-            graph.add(GaussianProcessPriorLinear(key_pos1, key_vel1, key_pos2, key_vel2, delta_t, Qc_model));
-            
-            // % unary obstacle factor
-            graph.add(ObstacleSDFFactorArm(key_pos, *arm_model, sdf, obs_sigma, epsilon_dist));
-            
-            // // % interpolated obstacle factor
-
-            if(check_inter){
-                for(int j=1; j<=check_inter; j++){
-                    double tau = j * (total_time_sec / total_check_step);
-                    graph.add(ObstacleSDFFactorGPArm(key_pos1, key_vel1, key_pos2, key_vel2, *arm_model, sdf, obs_sigma, epsilon_dist, Qc_model, delta_t, tau));
-                }
-            }
-        }
-        
-    }
-    // matlab程序
-    // parameters = LevenbergMarquardtParams;
-    // parameters.setVerbosity('ERROR');
-    // parameters.setlambdaInitial(1000.0);
-    // optimizer = LevenbergMarquardtOptimizer(graph, init_values, parameters);
-
-    bool opt_type = false;
-    
-    Values results;
-    if(opt_type){
-        LevenbergMarquardtParams parameters;
-        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
-        parameters.setAbsoluteErrorTol(1e-12);
-        // parameters.setlambdaInitial(1000.0);
-        LevenbergMarquardtOptimizer optimizer(graph, init_values, parameters);
-        // LevenbergMarquardtOptimizer类的定义
-        // #include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
-        // virtual class LevenbergMarquardtOptimizer : gtsam::NonlinearOptimizer {
-        //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues);
-        //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues, const gtsam::LevenbergMarquardtParams& params);
-        //     double lambda() const;
-        //     void print(string str) const;
-        results = optimizer.optimize();
-    }
-    else{
-        GaussNewtonParams parameters;
-        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
-        GaussNewtonOptimizer optimizer(graph, init_values, parameters);
-        results = optimizer.optimize();
-    }
-    // else{
-    //     DoglegParams parameters;
-    //     parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
-    //     DoglegOptimizer optimizer(graph, init_values, parameters);
-    //     results = optimizer.optimize();
-    //     // cout_results = optimizer.values();
-    // }
-    
-    
-    // Values results = optimizer.values();
-    
-  
-    
-
-    // /home/zhjd/work/gpmp2/gpmp2/planner/BatchTrajOptimizer.cpp
-    // 282,16:       cout << "newError: " << opt->error() << endl;
-    // 推测这个文件没用到
-
-    // 结论：用到的都是下面这文件
-    // /home/zhjd/software/gtsam-4.0.3/gtsam/nonlinear/NonlinearOptimizer.cpp
-    // 101,15:       cout << "newError: " << error() << endl;
-    // /home/zhjd/software/gtsam-4.0.3/gtsam/nonlinear/NonlinearOptimizer.cpp
-    // 180,16:       cout << "errorThreshold: " << newError << " < " << errorThreshold << endl;  
-    // 、、、
-    
-
-    std::cout << "Optimization complete" << std::endl;
-    // std::cout << "results="<<std::endl << results << std::endl;
-    std::cout << "initial error=" << graph.error(init_values) << std::endl;
-    std::cout << "final error=" << graph.error(results) << std::endl;
-    std::cout << "Optimization Result:"  <<std::endl;
-    // results.print();
-    // std::cout << "Init values:"  <<std::endl;
-    // init_values.print();
-
-    TrajOptimizerSetting opt_setting = TrajOptimizerSetting(arm_model->dof());
-    opt_setting.set_total_step(total_time_step);
-    opt_setting.set_total_time(total_time_sec);
-    opt_setting.set_epsilon(epsilon_dist);
-    opt_setting.set_cost_sigma(obs_sigma);
-    opt_setting.set_obs_check_inter(check_inter);
-    // opt_setting.set_conf_prior_model(noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma));
-    // opt_setting.set_vel_prior_model(noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma));
-    opt_setting.set_conf_prior_model(fix_sigma);
-    opt_setting.set_vel_prior_model(fix_sigma);
-    opt_setting.set_Qc_model(Qc);
-    if(CollisionCost3DArm(*arm_model, sdf, results, opt_setting)){
-        std::cout<<"Trajectory is in collision!"<<std::endl;
-        return 0;
-    }
-    else
-        std::cout<<"Trajectory is collision free."<<std::endl;
-
-
-
-    // 五、moveit控制及rviz可视化
-    
-    
-    // 关节量 
-    bool pub_form = true;
-    std::vector<double /* std::vector<double> */ > target_joint_group_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
-    Vector target_joint_group_positions_eigen;
-    for(int i=0; i<=total_time_step; i++){
-        // target_joint_group_positions.clear();
-        std::cout<<"开始规划,"<<i<<std::endl;
-
-        target_joint_group_positions_eigen = results.at<Vector>(symbol('x', i));
-        
-        target_joint_group_positions[0] = (double(target_joint_group_positions_eigen[0]));
-        target_joint_group_positions[1] = (double(target_joint_group_positions_eigen[1]));
-        target_joint_group_positions[2] = (double(target_joint_group_positions_eigen[2]));
-        target_joint_group_positions[3] = (double(target_joint_group_positions_eigen[3]));
-        target_joint_group_positions[4] = (double(target_joint_group_positions_eigen[4]));
-        target_joint_group_positions[5] = (double(target_joint_group_positions_eigen[5]));
-        target_joint_group_positions[6] = (double(target_joint_group_positions_eigen[6]));
-        std::cout<<" gpmp计算结果 "<<i <<", size:"<< target_joint_group_positions.size()
-                                        <<", values: "<< target_joint_group_positions[0] 
-                                        <<", "<< target_joint_group_positions[1] 
-                                        <<", "<< target_joint_group_positions[2]
-                                        <<", "<< target_joint_group_positions[3]
-                                        <<", "<< target_joint_group_positions[4]
-                                        <<", "<< target_joint_group_positions[5]
-                                        <<", "<< target_joint_group_positions[6]        <<std::endl;
-
-        
-        if(pub_form){
-            // 通过rostopic发送出去
-            std_msgs::Float64MultiArray msg;
-            std::vector<double> data = {1.0, 2.0, 3.0, 4.0};
-            msg.data = data;
-            joint_values_pub.publish(msg);
-        }
-        else{   // 直接发送给moveit
-            // 规划限制
-            // move_group.setMaxVelocityScalingFactor(0.05);
-            // move_group.setMaxAccelerationScalingFactor(0.05); 
-            // arm.set_goal_joint_tolerance(0.001)
-            // # arm.set_planner_id("RRTConnectkConfigDefault")
-            // arm.set_planner_id("RRTstar")
-            move_group.setGoalJointTolerance(0.01);
-            move_group.setPlannerId("RRTstar");
-            std::cout<<"设置joint values, "<<i<<std::endl;
-
-            // 设置目标关节量
-            move_group.setJointValueTarget(target_joint_group_positions);
-            std::cout<<"开始执行,"<<i<<std::endl;
-            move_group.move();
-            std::cout<<"规划成功,"<<i<<std::endl;
-
-            // 规划
-            // moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-            // bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-            // // moveit::planning_interface::MoveItErrorCode success = move_group.plan(my_plan);
-            // // ROS_INFO_NAMED("gpmp_realman", "Visualizing plan %d (joint space goal) %s", i,  success ? "" : "FAILED");
-            // if(success){
-            //     std::cout<<"规划成功"<<std::endl;
-            //     // move_group.execute(my_plan);
-            //     move_group.move();
-
-            // }
-            // else
-            //     std::cout<<"规划失败"<<std::endl;
-        }
-
-
-        
-
-    }
 
     return 0;
 }

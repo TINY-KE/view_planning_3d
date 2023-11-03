@@ -132,22 +132,21 @@ class object{
         }
 };
 
-
 class candidate{
     public:
-        double centor_x,centor_y,centor_z;
+        double x,y,z;
         double roll,pitch,yaw;
         Eigen::Vector3d start;
         Eigen::Vector3d end;
-        Eigen::Quaterniond oritention_quaterniond;
-        Eigen::Isometry3d  pose_isometry3d;
+        Eigen::Quaterniond quaterniond;
+
 
     public:
         // 构造函数
         candidate(){
-            centor_x = 0;
-            centor_y = 0;
-            centor_z = 0;
+            x = 0;
+            y = 0;
+            z = 0;
             roll = 0;
             pitch = 0;
             yaw = 0;
@@ -162,28 +161,22 @@ class candidate{
 
             Eigen::Quaterniond quaternion;
             quaternion.setFromTwoVectors(Eigen::Vector3d::UnitX(), direction);
-            oritention_quaterniond = quaternion;
-            // std::cout<<"quaternion.setFromTwoVectors: x "<<quaterniond_.x()
-            //                                         <<"  y "<<quaterniond_.y()
-            //                                         <<"  z "<<quaterniond_.z()
-            //                                         <<"  w "<<quaterniond_.w()<<std::endl;
-            // 以下注销的部分是自行计算ypr。经过我的验证，和quaternion.setFromTwoVectors的计算结果一致
-            // cv::Point3f v =  cv::Point3f(end.x(),  end.y(),  end.z()) - cv::Point3f(start.x(),  start.y(),  start.z());
-            // yaw = std::atan2(v.y, v.x);  // 绕Z轴的旋转角度
-            // pitch = std::atan2(-v.z, v.x);  // 绕y轴的旋转角度
-            // // roll = std::atan2 因为要让相机视线（机械臂末端的x轴）与目标向量相同，有很多选择，因此我选择了限制roll=0
-            // // 计算旋转矩阵
-            // Eigen::Matrix3d rotation_matrix_;
-            // rotation_matrix_ = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())
-            //                 * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY());
-            // quaterniond_ = Eigen::Quaterniond(rotation_matrix_);
-            // std::cout<<"Eigen::AngleAxisd: x "<<quaterniond_.x()
-            //                             <<"  y "<<quaterniond_.y()
-            //                             <<"  z "<<quaterniond_.z()
-            //                             <<"  w "<<quaterniond_.w()<<std::endl;
-            // std::cout<<std::endl;
-            // std::cout<<std::endl;
+            quaterniond = quaternion;
+            std::cout<<"quaternion.setFromTwoVectors: "<<quaterniond<<std::endl;
+            x = start(0);
+            y = start(1);
+            z = start(2);
 
+            cv::Point3f v =  cv::Point3f(end.x(),  end.y(),  end.z()) - cv::Point3f(start.x(),  start.y(),  start.z());
+            yaw = std::atan2(v.y, v.x);  // 绕Z轴的旋转角度
+            pitch = std::atan2(-v.z, v.x);  // 绕y轴的旋转角度
+            // roll = std::atan2 因为要让相机视线（机械臂末端的x轴）与目标向量相同，有很多选择，因此我选择了限制roll=0
+            // 计算旋转矩阵
+            Eigen::Matrix3d rotation_matrix_;
+            rotation_matrix_ = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())
+                            * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY());
+            quaterniond = Eigen::Quaterniond(rotation_matrix_);
+            std::cout<<"Eigen::AngleAxisd: "<<quaterniond<<std::endl;
 
             // //转换成  cvmat矩阵
             // cv::Mat rotate_mat = Converter::toCvMat(rotation_matrix);
@@ -192,13 +185,6 @@ class candidate{
             // rotate_mat.copyTo(T_world_to_baselink.rowRange(0, 3).colRange(0, 3));
             // t_mat.copyTo(T_world_to_baselink.rowRange(0, 3).col(3));
             // cv::Mat Camera_mat = T_world_to_baselink * mT_basefootprint_cam;
-
-
-            centor_x = start(0);
-            centor_y = start(1);
-            centor_z = start(2);
-            pose_isometry3d = Eigen::Translation3d(centor_x, centor_y, centor_z) * oritention_quaterniond;
-
         }
 
         // cv::Mat GetPose(){
@@ -745,7 +731,14 @@ int main(int argc, char** argv){
     }
     
     
+    auto jposes = arm_model->fk_model().forwardKinematicsPose(end_conf);
+    Pose3 end_pose = Pose3(Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6)), Point3(jposes(3, 6), jposes(4, 6), jposes(5, 6)));
     
+    #ifdef DEBUG
+        end_pose.print("终点位姿：\n");
+        candidates_pose3[candidates_pose3.size()-1].print("最后候选点位姿：\n");
+        std::cout<<std::endl<<std::endl;
+    #endif
 
     
 
@@ -760,9 +753,8 @@ int main(int argc, char** argv){
 
     // 四、轨迹初值  TODO: 使用moveit compute_ik或者其他机器人工具箱，计算candidates的运动学逆解来作为轨迹初值。问题在于candidates大部分是无法解出逆解的，需要进行筛选
     // version1： 直接使用直线插值
-    // gtsam::Values init_values = gpmp2::initArmTrajStraightLine(start_conf, end_conf, total_time_step);
+    gtsam::Values init_values = gpmp2::initArmTrajStraightLine(start_conf, end_conf, total_time_step);
     // version2： 使用moveit compute_ik或者其他机器人工具箱
-    gtsam::Values init_values;
     //1.RobotModelPtr，robot_model指针
     robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
     robot_model::RobotModelPtr kinematic_model_RobotModelPtr = robot_model_loader.getModel();
@@ -773,12 +765,15 @@ int main(int argc, char** argv){
     int candidate_num=0;
     init_values.clear();
     for(auto candidate: candidates){
+        Eigen::Matrix3d rotation_matrix;
+        rotation_matrix = Eigen::AngleAxisd(candidate.yaw, Eigen::Vector3d::UnitZ())
+                        * Eigen::AngleAxisd(candidate.pitch, Eigen::Vector3d::UnitY());
+
         // 调用setFromIK解当前规划组arm的逆运动学问题，返回一个bool量。在解决该问题之前，需要如下条件：
         // end_effector_state: 末端执行器的期望位姿（一般情况下为当前规划组chain的最后一个连杆，本文为gripper_link）：也就是上面已经计算得到的齐次变换矩阵end_effector_state；
-        Eigen::Isometry3d end_effector_state_my = Eigen::Isometry3d::Identity();
-        Eigen::Vector3d translation(candidate.centor_x, candidate.centor_y, candidate.centor_z);
+        Eigen::Isometry3d end_effector_state_my;
+        Eigen::Vector3d translation(candidate.start.x(), candidate.start.y(), candidate.start.z());
         end_effector_state_my.pretranslate(translation);
-        Eigen::Matrix3d rotation_matrix = candidate.oritention_quaterniond.toRotationMatrix();
         end_effector_state_my.rotate(rotation_matrix);
         
         // 10：  尝试解决IK的次数
@@ -788,9 +783,11 @@ int main(int argc, char** argv){
         bool found_ik = kinematic_state_RobotStatePtr->setFromIK(joint_model_group, end_effector_state_my /* bug */, attempts, timeout);   //bug
         // 如果IK得到解，则驱动机器人按照计算得到的关节值进行运动，同时，打印计算结果。
         if (found_ik){
+            ROS_INFO_STREAM("Find IK solution for "<<candidate_num);
+            
             std::vector<double> joint_values;
             kinematic_state_RobotStatePtr->copyJointGroupPositions(joint_model_group, joint_values);
-            Eigen::VectorXd joint_values_gpmp(7), avg_vel_gpmp(7);
+            Vector joint_values_gpmp, avg_vel_gpmp;
             for(int i=0; i<joint_values.size(); i++){
                 joint_values_gpmp[i] = joint_values[i];   
                 avg_vel_gpmp[i] = 0; 
@@ -798,26 +795,15 @@ int main(int argc, char** argv){
             init_values.insert(Symbol('x', candidate_num),  joint_values_gpmp);
             // TODO: 自己插入一个为0的速度。之后根据候选点ik之间的变化量，计算速度  Vector avg_vel = (end_conf - init_conf) / static_cast<double>(total_step);
             init_values.insert(Symbol('v', candidate_num),  avg_vel_gpmp);
-
-            ROS_INFO_STREAM("Find IK solution for "<<candidate_num<<" and success to store");
-        }
-        else{
+            
+        }else{
             ROS_INFO("Did not find IK solution");
         }
         candidate_num++;
     }
     ROS_ERROR_STREAM("Find IK: "<<candidate_num<<"/"<<candidates.size());
 
-    // TODO: end pose用candidates的最后一个。
-    auto jposes = arm_model->fk_model().forwardKinematicsPose(end_conf);
-    Pose3 end_pose = Pose3(Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6)), Point3(jposes(3, 6), jposes(4, 6), jposes(5, 6)));
-    
-    #ifdef DEBUG
-        end_pose.print("终点位姿：\n");
-        candidates_pose3[candidates_pose3.size()-1].print("最后候选点位姿：\n");
-        std::cout<<std::endl<<std::endl;
-    #endif
-    
+
     // std::cout<<"轨迹初值，10个插值："<<std::endl;
     // 【已经验证过了，没有问题】： init_values.print();
 
