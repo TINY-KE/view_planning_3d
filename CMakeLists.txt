@@ -245,7 +245,7 @@ target_link_libraries(gpmp_realman   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_
 
 
 message(STATUS "Arm7 gpmp Test")
-add_executable(gpmp_realman_debug src_gpmp/gpmp_realman_debug.cpp)
+add_executable(gpmp_realman_debug src_gpmp/gpmp_realman_setfromik_debug.cpp)
 target_link_libraries(gpmp_realman_debug   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
 
 # add_executable(sdf_visulization src_gpmp/sdf_visulization.cpp)

@@ -715,8 +715,8 @@ int main(int argc, char** argv){
     // TODO:  用moveit计算初始位置，当前先使用全0的初始值
     // gtsam::Vector start_conf = (Vector(7) << -3.084730575741016, -1.763304599691998, 1.8552083929655296, 0.43301604856981246, -2.672461979658843, 0.46925065047728776, 4.000864693936108).finished();
     // gtsam::Vector end_conf = (Vector(7) << -2.018431036907354, -1.4999897089911451, 1.4046777996889483, -1.3707039693409548, -3.0999924865261397, -0.8560425214202461, 4.8622166345079165).finished();
-    gtsam::Vector start_conf = (Vector(7) << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0).finished();
-    gtsam::Vector end_conf = (Vector(7) << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0).finished();
+    gtsam::Vector start_conf = (Vector(7) << 0.13002084665013403, 0.6340221931800807, -2.890573044217538, 1.1037690133566604, -0.16771425134827123, -1.3369692618297302, 2.8542266646579453).finished();
+    gtsam::Vector end_conf = (Vector(7) << 0.13002084665013403, 0.6340221931800807, -2.890573044217538, 1.1037690133566604, -0.16771425134827123, -1.3369692618297302, 2.8542266646579453).finished();
 
     gtsam::Vector start_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();
     gtsam::Vector end_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();
@@ -750,8 +750,8 @@ int main(int argc, char** argv){
     
 
 
-    int total_time_sec = candidates.size() * 0.2; //2;
-    int total_time_step = candidates.size();  //
+    int total_time_sec = candidates.size() * 0.5; //2;
+    int total_time_step = candidates.size()-1;  //
     int check_inter = 0;
     double delta_t = real(total_time_sec) / real(total_time_step);
     double total_check_step = (check_inter + 1)*total_time_step;
@@ -808,15 +808,15 @@ int main(int argc, char** argv){
     }
     ROS_ERROR_STREAM("Find IK: "<<candidate_num<<"/"<<candidates.size());
 
-    // TODO: end pose用candidates的最后一个。
-    auto jposes = arm_model->fk_model().forwardKinematicsPose(end_conf);
-    Pose3 end_pose = Pose3(Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6)), Point3(jposes(3, 6), jposes(4, 6), jposes(5, 6)));
+    // // TODO: end pose用candidates的最后一个。
+    // auto jposes = arm_model->fk_model().forwardKinematicsPose(end_conf);
+    // Pose3 end_pose = Pose3(Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6)), Point3(jposes(3, 6), jposes(4, 6), jposes(5, 6)));
     
-    #ifdef DEBUG
-        end_pose.print("终点位姿：\n");
-        candidates_pose3[candidates_pose3.size()-1].print("最后候选点位姿：\n");
-        std::cout<<std::endl<<std::endl;
-    #endif
+    // #ifdef DEBUG
+    //     end_pose.print("终点位姿：\n");
+    //     candidates_pose3[candidates_pose3.size()-1].print("最后候选点位姿：\n");
+    //     std::cout<<std::endl<<std::endl;
+    // #endif
     
     // std::cout<<"轨迹初值，10个插值："<<std::endl;
     // 【已经验证过了，没有问题】： init_values.print();
@@ -1028,12 +1028,13 @@ int main(int argc, char** argv){
 
     // 2.图优化
     // % algo settings
-    double obs_sigma = 0.005;
-    double epsilon_dist = 0.15;
-    double fix_sigma = 1e-4;
-    double end_pose_sigma = 1e-4;
-    double pose_sigma = 1e-4;
-    double orien_sigma = 1e-2;
+    double obs_sigma = 0.005;  //???
+    double epsilon_dist = 0.15; //
+
+    double fix_sigma = 1e-4; //固定的位姿，包括初始的位姿
+    double end_pose_sigma = 1e-4; //固定的位姿，包括结束时的位姿
+    double pose_sigma = 1e-4;  //过程中的位姿，包括结束时的位姿
+    double orien_sigma = 1e-2;  //过程中的方向。 TODO: 为什么是其他噪声模型的100倍？？？
     
     NonlinearFactorGraph graph;
     for(int i=0; i<=total_time_step; i++){
@@ -1043,7 +1044,7 @@ int main(int argc, char** argv){
         if(i==0){
             // 2.1 起始位置约束
             // graph.add(PriorFactor<Vector>(key_pos, start_conf,  noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
-            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, pose_sigma)));
+            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, fix_sigma)));
             graph.add(PriorFactor<Vector>(key_vel, start_vel,   noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
         }
         else if(i==total_time_step){
@@ -1051,7 +1052,7 @@ int main(int argc, char** argv){
             // goal pose for end effector in workspace
             // graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, end_pose, noiseModel::Isotropic::Sigma(6, pose_sigma)));
             // 为什么是dof-1
-            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, pose_sigma)));
+            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, fix_sigma)));
             // fix goal velocity
             graph.add(PriorFactor<Vector>(key_vel, end_vel, noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
         }
@@ -1077,7 +1078,7 @@ int main(int argc, char** argv){
             graph.add(GaussianProcessPriorLinear(key_pos1, key_vel1, key_pos2, key_vel2, delta_t, Qc_model));
             
             // % unary obstacle factor
-            graph.add(ObstacleSDFFactorArm(key_pos, *arm_model, sdf, obs_sigma, epsilon_dist));
+            // graph.add(ObstacleSDFFactorArm(key_pos, *arm_model, sdf, obs_sigma, epsilon_dist));
             
             // // % interpolated obstacle factor
 

@@ -806,15 +806,21 @@ int main(int argc, char** argv){
             std::vector<double> joint_values;
             kinematic_state_RobotStatePtr->copyJointGroupPositions(joint_model_group, joint_values);
             Eigen::VectorXd joint_values_gpmp(7), avg_vel_gpmp(7);
+            ROS_INFO_STREAM("Find IK solution for "<<candidate_num<<" and success to store");
+            std::cout<<"joint values: ";
             for(int i=0; i<joint_values.size(); i++){
                 joint_values_gpmp[i] = joint_values[i];   
+                std::cout<<joint_values[i]<<",";
                 avg_vel_gpmp[i] = 0; 
             }
+            std::cout<<std::endl;
+            std::cout<<std::endl;
+            
             init_values.insert(Symbol('x', candidate_num),  joint_values_gpmp);
             // TODO: 自己插入一个为0的速度。之后根据候选点ik之间的变化量，计算速度  Vector avg_vel = (end_conf - init_conf) / static_cast<double>(total_step);
             init_values.insert(Symbol('v', candidate_num),  avg_vel_gpmp);
 
-            ROS_INFO_STREAM("Find IK solution for "<<candidate_num<<" and success to store");
+
         }else{
             ROS_INFO("Did not find IK solution");
         }
