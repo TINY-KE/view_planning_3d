@@ -29,11 +29,14 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   rviz_visual_tools
   moveit_visual_tools
+  gazebo_msgs
+  tf2_geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Eigen3 3.1.0 REQUIRED)
+find_package(gazebo REQUIRED)
 
 
 # Find GTSAM components
@@ -49,6 +52,10 @@ include(GtsamTesting)
 find_package(gpmp2 REQUIRED)
 include_directories(${gpmp2_INCLUDE_DIR})
 
+include_directories(
+   ${GAZEBO_INCLUDE_DIRS}
+   ${EIGEN3_INCLUDE_DIR}
+   )
 
 set(OpenCV_DIR "/home/zhjd/thirdparty/opencv3.4.10/opencv-3.4.10/build/")
 find_package(OpenCV 3.0 QUIET)
@@ -146,10 +153,10 @@ set(cv_bridge_DIR "/home/zhjd/thirdparty/vision_opencv-indigo/cv_bridge/cmake")
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES marm_planning
-#  CATKIN_DEPENDS actionlib control_msgs diagnostic_msgs geometry_msgs manipulation_msgs moveit_msgs moveit_msgs roscpp rospy sensor_msgs shape_msgs std_msgs std_srvs tf trajectory_msgs
-#  DEPENDS system_lib
+  # INCLUDE_DIRS include
+  # LIBRARIES connect_gazebo
+  # CATKIN_DEPENDS roscpp std_msgs  gazebo_msgs
+  # DEPENDS system_lib
 )
 
 ###########
@@ -248,8 +255,8 @@ message(STATUS "Arm7 gpmp Test")
 add_executable(gpmp_realman_debug src_gpmp/gpmp_realman_setfromik_debug.cpp)
 target_link_libraries(gpmp_realman_debug   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
 
-# add_executable(sdf_visulization src_gpmp/sdf_visulization.cpp)
-# target_link_libraries(sdf_visulization   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 )  #${Boost_LIBRARIES}
+add_executable(sdf_visulization src_gpmp/sdf_visulization.cpp)
+target_link_libraries(sdf_visulization   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 )  #${Boost_LIBRARIES}
 
 
 # add_executable(test_bwdist src/test_bwdist.cpp)
@@ -266,5 +273,36 @@ target_link_libraries(gpmp_realman_debug   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${
 # add_executable(robot_state_ptr src_moveit/robot_state_ptr.cpp)
 # target_link_libraries(robot_state_ptr   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )
 
-add_executable(robot_state_ptr2 src_moveit/robot_state_ptr2.cpp)
-target_link_libraries(robot_state_ptr2   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )
+# add_executable(robot_state_ptr2 src_moveit/robot_state_ptr2.cpp)
+# target_link_libraries(robot_state_ptr2   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )
+
+add_executable(wam_ik_only_endpoint src_wam/wam_ik_only_endpoint.cpp)
+target_link_libraries(wam_ik_only_endpoint   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )
+
+
+
+# add_executable(object_direction src_wam/object_direction.cpp)
+# target_link_libraries(object_direction   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GAZEBO_LIBRARIES})
+
+add_executable(circle_wam src_wam/circle_wam.cpp)
+target_link_libraries(circle_wam   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GAZEBO_LIBRARIES})
+
+
+add_executable(object_direction src_wam/object_direction.cpp)
+target_link_libraries(object_direction   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )
+
+# add_executable(wam_ik_only_endpoint_from_gazebo_object src_wam/wam_ik_only_endpoint_from_gazebo_object.cpp)
+# target_link_libraries(wam_ik_only_endpoint_from_gazebo_object   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )
+
+
+message(STATUS "gpmp_wam_getfromik")
+add_executable(gpmp_wam_getfromik src_wam/gpmp_wam_getfromik_debug.cpp )
+target_link_libraries(gpmp_wam_getfromik   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
+
+
+# add_executable(wam_fk_from_gpmp src_wam/wam_fk_from_gpmp.cpp)
+# target_link_libraries(wam_fk_from_gpmp   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )
+
+
+add_executable(ellipse_debug src_wam/ellipse_debug.cpp)
+target_link_libraries(ellipse_debug   ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} )

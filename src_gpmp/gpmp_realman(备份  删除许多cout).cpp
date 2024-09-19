@@ -281,7 +281,8 @@ void generate3Ddataset_addObstacle(std::vector<gtsam::Matrix>& dataset, const Po
         dataset[i] = matrix;
     }
 
-   
+    #ifdef DEBUG
+    std::cout<<"[debug]: construct sdf"<<std::endl;
     add_obstacle({170, 220, 130}, {140, 60, 5}, dataset);
     add_obstacle({105, 195, 90}, {10, 10, 80}, dataset);
     add_obstacle({235, 195, 90}, {10, 10, 80}, dataset);
@@ -297,6 +298,10 @@ void generate3Ddataset_addObstacle(std::vector<gtsam::Matrix>& dataset, const Po
     
     // debug
     // add_obstacle({150, 10, 10}, {20, 10, 10}, dataset);
+
+    std::cout<<"[debug]: construct sdf End"<<std::endl;
+    #endif
+
     // 发布障碍物
     // std::cout<<"sdf dataset: "<<std::endl;
     // // for (int j = 220-1; j < 260; j++) {
@@ -589,6 +594,10 @@ std::vector<candidate>  generate_candidates(const object& ob)
         candidate cand(Eigen::Vector3d(x, y, z), Eigen::Vector3d(ob.x, ob.y, ob.z));
         // cand.start = Eigen::Vector3d(x, y, z);
         // cand.end = Eigen::Vector3d(ob.x, ob.y, ob.z);
+        #ifdef DEBUG
+        std::cout<<"ob_diag: "<< ob_diag <<std::endl;
+        std::cout<<"end: "<<cand.end.transpose()<<";      start: "<<cand.start.transpose()<<std::endl;
+        #endif
         candidates.push_back(cand);
     }
 
@@ -633,11 +642,6 @@ std::vector<candidate>  generate_candidates(const object& ob)
 
 
 int main(int argc, char** argv){
-    int init_version=1;
-    if(argc == 2){
-        init_version = std::stoi(argv[1]);
-    }
-
     ros::init(argc, argv, "gpmp_realman");
     ros::NodeHandle nh;
 
@@ -702,6 +706,10 @@ int main(int argc, char** argv){
     // ArmModel* arm_model = generateArm("WAMArm");
         ArmModel* arm_model = generateArm("realman");
     
+    #ifdef DEBUG
+        std::cout<<"[debug arm]: 自由度"<<arm_model->dof()<<std::endl;
+    #endif
+    
 
     
     
@@ -726,6 +734,13 @@ int main(int argc, char** argv){
     int i = 0;
     for(auto candidate: candidates)
     {
+        #ifdef DEBUG
+            std::cout<<"候选点" << i <<"的目标朝向偏转（ypr）："<<candidate.yaw<<","<< candidate.pitch<<", 0"<< std::endl;
+            i++;
+            // 朝向角度：1.57184,0.0207701,1.62101  说明先再绕着z转了90度，又绕着x轴转了90度。
+        #endif
+
+
         Rot3 traj_orien = Rot3::Ypr(candidate.yaw, candidate.pitch, 0.0);
         Pose3 traj_pose = Pose3(traj_orien, Point3(candidate.start.x(), candidate.start.y(), candidate.start.z()));
 
@@ -746,159 +761,59 @@ int main(int argc, char** argv){
     double total_check_step = (check_inter + 1)*total_time_step;
 
 
-    gtsam::Values init_values;
+
     // 四、轨迹初值  TODO: 使用moveit compute_ik或者其他机器人工具箱，计算candidates的运动学逆解来作为轨迹初值。问题在于candidates大部分是无法解出逆解的，需要进行筛选
-    
-    if(init_version==1){
-        // version1： 直接使用直线插值
-        init_values = gpmp2::initArmTrajStraightLine(start_conf, end_conf, total_time_step);
-    }
-    else if(init_version==2){
-        // version2： 使用moveit compute_ik或者其他机器人工具箱
-        //1.RobotModelPtr，robot_model指针
-        robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
-        robot_model::RobotModelPtr kinematic_model_RobotModelPtr = robot_model_loader.getModel();
-        ROS_INFO("Model frame: %s", kinematic_model_RobotModelPtr->getModelFrame().c_str());
-        robot_state::RobotStatePtr kinematic_state_RobotStatePtr(new robot_state::RobotState(kinematic_model_RobotModelPtr));
-        kinematic_state_RobotStatePtr->setToDefaultValues();  //将机器人的状态都设为默认值，根据setToDefaultValues()定义，默认位置为0或者是最大界限和最小界限之间。
-        const robot_state::JointModelGroup* joint_model_group = kinematic_model_RobotModelPtr->getJointModelGroup("arm");
-        int candidate_num=0;
-        init_values.clear();
-        for(auto candidate: candidates){
-            // 调用setFromIK解当前规划组arm的逆运动学问题，返回一个bool量。在解决该问题之前，需要如下条件：
-            // end_effector_state: 末端执行器的期望位姿（一般情况下为当前规划组chain的最后一个连杆，本文为gripper_link）：也就是上面已经计算得到的齐次变换矩阵end_effector_state；
-            Eigen::Isometry3d end_effector_state_my = Eigen::Isometry3d::Identity();
-            Eigen::Vector3d translation(candidate.centor_x, candidate.centor_y, candidate.centor_z);
-            end_effector_state_my.pretranslate(translation);
-            Eigen::Matrix3d rotation_matrix = candidate.oritention_quaterniond.toRotationMatrix();
-            end_effector_state_my.rotate(rotation_matrix);
-            
-            // 10：  尝试解决IK的次数
-            // 0.1s：   每次尝试的时间
-            std::size_t attempts = 10;
-            double timeout = 0.1;
-            bool found_ik = kinematic_state_RobotStatePtr->setFromIK(joint_model_group, end_effector_state_my /* bug */, attempts, timeout);   //bug
-            // 如果IK得到解，则驱动机器人按照计算得到的关节值进行运动，同时，打印计算结果。
-            if (found_ik){
-                std::vector<double> joint_values;
-                kinematic_state_RobotStatePtr->copyJointGroupPositions(joint_model_group, joint_values);
-                Eigen::VectorXd joint_values_gpmp(7), avg_vel_gpmp(7);
-                for(int i=0; i<joint_values.size(); i++){
-                    joint_values_gpmp[i] = joint_values[i];   
-                    avg_vel_gpmp[i] = 0; 
-                }
-                init_values.insert(Symbol('x', candidate_num),  joint_values_gpmp);
-                // TODO: 自己插入一个为0的速度。之后根据候选点ik之间的变化量，计算速度  Vector avg_vel = (end_conf - init_conf) / static_cast<double>(total_step);
-                init_values.insert(Symbol('v', candidate_num),  avg_vel_gpmp);
+    // version1： 直接使用直线插值
+    gtsam::Values init_values = gpmp2::initArmTrajStraightLine(start_conf, end_conf, total_time_step);
 
-                ROS_INFO_STREAM("Find IK solution for "<<candidate_num<<" and success to store");
-            }
-            else{
-                ROS_INFO("Did not find IK solution");
-            }
-            candidate_num++;
-        }
-        ROS_ERROR_STREAM("Find IK: "<<candidate_num<<"/"<<candidates.size());
-    }
-    else if(init_version==3){
-        // version3：每次都是用相同的初始值
-        Eigen::VectorXd joint_values_gpmp(7), avg_vel_gpmp(7);
-        joint_values_gpmp<< 0.0456364, -0.400563, -0.0414954, 0.879, 0.0210558, 0.379061, -0.0304794;
-        avg_vel_gpmp<< 0, 0, 0, 0, 0, 0, 0;
-        init_values.insert(Symbol('x', 0),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 0),  avg_vel_gpmp);
+    // version2： 使用moveit compute_ik或者其他机器人工具箱
+    // gtsam::Values init_values;
+    // //1.RobotModelPtr，robot_model指针
+    // robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
+    // robot_model::RobotModelPtr kinematic_model_RobotModelPtr = robot_model_loader.getModel();
+    // ROS_INFO("Model frame: %s", kinematic_model_RobotModelPtr->getModelFrame().c_str());
+    // robot_state::RobotStatePtr kinematic_state_RobotStatePtr(new robot_state::RobotState(kinematic_model_RobotModelPtr));
+    // kinematic_state_RobotStatePtr->setToDefaultValues();  //将机器人的状态都设为默认值，根据setToDefaultValues()定义，默认位置为0或者是最大界限和最小界限之间。
+    // const robot_state::JointModelGroup* joint_model_group = kinematic_model_RobotModelPtr->getJointModelGroup("arm");
+    // int candidate_num=0;
+    // init_values.clear();
+    // for(auto candidate: candidates){
+    //     // 调用setFromIK解当前规划组arm的逆运动学问题，返回一个bool量。在解决该问题之前，需要如下条件：
+    //     // end_effector_state: 末端执行器的期望位姿（一般情况下为当前规划组chain的最后一个连杆，本文为gripper_link）：也就是上面已经计算得到的齐次变换矩阵end_effector_state；
+    //     Eigen::Isometry3d end_effector_state_my = Eigen::Isometry3d::Identity();
+    //     Eigen::Vector3d translation(candidate.centor_x, candidate.centor_y, candidate.centor_z);
+    //     end_effector_state_my.pretranslate(translation);
+    //     Eigen::Matrix3d rotation_matrix = candidate.oritention_quaterniond.toRotationMatrix();
+    //     end_effector_state_my.rotate(rotation_matrix);
+        
+    //     // 10：  尝试解决IK的次数
+    //     // 0.1s：   每次尝试的时间
+    //     std::size_t attempts = 10;
+    //     double timeout = 0.1;
+    //     bool found_ik = kinematic_state_RobotStatePtr->setFromIK(joint_model_group, end_effector_state_my /* bug */, attempts, timeout);   //bug
+    //     // 如果IK得到解，则驱动机器人按照计算得到的关节值进行运动，同时，打印计算结果。
+    //     if (found_ik){
+    //         std::vector<double> joint_values;
+    //         kinematic_state_RobotStatePtr->copyJointGroupPositions(joint_model_group, joint_values);
+    //         Eigen::VectorXd joint_values_gpmp(7), avg_vel_gpmp(7);
+    //         for(int i=0; i<joint_values.size(); i++){
+    //             joint_values_gpmp[i] = joint_values[i];   
+    //             avg_vel_gpmp[i] = 0; 
+    //         }
+    //         init_values.insert(Symbol('x', candidate_num),  joint_values_gpmp);
+    //         // TODO: 自己插入一个为0的速度。之后根据候选点ik之间的变化量，计算速度  Vector avg_vel = (end_conf - init_conf) / static_cast<double>(total_step);
+    //         init_values.insert(Symbol('v', candidate_num),  avg_vel_gpmp);
 
-        // #init结果 1, size:7, values: 
-        joint_values_gpmp<< 0.0456364, -0.400563, -0.0414954, 0.879, 0.0210558, 0.379061, -0.0304794;
-        init_values.insert(Symbol('x', 1),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 1),  avg_vel_gpmp);
+    //         ROS_INFO_STREAM("Find IK solution for "<<candidate_num<<" and success to store");
+    //     }
+    //     else{
+    //         ROS_INFO("Did not find IK solution");
+    //     }
+    //     candidate_num++;
+    // }
+    // ROS_ERROR_STREAM("Find IK: "<<candidate_num<<"/"<<candidates.size());
 
-        // #init结果 2, size:7, values: 
-        joint_values_gpmp<< -0.536215, -0.495004, 0.387819, 1.28618, -0.015143, 0.0240445, 0.219869;
-        init_values.insert(Symbol('x', 2),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 2),  avg_vel_gpmp);
-
-        // #init结果 3, size:7, values: 
-        // [-1.15285, -0.706411, 0.785157, 1.45372, 0.14487, -0.148767, 0.405327],
-        joint_values_gpmp<<-1.15285, -0.706411, 0.785157, 1.45372, 0.14487, -0.148767, 0.405327;
-        init_values.insert(Symbol('x', 3),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 3),  avg_vel_gpmp);
-        
-        // #init结果 4, size:7, values: 
-        joint_values_gpmp<< -1.5592, -1.05688, 0.913052, 1.4191, 0.422224, -0.087392, 0.528779;
-        init_values.insert(Symbol('x', 4),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 4),  avg_vel_gpmp);
-        
-        // #init结果 5, size:7, values: 
-        joint_values_gpmp<< -1.90212, -1.43253, 0.692497, 1.16929, 0.675089, 0.25632, 0.743476;
-        init_values.insert(Symbol('x', 5),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 5),  avg_vel_gpmp);
-        
-        // #init结果 6, size:7, values: 
-        joint_values_gpmp<< -2.19897, -1.50664, 0.305404, 0.564858, 0.692813, 0.783777, 1.15551;
-        init_values.insert(Symbol('x', 6),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 6),  avg_vel_gpmp);
-        
-        // #init结果 7, size:7, values: 
-        joint_values_gpmp<< -1.94495, -1.61288, 0.785062, 1.43535, 0.961897, 0.0289539, 0.609252;
-        init_values.insert(Symbol('x', 7),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 7),  avg_vel_gpmp);
-        
-        // #init结果 8, size:7, values: 
-        joint_values_gpmp<< -1.68399, -0.875753, 1.47565, 1.90867, 0.574179, -0.957613, 0.343225;
-        init_values.insert(Symbol('x', 8),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 8),  avg_vel_gpmp);
-        
-        // #init结果 9, size:7, values: 
-        joint_values_gpmp<< -1.87369, -0.578597, 1.41798, 2.16007, 0.107018, -1.38165, 0.704756;
-        init_values.insert(Symbol('x', 9),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 9),  avg_vel_gpmp);
-        
-        // #init结果 10, size:7, values: 
-        joint_values_gpmp<< -2.6959, -0.501381, 1.88715, 1.90868, -0.171857, -1.57163, 1.01829;
-        init_values.insert(Symbol('x', 10),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 10),  avg_vel_gpmp);
-
-        // #init结果 11, size:7, values: 
-        joint_values_gpmp<< -3.29856, -0.739486, 2.13514, 1.43535, -0.173942, -1.60916, 1.42163;
-        init_values.insert(Symbol('x', 11),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 11),  avg_vel_gpmp);
-        
-        // #init结果 12, size:7, values: 
-        joint_values_gpmp<< -3.80753, -1.08805, 2.30099, 0.564844, -0.094258, -1.34746, 1.72368;
-        init_values.insert(Symbol('x', 12),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 12),  avg_vel_gpmp);
-
-        // #init结果 13, size:7, values: 
-        joint_values_gpmp<< -3.80753, -1.08805, 2.30099, 0.564844, -0.094258, -1.34746, 1.72368;
-        init_values.insert(Symbol('x', 13),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 13),  avg_vel_gpmp);
-
-        // #init结果 14, size:7, values: 
-        joint_values_gpmp<< -3.51037, -0.706205, 2.12403, 1.15464, -0.254472, -1.4854, 1.68053;
-        init_values.insert(Symbol('x', 14),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 14),  avg_vel_gpmp);
-        
-        // #init结果 15, size:7, values: 
-        joint_values_gpmp<< -3.13985, -0.346943, 1.89855, 1.39904, -0.521287, -1.36049, 1.59034;
-        init_values.insert(Symbol('x', 15),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 15),  avg_vel_gpmp);
-
-        // #init结果 16, size:7, values: 
-        joint_values_gpmp<< -3.54505, 0.142717, 2.74902, 1.43414, -0.92129, -0.886122, 1.40049;
-        init_values.insert(Symbol('x', 16),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 16),  avg_vel_gpmp);
-        
-        // #init结果 17, size:7, values: 
-        joint_values_gpmp<< -3.46322, 0.358652, 2.89367, 1.27288, -1.34315, -0.514562, 1.69857;
-        init_values.insert(Symbol('x', 17),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 17),  avg_vel_gpmp);
-        
-        // #init结果 18, size:7, values: 
-        joint_values_gpmp<< -3.72906, 0.389597, 3.09616, 0.879004, -2.0424, -0.541005, 2.54568;
-        init_values.insert(Symbol('x', 18),  joint_values_gpmp);
-        init_values.insert(Symbol('v', 18),  avg_vel_gpmp);
-    }
+    // version3：每次都是用相同的初始值
 
 
 
@@ -906,34 +821,14 @@ int main(int argc, char** argv){
     // auto jposes = arm_model->fk_model().forwardKinematicsPose(end_conf);
     // Pose3 end_pose = Pose3(Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6)), Point3(jposes(3, 6), jposes(4, 6), jposes(5, 6)));
     
+    // #ifdef DEBUG
+    //     end_pose.print("终点位姿：\n");
+    //     candidates_pose3[candidates_pose3.size()-1].print("最后候选点位姿：\n");
+    //     std::cout<<std::endl<<std::endl;
+    // #endif
     
-    std::cout<<"轨迹初值，"<<total_time_step+1<<"个插值："<<std::endl;
-    // init_values.print();
-    std::vector<double> init_values_print = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
-    Vector init_values_eigen;
-    for(int i=0; i<=total_time_step; i++){
-        // target_joint_group_positions.clear();
-        // std::cout<<"开始规划,"<<i<<std::endl;
-
-        init_values_eigen = init_values.at<Vector>(symbol('x', i));
-        
-        init_values_print[0] = (double(init_values_eigen[0]));
-        init_values_print[1] = (double(init_values_eigen[1]));
-        init_values_print[2] = (double(init_values_eigen[2]));
-        init_values_print[3] = (double(init_values_eigen[3]));
-        init_values_print[4] = (double(init_values_eigen[4]));
-        init_values_print[5] = (double(init_values_eigen[5]));
-        init_values_print[6] = (double(init_values_eigen[6]));
-        std::cout<<" #init结果 "<<i <<", size:"<< init_values_print.size()
-                                        <<", values: "<<std::endl<<"["
-                                        << init_values_print[0] 
-                                        <<", "<< init_values_print[1] 
-                                        <<", "<< init_values_print[2]
-                                        <<", "<< init_values_print[3]
-                                        <<", "<< init_values_print[4]
-                                        <<", "<< init_values_print[5]
-                                        <<", "<< init_values_print[6]  <<"],"<<std::endl;
-    }
+    // std::cout<<"轨迹初值，10个插值："<<std::endl;
+    // 【已经验证过了，没有问题】： init_values.print();
 
 
 
@@ -997,6 +892,25 @@ int main(int argc, char** argv){
 
     std::cout<<"calculating signed distance field done"<<std::endl;
     SignedDistanceField sdf(origin, cell_size, field);
+    #ifdef DEBUG
+        std::cout<<"[debug sdf origin x]:"<<origin.x()<<std::endl;
+        std::cout<<"[debug sdf origin y]:"<<origin.y()<<std::endl;
+        std::cout<<"[debug sdf origin z]:"<<origin.z()<<std::endl;
+        std::cout<<"[debug sdf cell_size]:"<<cell_size<<std::endl;
+        std::cout<<"[debug sdf height]:"<<field.size()<<std::endl;
+        std::cout<<"[debug sdf length]:"<<field[0].rows()<<std::endl;
+        std::cout<<"[debug sdf width]:"<<field[0].cols()<<std::endl;
+        
+        std::cout<<"[debug sdf origin x]:"<<sdf.origin().x()<<std::endl;
+        std::cout<<"[debug sdf origin y]:"<<sdf.origin().y()<<std::endl;
+        std::cout<<"[debug sdf origin z]:"<<sdf.origin().z()<<std::endl;
+        std::cout<<"[debug sdf cell_size]:"<<sdf.cell_size()<<std::endl;
+        std::cout<<"[debug sdf height]:"<<sdf.z_count()<<std::endl;
+        std::cout<<"[debug sdf length]:"<<sdf.x_count()<<std::endl;
+        std::cout<<"[debug sdf width]:"<<sdf.y_count()<<std::endl;
+    #endif
+    // SignedDistanceField sdf(origin, cell_size, rows, cols, heights);
+
 
     // sdf可视化
     visualization_msgs::Marker marker;
@@ -1026,6 +940,9 @@ int main(int argc, char** argv){
                 marker.points.push_back(point);
     }
 
+    #ifdef DEBUG
+    std::cout<<"marker_field赋值完毕"<<std::endl;
+    #endif
 
     visualization_msgs::Marker marker2;
     marker2.header.frame_id = "base_link";  // 设置坐标系，根据需要进行修改
@@ -1053,7 +970,11 @@ int main(int argc, char** argv){
             if(sdf.getSignedDistance(Point3(point.x, point.y, point.z))<0.05)
                 marker2.points.push_back(point);
     }
-        
+    #ifdef DEBUG
+    std::cout<<"marker_sdf赋值完毕"<<std::endl;
+    #endif
+
+    
     #ifdef DEBUG
         // debug sdf内容
         // access
@@ -1080,6 +1001,8 @@ int main(int argc, char** argv){
             boost::bind(sdf_wrapper, sdf, _1)), p, 1e-6);
         std::cout<<"[debug sdf]:(0.18, 0.12, 0.01) sdf梯度"<<grad_act<<std::endl;
         std::cout<<"[debug sdf]:(0.18, 0.12, 0.01) 数值梯度"<<grad_exp<<std::endl;
+
+        
     #endif
 
     int counter = 0;  // 定义计数器变量
@@ -1107,8 +1030,14 @@ int main(int argc, char** argv){
     // 五、优化
     // 1.传感器模型
     Eigen::MatrixXd Qc = 0.1 * Eigen::MatrixXd::Identity(arm_model->dof(), arm_model->dof());
+    #ifdef DEBUG
+        std::cout<<"[debug协方差矩阵]:"<<std::endl<<Qc<<std::endl<<std::endl;
+    #endif
     noiseModel::Gaussian::shared_ptr Qc_model = noiseModel::Gaussian::Covariance(Qc);// noiseModel是命名空间，Gaussian是类，Covariance是类的成员函数
-
+    #ifdef DEBUG
+        Qc_model->print("[debug高斯噪声模型]:\n");
+        std::cout<<std::endl<<std::endl;
+    #endif
 
     // 2.图优化
     // % algo settings
@@ -1117,8 +1046,8 @@ int main(int argc, char** argv){
 
     double fix_sigma = 1e-4; //固定的位姿，包括初始的位姿
     // double end_pose_sigma = 1e-4; //固定的位姿，包括结束时的位姿
-    double pose_sigma = 0.1;//10.0/100.0;  //过程中的位姿，包括结束时的位姿
-    double orien_sigma = 1e-4;  //过程中的方向。 TODO: 为什么是其他噪声模型的100倍？？？
+    double pose_sigma = 1e-4;  //过程中的位姿，包括结束时的位姿
+    double orien_sigma = 1e-2;  //过程中的方向。 TODO: 为什么是其他噪声模型的100倍？？？
     
     NonlinearFactorGraph graph;
     for(int i=0; i<=total_time_step; i++){
@@ -1131,7 +1060,7 @@ int main(int argc, char** argv){
             // graph.add(PriorFactor<Vector>(key_pos, start_conf,  noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
             
             // 初始位置的候选点位置
-            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, pose_sigma)));
+            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, fix_sigma)));
             
             // 初始位置的速度
             graph.add(PriorFactor<Vector>(key_vel, start_vel,   noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
@@ -1141,7 +1070,7 @@ int main(int argc, char** argv){
             // goal pose for end effector in workspace
             // graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, end_pose, noiseModel::Isotropic::Sigma(6, pose_sigma)));
             
-            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1 /* 为什么是dof-1 */, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, pose_sigma)));
+            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1 /* 为什么是dof-1 */, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, fix_sigma)));
             
             // fix goal velocity
             graph.add(PriorFactor<Vector>(key_vel, end_vel, noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
@@ -1149,10 +1078,9 @@ int main(int argc, char** argv){
         else{
             // 2.3 运动学约束 fix end effector orientation in workspace to be horizontal
             // 删除的原因：   pose_sigma = 1e-4 限制了非两端候选点的距离，必须在目标候选点的位置
-            graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, pose_sigma)));
+            // graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, candidates_pose3[i], noiseModel::Isotropic::Sigma(6, pose_sigma)));
             
-            // 删除原因：尝试只限制距离。此步的方向不限制
-            graph.add(GaussianPriorWorkspaceOrientationArm(key_pos, *arm_model, arm_model->dof()-1, candidates_rot3[total_time_step/2]/* traj_orien */, noiseModel::Isotropic::Sigma(3, orien_sigma)));
+            graph.add(GaussianPriorWorkspaceOrientationArm(key_pos, *arm_model, arm_model->dof()-1, candidates_rot3[i]/* traj_orien */, noiseModel::Isotropic::Sigma(3, orien_sigma)));
         }
 
         if(i>0){
@@ -1167,7 +1095,7 @@ int main(int argc, char** argv){
             graph.add(GaussianProcessPriorLinear(key_pos1, key_vel1, key_pos2, key_vel2, delta_t, Qc_model));
             
             // % unary obstacle factor
-            graph.add(ObstacleSDFFactorArm(key_pos, *arm_model, sdf, obs_sigma, epsilon_dist));
+            // graph.add(ObstacleSDFFactorArm(key_pos, *arm_model, sdf, obs_sigma, epsilon_dist));
             
             // // % interpolated obstacle factor
 
@@ -1186,29 +1114,14 @@ int main(int argc, char** argv){
     // parameters.setlambdaInitial(1000.0);
     // optimizer = LevenbergMarquardtOptimizer(graph, init_values, parameters);
 
-    int opt_type = 1;
+    bool opt_type = false;
     
-
-    // 可以调节的参数类型
-    // size_t maxIterations; /// 停止迭代的最大迭代次数（默认为100）
-    // double relativeErrorTol; /// 最大相对误差的减小量，以停止迭代（默认1e-5）
-    // double absoluteErrorTol; /// 最大绝对误差的减小量，以停止迭代（默认1e-5）
-    // double errorTol; /// 停止迭代的最大总错误（默认值为0.0）
-    // Verbosity verbosity; /// 优化期间的打印详细程度（默认为SILENT SILENT）
-    // Ordering::OrderingType orderingType; ///< The method of ordering use during variable elimination (default COLAMD)
-    // for(int i=0; i<graph.size(); i++) {
-    //     auto factor = graph.at(i);
-    //     for(int j=0; j<candidates_pose3.size(); j++){
-    //         Vector error = factor->evaluateError(candidates_pose3[j]);
-    //         std::cout << ...;
-    //     }
-    // }
     Values results;
-    if(opt_type == 1){
+    if(opt_type){
         LevenbergMarquardtParams parameters;
-        parameters.setVerbosity("ERROR"); // SILENT, TERMINATION, ERROR, VALUES, DELTA, LINEAR
+        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
         parameters.setAbsoluteErrorTol(1e-12);
-        parameters.setlambdaInitial(1000.0);
+        // parameters.setlambdaInitial(1000.0);
         LevenbergMarquardtOptimizer optimizer(graph, init_values, parameters);
         // LevenbergMarquardtOptimizer类的定义
         // #include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
@@ -1217,21 +1130,21 @@ int main(int argc, char** argv){
         //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues, const gtsam::LevenbergMarquardtParams& params);
         //     double lambda() const;
         //     void print(string str) const;
-        results = optimizer.optimize();   
+        results = optimizer.optimize();
     }
-    else if(opt_type == 2){
+    else{
         GaussNewtonParams parameters;
-        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR"); SILENT, TERMINATION, ERROR, VALUES, DELTA, LINEAR
+        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
         GaussNewtonOptimizer optimizer(graph, init_values, parameters);
         results = optimizer.optimize();
     }
-    else if(opt_type == 3){
-        DoglegParams parameters;
-        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
-        DoglegOptimizer optimizer(graph, init_values, parameters);
-        results = optimizer.optimize();
-        // cout_results = optimizer.values();
-    }
+    // else{
+    //     DoglegParams parameters;
+    //     parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
+    //     DoglegOptimizer optimizer(graph, init_values, parameters);
+    //     results = optimizer.optimize();
+    //     // cout_results = optimizer.values();
+    // }
     
     
     // Values results = optimizer.values();
@@ -1289,7 +1202,7 @@ int main(int argc, char** argv){
     Vector target_joint_group_positions_eigen;
     for(int i=0; i<=total_time_step; i++){
         // target_joint_group_positions.clear();
-        // std::cout<<"开始规划,"<<i<<std::endl;
+        std::cout<<"开始规划,"<<i<<std::endl;
 
         target_joint_group_positions_eigen = results.at<Vector>(symbol('x', i));
         
@@ -1300,15 +1213,14 @@ int main(int argc, char** argv){
         target_joint_group_positions[4] = (double(target_joint_group_positions_eigen[4]));
         target_joint_group_positions[5] = (double(target_joint_group_positions_eigen[5]));
         target_joint_group_positions[6] = (double(target_joint_group_positions_eigen[6]));
-        std::cout<<" #gpmp规划结果 "<<i <<", size:"<< target_joint_group_positions.size()
-                                        <<", values: "<<std::endl<<"["
-                                        << target_joint_group_positions[0] 
+        std::cout<<" gpmp计算结果 "<<i <<", size:"<< target_joint_group_positions.size()
+                                        <<", values: "<< target_joint_group_positions[0] 
                                         <<", "<< target_joint_group_positions[1] 
                                         <<", "<< target_joint_group_positions[2]
                                         <<", "<< target_joint_group_positions[3]
                                         <<", "<< target_joint_group_positions[4]
                                         <<", "<< target_joint_group_positions[5]
-                                        <<", "<< target_joint_group_positions[6]  <<"];"<<std::endl;
+                                        <<", "<< target_joint_group_positions[6]        <<std::endl;
 
         
         if(pub_form){

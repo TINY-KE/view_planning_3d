@@ -647,7 +647,7 @@ int main(int argc, char** argv){
     ros::Publisher candidate_pub = nh.advertise<visualization_msgs::Marker>("/candidate", 10);
     ros::Publisher candidate_quaterniond_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("output", 1);
 
-
+    
     // 启动movegroup
     static const std::string PLANNING_GROUP = "arm";
     moveit::planning_interface::MoveGroupInterface move_group(PLANNING_GROUP);
