@@ -19,6 +19,9 @@
 
 // #include"Thirdparty/g2o/g2o/types/types_six_dof_expmap.h"
 // #include"Thirdparty/g2o/g2o/types/types_seven_dof_expmap.h"
+#include<opencv2/core/core.hpp>
+#include<opencv2/features2d/features2d.hpp>
+#include<opencv2/core/eigen.hpp>
 
 //eigen cv的convert
 
@@ -195,6 +198,18 @@ geometry_msgs::Point corner_to_marker(geometry_msgs::Point& oldp, Eigen::Matrix4
         return newp;
 }
 
+
+// g2o::SE3Quat toSE3Quat(const cv::Mat &cvT)
+// {
+//     Eigen::Matrix<double,3,3> R;
+//     R << cvT.at<float>(0,0), cvT.at<float>(0,1), cvT.at<float>(0,2),
+//          cvT.at<float>(1,0), cvT.at<float>(1,1), cvT.at<float>(1,2),
+//          cvT.at<float>(2,0), cvT.at<float>(2,1), cvT.at<float>(2,2);
+
+//     Eigen::Matrix<double,3,1> t(cvT.at<float>(0,3), cvT.at<float>(1,3), cvT.at<float>(2,3));
+
+//     return g2o::SE3Quat(R,t);
+// }
 
 
 //  【报错】以下来自ORBSLAM2  一直报错。

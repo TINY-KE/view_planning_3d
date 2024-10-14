@@ -27,6 +27,8 @@
 // [zhjd g2o和gtsam冲突]
 // #include"Thirdparty/g2o/g2o/types/types_six_dof_expmap.h"
 // #include"Thirdparty/g2o/g2o/types/types_seven_dof_expmap.h"
+// #include "Thirdparty/g2o/g2o/core/base_multi_edge.h"
+// #include "Thirdparty/g2o/g2o/types/types_six_dof_expmap.h"
 
 //eigen cv的convert
 #include<opencv2/core/core.hpp>

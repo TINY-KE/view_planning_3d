@@ -1,4 +1,4 @@
-# Install script for directory: /home/zhjd/ws_3d_vp/src/view_planning/Thirdparty/g2o
+# Install script for directory: /home/robotlab/ws_3d_vp/src/view_planning_3d/Thirdparty/g2o
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/zhjd/ws_3d_vp/src/view_planning/Thirdparty/g2o/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/robotlab/ws_3d_vp/src/view_planning_3d/Thirdparty/g2o/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

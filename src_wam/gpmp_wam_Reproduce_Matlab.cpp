@@ -408,8 +408,8 @@ int main(int argc, char** argv){
             move_group.execute(my_plan);
             std::cout << "按任意键继续..." << std::endl;
 
-            // 等待用户按下任意键（实际上是等待按下回车键）
-            std::cin.get();  // 读取一个字符（包括换行符）
+        // 等待用户按下任意键（实际上是等待按下回车键）
+        std::cin.get();  // 读取一个字符（包括换行符）
 
         }
         else

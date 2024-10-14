@@ -299,4 +299,63 @@ void Visualize_Tools::visualize_geometry_pose(geometry_msgs::Pose pose, std::str
     candidate_quaterniond_pub.publish(target);
 }
 
+
+// 函数：根据平面方程生成平面上的一个点
+geometry_msgs::Point generatePointOnPlane(double a, double b, double c, double d, double x, double y) {
+    geometry_msgs::Point point;
+    point.x = x;
+    point.y = y;
+    
+    // 根据平面方程 ax + by + cz + d = 0 计算 z
+    if (c != 0) {
+        point.z = -(a * x + b * y + d) / c;
+    } else {
+        point.z = 0.0;  // 如果 c == 0，默认为 z = 0
+    }
+
+    return point;
+}
+
+// 以三角的形式显示平面
+void publish_plane_triangle(ros::Publisher& marker_pub, Eigen::Vector4d plane_param, int id, std::string frame_id = "world") {
+    double a = plane_param[0];
+    double b = plane_param[1];
+    double c = plane_param[2];
+    double d = plane_param[3];
+
+    // 创建一个Marker消息
+    // 创建一个 Marker 消息
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "world";  // 使用世界坐标系
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "triangle";
+    marker.id = id;
+    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;  // 使用三角形列表
+    marker.action = visualization_msgs::Marker::ADD;
+
+    // 设置颜色和透明度
+    marker.color.a = 0.2;  // 不透明
+    marker.color.r = 1.0;  // 红色
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+
+    // 设置比例
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+
+
+    // 生成平面上的点
+    std::vector<geometry_msgs::Point> points;
+    points.push_back(generatePointOnPlane(a, b, c, d, 0, 0));
+    points.push_back(generatePointOnPlane(a, b, c, d, 3.0, 0));
+    points.push_back(generatePointOnPlane(a, b, c, d, 0, 3.0));
+    marker.points = points;
+
+    // 发布Marker消息
+    marker_pub.publish(marker);
+}
+
+// 
+
 #endif //VIEW_PLANNING_GAZEBO_TOOLS_H

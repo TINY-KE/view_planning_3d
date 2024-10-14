@@ -176,6 +176,8 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}
   /home/robotlab/QSP-SLAM-ellipsoid-associdate
+  ${PROJECT_SOURCE_DIR}/Thirdparty/g2o
+
 )
 
 
@@ -216,11 +218,40 @@ target_link_libraries(gpmp_wam_Reproduce_Matlab   ${catkin_LIBRARIES} ${EIGEN3_L
 add_executable(ellipse_debug src_wam/ellipse_debug.cpp)
 target_link_libraries(ellipse_debug   ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} )
 
-add_executable(error_cube_debug 
-              src_object/error_cube_debug.cpp 
+
+# add_subdirectory(src_object/symmetry)
+# add_subdirectory(src_object/config)
+# add_subdirectory(src_object/pca)
+# add_subdirectory(src_object/plane)
+add_subdirectory(src_object/Polygon)
+# add_subdirectory(src_object/Relationship)
+
+add_library(utils SHARED
+    src_object/utils/matrix_utils.cpp
+    src_object/utils/dataprocess_utils.cpp
+    src_object/utils/file_operate.cpp
+)
+
+target_link_libraries(utils
+    ${OpenCV_LIBS}
+)
+
+find_package(Boost REQUIRED COMPONENTS filesystem system)
+
+add_executable(error_cube_camera_debug 
+              src_object/error_cube_camera_debug.cpp 
               src_object/MapObject.cpp
               src_object/Converter.cc
+              src_object/core/Plane.cpp
+              src_object/core/ConstrainPlane.cpp
+              src_object/core/Ellipsoid.cpp
+              # src_object/
               )
-target_link_libraries(error_cube_debug   
+target_link_libraries(error_cube_camera_debug   
               ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} 
+              utils
+              Polygon
+              ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
+              Boost::filesystem
+              Boost::system
               )
