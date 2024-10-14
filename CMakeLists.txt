@@ -176,7 +176,7 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}
   /home/robotlab/QSP-SLAM-ellipsoid-associdate
-  ${PROJECT_SOURCE_DIR}/Thirdparty/g2o
+  # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o
 
 )
 
@@ -251,7 +251,27 @@ target_link_libraries(error_cube_camera_debug
               ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} 
               utils
               Polygon
-              ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
+              # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
               Boost::filesystem
               Boost::system
+              ${GTSAM_LIBRARIES} gpmp2
+              )
+
+add_executable(error_plane_endlink_debug 
+            src_object/error_plane_endlink_debug.cpp 
+            src_object/MapObject.cpp
+            src_object/Converter.cc
+            src_object/core/Plane.cpp
+            src_object/core/ConstrainPlane.cpp
+            src_object/core/Ellipsoid.cpp
+            # src_object/
+            )
+target_link_libraries(error_plane_endlink_debug   
+              ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} 
+              utils
+              Polygon
+              # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
+              Boost::filesystem
+              Boost::system
+              ${GTSAM_LIBRARIES} gpmp2
               )

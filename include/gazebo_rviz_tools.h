@@ -356,6 +356,41 @@ void publish_plane_triangle(ros::Publisher& marker_pub, Eigen::Vector4d plane_pa
     marker_pub.publish(marker);
 }
 
+
+// 以三角的形式显示平面
+void publish_plane_triangle_bypoint(ros::Publisher& marker_pub, std::vector<geometry_msgs::Point>& points, int id, std::string frame_id = "world") {
+    
+    // 创建一个 Marker 消息
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "world";  // 使用世界坐标系
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "triangle";
+    marker.id = id;
+    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;  // 使用三角形列表
+    marker.action = visualization_msgs::Marker::ADD;
+
+    // 设置颜色和透明度
+    marker.color.a = 0.2;  // 不透明
+    marker.color.r = 1.0;  // 红色
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+
+    // 设置比例
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+
+
+    // 生成平面上的点
+    points.push_back(points[0]);
+    points.push_back(points[1]);
+    points.push_back(points[2]);
+    marker.points = points;
+
+    // 发布Marker消息
+    marker_pub.publish(marker);
+}
+
 // 
 
 #endif //VIEW_PLANNING_GAZEBO_TOOLS_H

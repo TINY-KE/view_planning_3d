@@ -123,7 +123,7 @@ int main(int argc, char** argv){
 
         std::cout<<"Distance：          ↑"<<std::endl;
         std::cout<<"                "<<distance_high<<std::endl;
-        std::cout<<"       ←  "<<distance_left<<"    "<<distance_right<<" → "<<std::endl;
+        std::cout<<"        ←  "<<distance_left<<"    "<<distance_right<<" → "<<std::endl;
         std::cout<<"                "<<distance_low<<std::endl;
         std::cout<<"                    ↓"<<std::endl;
 

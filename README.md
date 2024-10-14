@@ -17,9 +17,17 @@
 + 添加Converter.cc  MapObject.cpp
 
 
-# 第二次准备融合g2o和gtsam     
+# 第二次准备融合g2o和gtsam     commit 18cb4a9540ca6c993d42a0e3c0928603b907bc1d
 + 添加到
 
+# 通过三角面可视化相机视场，并实现了点面距离的计算
++ 删除了Thirdparty中的g2o，但是Ellipsoid.h还是到导入两个g2o头文件，但是我已经删除了啊？ 为什么还能找到并编译。
+    #include "Thirdparty/g2o/g2o/core/base_multi_edge.h"
+    #include "Thirdparty/g2o/g2o/types/types_six_dof_expmap.h"
+  姑且可以认为融合了g2o和gtsam
++ 实现了一点和相机视场平面（四个包围面）的距离计算；
++ 通过三角面，在rviz中可视化相机视场
++ 
 
 + 待：验证gpmp能否输入（GenerateCandidates_ellipse_by_circle）的结果，从而使的规划结果更顺滑。
 + 待：验证cube四方体8角与平面距离的error

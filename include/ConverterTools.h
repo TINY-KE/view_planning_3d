@@ -16,9 +16,13 @@
 #include <tf2/convert.h>
 #include <geometry_msgs/Pose.h>
 #include <tf2/transform_datatypes.h> // Include if needed
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Transform.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 // #include"Thirdparty/g2o/g2o/types/types_six_dof_expmap.h"
 // #include"Thirdparty/g2o/g2o/types/types_seven_dof_expmap.h"
+
 #include<opencv2/core/core.hpp>
 #include<opencv2/features2d/features2d.hpp>
 #include<opencv2/core/eigen.hpp>
@@ -198,6 +202,28 @@ geometry_msgs::Point corner_to_marker(geometry_msgs::Point& oldp, Eigen::Matrix4
         return newp;
 }
 
+// 函数：将 Eigen::Isometry3d 转换为 geometry_msgs::PoseStamped
+geometry_msgs::PoseStamped eigenToPoseStamped(const Eigen::Isometry3d& eigen_pose, const std::string& frame_id = "world") {
+    geometry_msgs::PoseStamped pose_stamped;
+    
+    // 设置 PoseStamped 的 header
+    pose_stamped.header.frame_id = frame_id;
+    pose_stamped.header.stamp = ros::Time::now();
+    
+    // 提取平移部分
+    pose_stamped.pose.position.x = eigen_pose.translation().x();
+    pose_stamped.pose.position.y = eigen_pose.translation().y();
+    pose_stamped.pose.position.z = eigen_pose.translation().z();
+    
+    // 提取旋转部分并转换为四元数
+    Eigen::Quaterniond quat(eigen_pose.rotation());
+    pose_stamped.pose.orientation.x = quat.x();
+    pose_stamped.pose.orientation.y = quat.y();
+    pose_stamped.pose.orientation.z = quat.z();
+    pose_stamped.pose.orientation.w = quat.w();
+    
+    return pose_stamped;
+}
 
 // g2o::SE3Quat toSE3Quat(const cv::Mat &cvT)
 // {
