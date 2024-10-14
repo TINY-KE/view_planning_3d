@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(view_planning)
 
+# 各类库
+set(OpenCV_DIR "/home/robotlab/thirdparty/opencv-3.4.10/build")
+set(cv_bridge_DIR "/home/zhjd/thirdparty/vision_opencv-indigo/cv_bridge/cmake")
+
+
 SET(CMAKE_BUILD_TYPE Debug)  #zhjd
 
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -14,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   control_msgs
   diagnostic_msgs
   geometry_msgs
-  manipulation_msgs
+  # manipulation_msgs   #used for ubuntu18
   moveit_msgs
   moveit_ros_perception
   moveit_ros_planning_interface
@@ -57,7 +62,6 @@ include_directories(
    ${EIGEN3_INCLUDE_DIR}
    )
 
-set(OpenCV_DIR "/home/zhjd/thirdparty/opencv3.4.10/opencv-3.4.10/build/")
 find_package(OpenCV 3.0 QUIET)
 if(NOT OpenCV_FOUND)
    find_package(OpenCV 2.4.3 QUIET)
@@ -65,7 +69,7 @@ if(NOT OpenCV_FOUND)
       message(FATAL_ERROR "OpenCV > 2.4.3 not found.")
    endif()
 endif()
-set(cv_bridge_DIR "/home/zhjd/thirdparty/vision_opencv-indigo/cv_bridge/cmake")
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -172,133 +176,33 @@ include_directories(
   ${PROJECT_SOURCE_DIR}
 )
 
-## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/marm_planning.cpp
-# )
-
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Declare a C++ executable
-## With catkin_make all packages are built within a single CMake context
-## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/marm_planning_node.cpp)
-
-## Rename C++ executable without prefix
-## The above recommended prefix causes long target names, the following renames the
-## target back to the shorter version for ease of user use
-## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
-# set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
-
-## Add cmake target dependencies of the executable
-## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
-
-# add_executable(test_random_node src/test_random.cpp)
-# target_link_libraries(test_random_node ${catkin_LIBRARIES})
-
-# add_executable(test_custom_node src/test_custom.cpp)
-# target_link_libraries(test_custom_node ${catkin_LIBRARIES})
-
-# add_executable(add_collision_objct_node src/add_collision_objct.cpp)
-# target_link_libraries(add_collision_objct_node ${catkin_LIBRARIES})
-
-# add_executable(remove_collision_objct_node src/remove_collision_objct.cpp)
-# target_link_libraries(remove_collision_objct_node ${catkin_LIBRARIES})
-
-# add_executable(check_collision_node src/check_collision.cpp)
-# target_link_libraries(check_collision_node ${catkin_LIBRARIES})
-
-# add_executable(test_cartesian_path_node src/test_cartesian_path.cpp)
-# target_link_libraries(test_cartesian_path_node ${catkin_LIBRARIES} ${EIGEN3_LIBS})
-
-# add_executable(fabo_cartesian_path_node src/fabo_cartesian_path.cpp)
-# target_link_libraries(fabo_cartesian_path_node ${catkin_LIBRARIES} ${EIGEN3_LIBS})
-
-# add_executable(fabo_ik_tf   src/fabo_ik_tf.cpp)
-# target_link_libraries(fabo_ik_tf ${catkin_LIBRARIES} ${EIGEN3_LIBS})
 
 
-# add_executable(fabo_cartesian_path_one src/fabo_cartesian_path_one.cpp)
-# target_link_libraries(fabo_cartesian_path_one ${catkin_LIBRARIES} ${EIGEN3_LIBS})
+add_executable(sdf_visulization src_wam/sdf_visulization.cpp)
+target_link_libraries(sdf_visulization   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2  ${OpenCV_LIBS})  #${Boost_LIBRARIES}
 
-# add_executable(generate_candidate src/generate_candidate.cpp )
-# src/Converter.cc
-# target_link_libraries(gen5erate_candidate ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LIBS})
-
-# add_executable(cartesian_candidate src/cartesian_candidate.cpp )
-# target_link_libraries(cartesian_candidate ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LIBS})
-
-# add_executable(candidate_ik_fabo src/candidate_ik_fabo.cpp  )
-# target_link_libraries(candidate_ik_fabo ${cEIGEN3_LIBST} gpmp2)
-
-
-# message(STATUS "Fabo Arm Test")
-# add_executable(fabo_test src/test.cpp)
-# target_link_libraries(fabo_test   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 )  #${Boost_LIBRARIES}
-
-message(STATUS "Arm7 gpmp Test")
-add_executable(gpmp_realman src_gpmp/gpmp_realman.cpp)
-target_link_libraries(gpmp_realman   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
-
-
-
-message(STATUS "Arm7 gpmp Test")
-add_executable(gpmp_realman_debug src_gpmp/gpmp_realman_setfromik_debug.cpp)
-target_link_libraries(gpmp_realman_debug   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
-
-add_executable(sdf_visulization src_gpmp/sdf_visulization.cpp)
-target_link_libraries(sdf_visulization   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 )  #${Boost_LIBRARIES}
-
-
-# add_executable(test_bwdist src/test_bwdist.cpp)
-# target_link_libraries(test_bwdist   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LIBS})  #${Boost_LIBRARIES}
-
-
-
-# add_executable(test_dist src/test_dis.cpp)
-# target_link_libraries(test_dist   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${OpenCV_LIBS})
-
-
-
-
-# add_executable(robot_state_ptr src_moveit/robot_state_ptr.cpp)
-# target_link_libraries(robot_state_ptr   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )
-
-# add_executable(robot_state_ptr2 src_moveit/robot_state_ptr2.cpp)
-# target_link_libraries(robot_state_ptr2   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )
 
 add_executable(wam_ik_only_endpoint src_wam/wam_ik_only_endpoint.cpp)
-target_link_libraries(wam_ik_only_endpoint   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )
+target_link_libraries(wam_ik_only_endpoint   ${catkin_LIBRARIES} ${EIGEN3_LIBS}   ${OpenCV_LIBS})
 
-
-
-# add_executable(object_direction src_wam/object_direction.cpp)
-# target_link_libraries(object_direction   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GAZEBO_LIBRARIES})
 
 add_executable(circle_wam src_wam/circle_wam.cpp)
-target_link_libraries(circle_wam   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GAZEBO_LIBRARIES})
+target_link_libraries(circle_wam   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GAZEBO_LIBRARIES}  ${OpenCV_LIBS})
 
 
 add_executable(object_direction src_wam/object_direction.cpp)
-target_link_libraries(object_direction   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )
+target_link_libraries(object_direction   ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS})
 
-# add_executable(wam_ik_only_endpoint_from_gazebo_object src_wam/wam_ik_only_endpoint_from_gazebo_object.cpp)
-# target_link_libraries(wam_ik_only_endpoint_from_gazebo_object   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )
 
 
 message(STATUS "gpmp_wam_getfromik")
 add_executable(gpmp_wam_getfromik src_wam/gpmp_wam_getfromik_debug.cpp )
 target_link_libraries(gpmp_wam_getfromik   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
 
+
+message(STATUS "gpmp_wam_Reproduce_Matlab")
+add_executable(gpmp_wam_Reproduce_Matlab src_wam/gpmp_wam_Reproduce_Matlab.cpp )
+target_link_libraries(gpmp_wam_Reproduce_Matlab   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
 
 # add_executable(wam_fk_from_gpmp src_wam/wam_fk_from_gpmp.cpp)
 # target_link_libraries(wam_fk_from_gpmp   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )

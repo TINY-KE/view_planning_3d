@@ -10,5 +10,12 @@
         "/home/zhjd/ws_turtlebot_custom/devel/lib/python2.7/dist-packages",
         "/opt/ros/melodic/lib/python2.7/dist-packages",
         "/usr/local/lib/python2.7/dist-packages"
-    ]
+    ],
+    "files.associations": {
+        "array": "cpp",
+        "bitset": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp"
+    }
 }

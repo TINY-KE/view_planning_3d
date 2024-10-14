@@ -11,7 +11,6 @@
 #include <tf2/LinearMath/Transform.h>
 #include <geometry_msgs/TransformStamped.h>
 
-#include<opencv2/core/core.hpp>
 
 #include<Eigen/Dense>
 #include <tf2/convert.h>
@@ -22,9 +21,6 @@
 // #include"Thirdparty/g2o/g2o/types/types_seven_dof_expmap.h"
 
 //eigen cv的convert
-#include<opencv2/core/core.hpp>
-#include<opencv2/features2d/features2d.hpp>
-#include<opencv2/core/eigen.hpp>
 
 // 用于计算Y轴水平、x轴指向目标点的坐标系(在我的工作中是相机Candidate坐标系)，在world中的位姿
 geometry_msgs::Pose ZeroRoll_Pose_of_TwoPoints_in_world(const Eigen::Vector3d& start_point_in_world, const Eigen::Vector3d& end_point_in_world) {

@@ -1,8 +1,0 @@
-prefix=/home/zhjd/ws_3d_vp/src/view_planning/cmake-build-debug/devel
-
-Name: view_planning
-Description: Description of view_planning
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
