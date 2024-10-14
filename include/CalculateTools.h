@@ -42,5 +42,17 @@ tf::Quaternion RPY_to_quaternion(double roll, double pitch, double yaw, tf2::Qua
     //     Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
 }
 
+// 函数：将 std::vector<double> 转换为 gtsam::Vector
+gtsam::Vector stdVectorToGtsamVector(const std::vector<double>& joint_values) {
+    int num = joint_values.size();
+
+    // 创建 gtsam::Vector (Eigen::VectorXd) 并赋值
+    gtsam::Vector gtsamVector(num);
+    for (size_t i = 0; i < num; ++i) {
+        gtsamVector(i) = joint_values[i];
+    }
+
+    return gtsamVector;
+}
 
 #endif //VIEW_PLANNING_CONVERTERTOOLS_H

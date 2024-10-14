@@ -164,7 +164,7 @@ int main(int argc, char** argv){
 
     // // 四、轨迹初值  
     // double total_time_sec = 2;
-    // double total_time_step = 10;
+    // double total_time_step = Candidates.size();
     // double check_inter = 5;
     // double delta_t = total_time_sec / total_time_step;
     // double total_check_step = (check_inter + 1.0)*total_time_step;
@@ -184,15 +184,16 @@ int main(int argc, char** argv){
     // double obs_sigma = 0.005; 
     // double epsilon_dist = 0.15; 
     // double fix_sigma = 1e-4; //固定的位姿，包括初始的位姿
+    // double init_pose_sigma = 10.0/100.0;  //过程中的位姿
     // double end_pose_sigma = 1e-4; //固定的位姿，包括结束时的位姿
-    // // double pose_sigma = 0.1;//10.0/100.0;  //过程中的位姿，包括结束时的位姿
+
     // double orien_sigma = 1e-2;  //过程中的方向。 TODO: 为什么是其他噪声模型的100倍？？？
     
     // NonlinearFactorGraph graph;
-    // for(int i=0; i<=total_time_step; i++){
+    // for(int i=0; i<total_time_step; i++){
     //     Key key_pos = symbol('x', i);
     //     Key key_vel = symbol('v', i);
-
+        
     //     if(i==0){
     //         // 2.1 起始位置约束
     //         // 删除的原因：原程序是直接限制了关节的角度，这个可以在我之后的程序中开启，
@@ -277,8 +278,8 @@ int main(int argc, char** argv){
     // std::cout << "final error=" << graph.error(results) << std::endl;
     // std::cout << "Optimization Result:"  <<std::endl;
     // results.print();
-    // // std::cout << "Init values:"  <<std::endl;
-    // // init_values.print();
+    // std::cout << "Init values:"  <<std::endl;
+    // init_values.print();
 
     
 
@@ -350,6 +351,11 @@ int main(int argc, char** argv){
         setPose(nh, "mrobot", FootPrints[i].position.x, FootPrints[i].position.y, FootPrints[i].position.z, FootPrints[i].orientation.w, FootPrints[i].orientation.x, FootPrints[i].orientation.y, FootPrints[i].orientation.z);
         bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         if(success){
+            
+            std::vector<double> joint_angles = my_plan.trajectory_.joint_trajectory.points.back().positions;
+            for (size_t i = 0; i < joint_angles.size(); ++i) {
+                ROS_INFO("Joint %lu: %f", i, joint_angles[i]);
+            }
             std::cout<<"<<<<<<<<<<<<<< 规划成功 \n"<<std::endl;
             move_group.execute(my_plan);
             // loop_rate.sleep();

@@ -4,13 +4,20 @@
 + 视点规划
     rosrun view_planning  gpmp_wam_getfromik 
 
-# 利用椭圆+圆+moveit ik，实现环绕观测
+# 利用椭圆+圆+moveit ik，实现环绕观测 commit 72c828759ba615f3a0c04c02b9d2e436e54966b6
 + gpmp_wam_Reproduce_Matlab
     cpp复现matlab机械臂手臂朝上
-+ gpmp_wam_getfromik_debug 
++ wam_getfromik_debug
     完成了利用椭圆和圆（GenerateCandidates_ellipse_by_circle）实现候选点，并通过moveit ik 计算关节角度。
 
-#  
+# 准备测试g2o和gtsam的融合
++ 因为wam机械臂会摔倒，因此引入了link wam/base_link的重量为1000
++ 添加Converter.cc  MapObject.cpp
+
+
+
+
+
 + 待：验证gpmp能否输入（GenerateCandidates_ellipse_by_circle）的结果，从而使的规划结果更顺滑。
 + 待：验证cube四方体8角与平面距离的error
 + 待：引入预设的椭球，

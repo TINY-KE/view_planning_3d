@@ -54,9 +54,7 @@
 
 // ros
 #include <ros/ros.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
-#include "std_msgs/Float64MultiArray.h"
+
 
 
 
@@ -80,15 +78,14 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/eigen.hpp>
-#include "Converter.h"
+
 
 
 #include "GenerateArm.h"
 #include "Candidate.h"
 #include "Obstacles.h"
 #include "ConverterTools.h"
-
-#include "CalculateTools.h"
+#include "gazebo_rviz_tools.h"
 
 using namespace std;
 using namespace gtsam;
@@ -115,29 +112,28 @@ enum opt_type {
     DOGLEG = 3
 };
 
-gtsam::Vector stdVectorToGtsamVector(const std::vector<double>& joint_values) {
-    int num = joint_values.size();
-
-    // 创建 gtsam::Vector (Eigen::VectorXd) 并赋值
-    gtsam::Vector gtsamVector(num);
-    for (size_t i = 0; i < num; ++i) {
-        gtsamVector(i) = joint_values[i];
-    }
-
-    return gtsamVector;
-}
-
 int main(int argc, char** argv){
     ros::init(argc, argv, "gpmp_wam", ros::init_options::AnonymousName);
     ros::NodeHandle nh;
+    Visualize_Tools vis_tools(nh);
+    ros::Rate loop_rate(2);  // 设置发布频率
 
-    ros::Publisher pub_field = nh.advertise<visualization_msgs::Marker>("field", 1);
-    ros::Publisher pub_sdf = nh.advertise<visualization_msgs::Marker>("sdf", 1);
-    ros::Publisher joint_values_pub = nh.advertise<std_msgs::Float64MultiArray>("joint_values_gpmp", 10);
-    ros::Publisher candidate_pub = nh.advertise<visualization_msgs::Marker>("/candidate", 10);
-    ros::Publisher candidate_quaterniond_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("output", 1);
 
-    ros::Rate loop_rate(5);  // 设置发布频率
+    SdfObject ob( 3, 0, 0.5, 
+                2.5, 2, 1, 
+                0, 0, 0);
+    std::vector<geometry_msgs::Pose> FootPrints;
+    std::vector<geometry_msgs::Pose>  Candidates = GenerateCandidates_ellipse_by_circle(ob, FootPrints, 3.5);
+
+    // while(ros::ok()){
+    //     for(int i=0; i<Candidates.size(); i++){
+    //         vis_tools.visualize_object(ob, "world");
+
+    //         vis_tools.visualize_geometry_pose(Candidates[i], "world", i, "candidate"+to_string(i), true);
+    //         ros::spinOnce();
+    //         loop_rate.sleep();
+    //     }
+    // }
 
 
     // 零、启动movegroup
@@ -154,6 +150,10 @@ int main(int argc, char** argv){
     move_group.setPoseReferenceFrame(pose_reference_frame);
 	ROS_INFO_NAMED("WAM_arm", "New Pose Reference frame: %s", move_group.getPoseReferenceFrame().c_str());
 
+    // move_group.setGoalJointTolerance(0.01);
+    // move_group.setPlannerId("RRTstar");
+
+
 
     // 一、构建机械臂模型
     ArmModel* arm_model = generateArm("WAMArm");
@@ -161,41 +161,34 @@ int main(int argc, char** argv){
 
     // 二、指定始末状态
     // TODO:  用moveit计算初始位置，当前先使用全0的初始值
-      int type_start = 1;
-    gtsam::Vector start_conf, end_conf;
-    gtsam::Vector start_vel, end_vel;
-    Rot3 traj_orien;
-    Pose3 end_pose ;
-    if(type_start==0){
-        // start_conf = (Vector(7) << -3.084730575741016, -1.763304599691998, 1.8552083929655296, 0.43301604856981246, -2.672461979658843, 0.46925065047728776, 4.000864693936108).finished();
-        // end_conf = (Vector(7) << -2.018431036907354, -1.4999897089911451, 1.4046777996889483, -1.3707039693409548, -3.0999924865261397, -0.8560425214202461, 4.8622166345079165).finished();
-        end_conf = (Vector(7) << -0.8,-1.70,1.64,1.29,1.1,-0.106,2.2).finished();
-        start_conf = (Vector(7) << -0.0,0.94,0,1.6,0,-0.919,1.55).finished();
-
-        start_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();
-        end_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();  
-        
-        auto jposes = arm_model->fk_model().forwardKinematicsPose(start_conf); 
-        traj_orien = Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6));
-        jposes = arm_model->fk_model().forwardKinematicsPose(end_conf);
-        end_pose = Pose3(Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6)), Point3(jposes(3, 6), jposes(4, 6), jposes(5, 6)));
-    }
-    else if (type_start==1)
-    {
-        std::vector<double> current_joint_values = move_group.getCurrentJointValues();
-        start_conf = stdVectorToGtsamVector(current_joint_values);
-        end_conf = (Vector(7) << -0.0,0.94,0,1.6,0,-0.919,1.55).finished();
-
-        start_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();
-        end_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();  
-        
-        auto jposes = arm_model->fk_model().forwardKinematicsPose(start_conf); 
-        jposes = arm_model->fk_model().forwardKinematicsPose(end_conf);
-        traj_orien = Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6));
-        end_pose = Pose3(Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6)), Point3(jposes(3, 6), jposes(4, 6), jposes(5, 6)));
-    }
+    std::vector<double> current_joint_values = move_group.getCurrentJointValues();
+    gtsam::Vector start_conf = stdVectorToGtsamVector(current_joint_values);
     
+    move_group.setPoseTarget(Candidates[i]);
+    //print pose target
+    std::cout<<">>>>>>> target pose "<< i<<", x:"<<Candidates[i].position.x<<", y:"<<Candidates[i].position.y<<", z:"<<Candidates[i].position.z
+            <<", qx:"<<Candidates[i].orientation.x<<", qy:"<<Candidates[i].orientation.y<<", qz:"<<Candidates[i].orientation.z<<", qw:"<<Candidates[i].orientation.w
+            <<std::endl;
+
+    // plan 和 move
+    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+    setPose(nh, "mrobot", FootPrints[i].position.x, FootPrints[i].position.y, FootPrints[i].position.z, FootPrints[i].orientation.w, FootPrints[i].orientation.x, FootPrints[i].orientation.y, FootPrints[i].orientation.z);
+    bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    if(success){
+        std::cout<<"<<<<<<<<<<<<<< 规划成功 \n"<<std::endl;
+        move_group.execute(my_plan);
+        // loop_rate.sleep();
+    gtsam::Vector start_conf = (Vector(7) << 1.941154, -0.644881, 0.063626, 1.696963, -3.159852, 1.301093, -0.217955).finished();
+    gtsam::Vector end_conf = (Vector(7) << -0.0,0.94,0,1.6,0,-0.919,1.55).finished();
+
+    gtsam::Vector start_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();
+    gtsam::Vector end_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();  
     
+    auto jposes = arm_model->fk_model().forwardKinematicsPose(start_conf); 
+    Rot3 traj_orien = Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6));
+    jposes = arm_model->fk_model().forwardKinematicsPose(end_conf);
+    Pose3 end_pose = Pose3(Rot3::Ypr(jposes(0, 6), jposes(1, 6), jposes(2, 6)), Point3(jposes(3, 6), jposes(4, 6), jposes(5, 6)));
+
 
     // 三、障碍物sdf
 
@@ -206,7 +199,7 @@ int main(int argc, char** argv){
 
     // 四、轨迹初值  
     double total_time_sec = 2;
-    double total_time_step = 10;
+    double total_time_step = Candidates.size();
     double check_inter = 5;
     double delta_t = total_time_sec / total_time_step;
     double total_check_step = (check_inter + 1.0)*total_time_step;
@@ -226,15 +219,16 @@ int main(int argc, char** argv){
     double obs_sigma = 0.005; 
     double epsilon_dist = 0.15; 
     double fix_sigma = 1e-4; //固定的位姿，包括初始的位姿
+    double init_pose_sigma = 10.0/100.0;  //过程中的位姿
     double end_pose_sigma = 1e-4; //固定的位姿，包括结束时的位姿
-    // double pose_sigma = 0.1;//10.0/100.0;  //过程中的位姿，包括结束时的位姿
+
     double orien_sigma = 1e-2;  //过程中的方向。 TODO: 为什么是其他噪声模型的100倍？？？
     
     NonlinearFactorGraph graph;
-    for(int i=0; i<=total_time_step; i++){
+    for(int i=0; i<total_time_step; i++){
         Key key_pos = symbol('x', i);
         Key key_vel = symbol('v', i);
-
+        
         if(i==0){
             // 2.1 起始位置约束
             // 删除的原因：原程序是直接限制了关节的角度，这个可以在我之后的程序中开启，
@@ -319,8 +313,8 @@ int main(int argc, char** argv){
     std::cout << "final error=" << graph.error(results) << std::endl;
     std::cout << "Optimization Result:"  <<std::endl;
     results.print();
-    // std::cout << "Init values:"  <<std::endl;
-    // init_values.print();
+    std::cout << "Init values:"  <<std::endl;
+    init_values.print();
 
     
 
@@ -333,88 +327,73 @@ int main(int argc, char** argv){
 
 
 
-    // TrajOptimizerSetting opt_setting = TrajOptimizerSetting(arm_model->dof());
-    // opt_setting.set_total_step(total_time_step);
-    // opt_setting.set_total_time(total_time_sec);
-    // opt_setting.set_epsilon(epsilon_dist);
-    // opt_setting.set_cost_sigma(obs_sigma);
-    // opt_setting.set_obs_check_inter(check_inter);
-    // // opt_setting.set_conf_prior_model(noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma));
-    // // opt_setting.set_vel_prior_model(noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma));
-    // opt_setting.set_conf_prior_model(fix_sigma);
-    // opt_setting.set_vel_prior_model(fix_sigma);
-    // opt_setting.set_Qc_model(Qc);
-    // if(CollisionCost3DArm(*arm_model, sdf, results, opt_setting)){
-    //     std::cout<<"Trajectory is in collision!"<<std::endl;
-    //     return 0;
-    // }
-    // else
-    //     std::cout<<"Trajectory is collision free."<<std::endl;
+    TrajOptimizerSetting opt_setting = TrajOptimizerSetting(arm_model->dof());
+    opt_setting.set_total_step(total_time_step);
+    opt_setting.set_total_time(total_time_sec);
+    opt_setting.set_epsilon(epsilon_dist);
+    opt_setting.set_cost_sigma(obs_sigma);
+    opt_setting.set_obs_check_inter(check_inter);
+    // opt_setting.set_conf_prior_model(noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma));
+    // opt_setting.set_vel_prior_model(noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma));
+    opt_setting.set_conf_prior_model(fix_sigma);
+    opt_setting.set_vel_prior_model(fix_sigma);
+    opt_setting.set_Qc_model(Qc);
+    if(CollisionCost3DArm(*arm_model, sdf, results, opt_setting)){
+        std::cout<<"Trajectory is in collision!"<<std::endl;
+        return 0;
+    }
+    else
+        std::cout<<"Trajectory is collision free."<<std::endl;
 
 
 
 
-    // //  六、moveit控制及rviz可视化
+    //  六、moveit控制及rviz可视化
+    
+    
+
+
     // 关节量 
     bool pub_form = true;
-    std::vector<double > target_joint_group_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
-    Vector target_joint_group_positions_eigen;
-    for(int i=0; i<=total_time_step; i++){
-        // target_joint_group_positions.clear();
-        // std::cout<<"开始规划,"<<i<<std::endl;
+    bool not_init_succuss = true;
+    for(int i=0; i<Candidates.size(); i++){
 
-        target_joint_group_positions_eigen = results.at<Vector>(symbol('x', i));
-        
-        target_joint_group_positions[0] = (double(target_joint_group_positions_eigen[0]));
-        target_joint_group_positions[1] = (double(target_joint_group_positions_eigen[1]));
-        target_joint_group_positions[2] = (double(target_joint_group_positions_eigen[2]));
-        target_joint_group_positions[3] = (double(target_joint_group_positions_eigen[3]));
-        target_joint_group_positions[4] = (double(target_joint_group_positions_eigen[4]));
-        target_joint_group_positions[5] = (double(target_joint_group_positions_eigen[5]));
-        target_joint_group_positions[6] = (double(target_joint_group_positions_eigen[6]));
-        // std::cout<<" #gpmp规划结果 "<<i <<", size:"<< target_joint_group_positions.size()
-        //                                 <<", values: "<<std::endl<<"["
-        //                                 << target_joint_group_positions[0] 
-        //                                 <<", "<< target_joint_group_positions[1] 
-        //                                 <<", "<< target_joint_group_positions[2]
-        //                                 <<", "<< target_joint_group_positions[3]
-        //                                 <<", "<< target_joint_group_positions[4]
-        //                                 <<", "<< target_joint_group_positions[5]
-        //                                 <<", "<< target_joint_group_positions[6]  <<"];"<<std::endl;
 
-        
+        move_group.setPoseTarget(Candidates[i]);
 
-        // 发送给moveit
-        // 规划限制
-        // move_group.setMaxVelocityScalingFactor(0.05);
-        // move_group.setMaxAccelerationScalingFactor(0.05); 
-        // arm.set_goal_joint_tolerance(0.001)
-        // # arm.set_planner_id("RRTConnectkConfigDefault")
-        // arm.set_planner_id("RRTstar")
-        
-        std::cout<<"设置joint values, "<<i<<std::endl;
-        for (int i = 0; i < target_joint_group_positions.size(); i++){
-            ROS_INFO("   Joint %d: %f", i, target_joint_group_positions[i]);
-        }
-        // 设置目标关节量
-        move_group.setJointValueTarget(target_joint_group_positions);
-
+        //print pose target
+        std::cout<<">>>>>>> target pose "<< i<<", x:"<<Candidates[i].position.x<<", y:"<<Candidates[i].position.y<<", z:"<<Candidates[i].position.z
+                <<", qx:"<<Candidates[i].orientation.x<<", qy:"<<Candidates[i].orientation.y<<", qz:"<<Candidates[i].orientation.z<<", qw:"<<Candidates[i].orientation.w
+                <<std::endl;
 
         // plan 和 move
         moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+        setPose(nh, "mrobot", FootPrints[i].position.x, FootPrints[i].position.y, FootPrints[i].position.z, FootPrints[i].orientation.w, FootPrints[i].orientation.x, FootPrints[i].orientation.y, FootPrints[i].orientation.z);
         bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
         if(success){
-            std::cout<<"规划成功"<<std::endl;
+            std::cout<<"<<<<<<<<<<<<<< 规划成功 \n"<<std::endl;
             move_group.execute(my_plan);
-            std::cout << "按任意键继续..." << std::endl;
-
-            // 等待用户按下任意键（实际上是等待按下回车键）
-            std::cin.get();  // 读取一个字符（包括换行符）
-
+            // loop_rate.sleep();
         }
-        else
-            std::cout<<"规划失败"<<std::endl;
+        else{
+            // Candidates[i].position.y += 0.3;
+            // Candidates[i].position.z -= 0.1;
+            // move_group.setPoseTarget(Candidates[i]);
+            // success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+            
+            // if(success){
+            //     std::cout<<"<<<<<<<<<<<<<< 重新规划成功 \n"<<std::endl;
+            //     move_group.execute(my_plan);
+            // }
+            // else
+                std::cout<<"<<<<<<<<<<<<<< 规划失败\n"<<std::endl;
+        }
+        if(not_init_succuss){
+            std::cin.get();
+            // not_init_succuss = false;
+        }
     }
+            
 
 
 

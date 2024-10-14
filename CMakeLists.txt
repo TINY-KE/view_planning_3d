@@ -169,11 +169,13 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
+
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}
+  /home/robotlab/QSP-SLAM-ellipsoid-associdate
 )
 
 
@@ -196,8 +198,11 @@ target_link_libraries(object_direction   ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${O
 
 
 message(STATUS "gpmp_wam_getfromik")
-add_executable(gpmp_wam_getfromik src_wam/gpmp_wam_getfromik_debug.cpp )
-target_link_libraries(gpmp_wam_getfromik   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
+add_executable(wam_getfromik src_wam/wam_getfromik_debug.cpp )
+target_link_libraries(wam_getfromik   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
+
+# add_executable(gpmp_wam src_wam/gpmp_wam.cpp )
+# target_link_libraries(gpmp_wam   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
 
 
 message(STATUS "gpmp_wam_Reproduce_Matlab")
@@ -210,3 +215,12 @@ target_link_libraries(gpmp_wam_Reproduce_Matlab   ${catkin_LIBRARIES} ${EIGEN3_L
 
 add_executable(ellipse_debug src_wam/ellipse_debug.cpp)
 target_link_libraries(ellipse_debug   ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} )
+
+add_executable(error_cube_debug 
+              src_object/error_cube_debug.cpp 
+              src_object/MapObject.cpp
+              src_object/Converter.cc
+              )
+target_link_libraries(error_cube_debug   
+              ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} 
+              )
