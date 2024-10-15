@@ -16,6 +16,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include "std_msgs/Float64MultiArray.h"
 #include "Object.h"
+#include "MapObject.h"
 #include "ConverterTools.h"
 
 geometry_msgs::Pose  get_link_pose(ros::NodeHandle& n, std::string link_name, std::string reference_name = "world", bool output = false){
@@ -127,12 +128,22 @@ class Visualize_Tools{
             joint_values_pub = nh.advertise<std_msgs::Float64MultiArray>("joint_values_gpmp", 10);
             candidate_pub = nh.advertise<visualization_msgs::Marker>("/candidate", 10);
             publisher_object = nh.advertise<visualization_msgs::Marker>("object", 1000);
+            publisher_ellipsoid = nh.advertise<visualization_msgs::Marker>("ellipsoid", 1000);
             point_pub = nh.advertise<visualization_msgs::Marker>("/point", 10);
+            bbox_plane_pub = nh.advertise<visualization_msgs::Marker>("bbox_plane", 1);
+
         }
         void visualize_geometry_pose(geometry_msgs::Pose pose, std::string frame_id = "world",  double id_num = 1,  std::string name = "no-name", bool output = false);
         void visualize_object(SdfObject& ob, std::string frame_id);
+        // void visualize_MapObject(SdfObject& ob, std::string frame_id);
+        void visualize_ellipsoid(MapObject* ob, std::string frame_id, double id);
+        void visualize_ellipsoid(double x, double y, double z, double a, double b, double c, double roll, double pitch, double yaw, std::string frame_id, double id);
         void visualize_point(Eigen::Vector3d& p , std::string frame_id, double id);
+        void visualize_plane_triangle_bypoint(std::vector<geometry_msgs::Point>& points, int id, std::string frame_id = "world");
 
+
+        void Run();
+        
     private:
         ros::Publisher candidate_quaterniond_pub;
         ros::Publisher pub_field;
@@ -140,8 +151,36 @@ class Visualize_Tools{
         ros::Publisher joint_values_pub;
         ros::Publisher candidate_pub;
         ros::Publisher publisher_object;
+        ros::Publisher publisher_ellipsoid;
         ros::Publisher point_pub;
+        ros::Publisher bbox_plane_pub;
+
+    public:
+        std::vector<std::vector<geometry_msgs::Point>> BboxPlanesTrianglePointsInWorld;
+
+        std::vector<MapObject*> MapObjects;
 };
+
+
+void Visualize_Tools::Run()
+{   
+    ros::Rate r(50);
+
+    while(1){
+
+        for(int i=0; i<MapObjects.size(); i++ ){
+            visualize_ellipsoid( MapObjects[i], "world", i);
+        }
+
+        for(int i=0; i<BboxPlanesTrianglePointsInWorld.size(); i++ ){
+            visualize_plane_triangle_bypoint(BboxPlanesTrianglePointsInWorld[i], i, "world");
+            // std::cout << "Publishing triangle marker..." << std::endl;
+        }
+        
+        r.sleep();
+
+    }
+}
 
 void Visualize_Tools::visualize_point(Eigen::Vector3d& p , std::string frame_id, double id){
         visualization_msgs::Marker marker;
@@ -358,7 +397,7 @@ void publish_plane_triangle(ros::Publisher& marker_pub, Eigen::Vector4d plane_pa
 
 
 // 以三角的形式显示平面
-void publish_plane_triangle_bypoint(ros::Publisher& marker_pub, std::vector<geometry_msgs::Point>& points, int id, std::string frame_id = "world") {
+void Visualize_Tools::visualize_plane_triangle_bypoint(std::vector<geometry_msgs::Point>& points, int id, std::string frame_id) {
     
     // 创建一个 Marker 消息
     visualization_msgs::Marker marker;
@@ -370,7 +409,7 @@ void publish_plane_triangle_bypoint(ros::Publisher& marker_pub, std::vector<geom
     marker.action = visualization_msgs::Marker::ADD;
 
     // 设置颜色和透明度
-    marker.color.a = 0.2;  // 不透明
+    marker.color.a = 0.12;  // 不透明
     marker.color.r = 1.0;  // 红色
     marker.color.g = 0.0;
     marker.color.b = 0.0;
@@ -388,9 +427,82 @@ void publish_plane_triangle_bypoint(ros::Publisher& marker_pub, std::vector<geom
     marker.points = points;
 
     // 发布Marker消息
-    marker_pub.publish(marker);
+    bbox_plane_pub.publish(marker);
 }
 
+
+void Visualize_Tools::visualize_ellipsoid(MapObject* ob, std::string frame_id, double id){
+    // 创建 Marker 消息
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = frame_id;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "ellipsoid_visualization";
+    marker.id = id;  // 唯一的 ID
+    marker.type = visualization_msgs::Marker::SPHERE;  // 使用 SPHERE 类型表示椭球体
+    marker.action = visualization_msgs::Marker::ADD;
+
+    // 设置椭球体的位置
+    marker.pose.position.x = ob->mCuboid3D.cuboidCenter[0];
+    marker.pose.position.y = ob->mCuboid3D.cuboidCenter[1];
+    marker.pose.position.z = ob->mCuboid3D.cuboidCenter[2];
+
+    // 椭球体的比例尺寸，a, b, c 分别为 x, y, z 方向的轴长度
+    marker.scale.x = ob->mCuboid3D.lenth;  // x 轴长度
+    marker.scale.y = ob->mCuboid3D.width;  // y 轴长度
+    marker.scale.z = ob->mCuboid3D.height;  // z 轴长度
+
+    // 设置颜色 (RGBA)
+    marker.color.r = 0.0f;
+    marker.color.g = 1.0f;  // 绿色
+    marker.color.b = 0.0f;
+    marker.color.a = 0.5f;  // 透明度
+
+    // 创建四元数并设置旋转（Roll, Pitch, Yaw）
+    tf2::Quaternion quat;
+    quat.setRPY(0, 0, 0);  // 设置旋转角度 (弧度)
+
+    // 将四元数转换为 geometry_msgs::Quaternion 并设置到 marker 中
+    marker.pose.orientation = tf2::toMsg(quat);
+    // 将 Marker 发布到 ROS 主题
+    publisher_ellipsoid.publish(marker);
+}
+
+void Visualize_Tools::visualize_ellipsoid(double x, double y, double z, double a, double b, double c, double roll, double pitch, double yaw, std::string frame_id, double id) {
+
+    // 创建 Marker 消息
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = frame_id;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "ellipsoid_visualization";
+    marker.id = id;  // 唯一的 ID
+    marker.type = visualization_msgs::Marker::SPHERE;  // 使用 SPHERE 类型表示椭球体
+    marker.action = visualization_msgs::Marker::ADD;
+
+    // 设置椭球体的位置
+    marker.pose.position.x = x;
+    marker.pose.position.y = y;
+    marker.pose.position.z = z;
+
+    // 椭球体的比例尺寸，a, b, c 分别为 x, y, z 方向的轴长度
+    marker.scale.x = a;  // x 轴长度
+    marker.scale.y = b;  // y 轴长度
+    marker.scale.z = c;  // z 轴长度
+
+    // 设置颜色 (RGBA)
+    marker.color.r = 0.0f;
+    marker.color.g = 1.0f;  // 绿色
+    marker.color.b = 0.0f;
+    marker.color.a = 0.8f;  // 透明度
+
+    // 创建四元数并设置旋转（Roll, Pitch, Yaw）
+    tf2::Quaternion quat;
+    quat.setRPY(roll, pitch, yaw);  // 设置旋转角度 (弧度)
+
+    // 将四元数转换为 geometry_msgs::Quaternion 并设置到 marker 中
+    marker.pose.orientation = tf2::toMsg(quat);
+    // 将 Marker 发布到 ROS 主题
+    publisher_ellipsoid.publish(marker);
+}
 // 
 
 #endif //VIEW_PLANNING_GAZEBO_TOOLS_H

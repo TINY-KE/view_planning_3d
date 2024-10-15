@@ -10,6 +10,11 @@
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include "Converter.h"
+#include <thread>
+
+// #include "gtsam/BboxPlaneEllipsoidFactor.h"
+// #include "gtsam/JointLimitFactorVector.h"
+#include "gtsam/BboxPlaneArmLink.h"
 
 using namespace Eigen;
 // ZHJD 移植
@@ -73,8 +78,20 @@ MatrixXd GenerateBboxPlanes(g2o::SE3Quat &campose_wc, Eigen::Vector4d &bbox, Mat
     MatrixXd lines = fromDetectionsToLines(bbox,CameraWidth,CameraHeight);
     MatrixXd planes = P.transpose() * lines;
 
+    // 相机z轴方向，各个平面的normal应该与camera_direction 夹角小于90度
+    Eigen::Vector3d camera_direction(0,0,1);  // Z轴方向
+
     // add to matrix
     for (int m = 0; m < planes.cols(); m++) {
+        // 获取平面的法向量 (a, b, c)
+        Eigen::Vector3d normal = planes.block<3, 1>(0, m);
+
+        // 检查法向量与z轴朝向相同，如果不是则反转法向量
+        if (normal.dot(camera_direction) < 0) {
+            // 反转法向量方向
+            planes.col(m) = -planes.col(m);
+        }
+
         planes_all.conservativeResize(planes_all.rows(), planes_all.cols() + 1);
         planes_all.col(planes_all.cols() - 1) = planes.col(m);
     }
@@ -183,7 +200,9 @@ std::vector<std::vector<geometry_msgs::Point>> GenerateBboxPlanesTrianglePoints(
 int main(int argc, char** argv){
     ros::init(argc, argv, "triangle_marker_node");
     ros::NodeHandle nh;
-    ros::Publisher marker_pub = nh.advertise<visualization_msgs::Marker>("visualization_marker", 1);
+    Visualize_Tools* vis_tools = new Visualize_Tools(nh);
+    std::thread* mptVisualizeTools;
+    mptVisualizeTools = new std::thread(&Visualize_Tools::Run, vis_tools);
 
     // 一、生成物体
     // SdfObject ob( 3, 0, 0.5, 
@@ -195,13 +214,20 @@ int main(int argc, char** argv){
     MapObject* ob = new MapObject();
     ob->Update_Twobj(x,y,z,yaw);
     ob->Update_object_size(lenth,width,height);
-
+    ob->Update_corner();
+    // int pub_num = 6;
+    // while(pub_num--){
+    //     vis_tools.visualize_ellipsoid(3, 0, 0.5, 
+    //             2.5, 2, 1, 
+    //             0, 0, 0, "world", 0);
+    // }
+    vis_tools->MapObjects.push_back(ob);
 
     // 二、生成平面
     g2o::SE3Quat local_wc = g2o::SE3Quat();
     int CameraWidth = 640;
     int CameraHeight = 480;
-    Vector4d bbox(0+10, 0+10, 640-10, 480-10);
+    Vector4d bbox(0+100, 0+80, 640-100, 480-80);
     float fx = 554.254691191187;
     float fy = 554.254691191187;
     float cx = 320.5;
@@ -267,13 +293,7 @@ int main(int argc, char** argv){
 
         // 三、通过三角形，可视化视场平面
         std::vector<std::vector<geometry_msgs::Point>> BboxPlanesTrianglePointsInWorld = GenerateBboxPlanesTrianglePoints(end_pose,  bbox, mCalib); 
-
-        int i =0;
-        for(auto TrianglePoints: BboxPlanesTrianglePointsInWorld){
-            publish_plane_triangle_bypoint(marker_pub, TrianglePoints, i, "world");
-            std::cout << "Publishing triangle marker..." << std::endl;
-            i++;
-        }
+        vis_tools->BboxPlanesTrianglePointsInWorld = BboxPlanesTrianglePointsInWorld;
 
 
 
@@ -293,6 +313,29 @@ int main(int argc, char** argv){
                 planes_world.push_back(plane_new);
             }
 
+        // 五、计算cube
+        Eigen::Vector3d target_pose_eigen = (ob->mCuboid3D.corner_1 + ob->mCuboid3D.corner_7)/2.0 ;
+        std::cout<<"Target Pose: "<<target_pose_eigen.transpose()<<std::endl;
+        
+        double distance_low = planes_world[3]->distanceToPoint(target_pose_eigen, true);
+        double distance_high = planes_world[1]->distanceToPoint(target_pose_eigen, true);
+        double distance_left = planes_world[0]->distanceToPoint(target_pose_eigen, true);
+        double distance_right = planes_world[2]->distanceToPoint(target_pose_eigen, true);
+        std::cout<<"normal 0: "<< planes_world[0]->normal().transpose()<<std::endl;
+        std::cout<<"normal 1: "<< planes_world[1]->normal().transpose()<<std::endl;
+        std::cout<<"normal 2: "<< planes_world[2]->normal().transpose()<<std::endl;
+        std::cout<<"normal 3: "<< planes_world[3]->normal().transpose()<<std::endl;
+
+        
+        std::cout<<"Distance：          ↑"<<std::endl;
+        std::cout<<"                "<<distance_high<<std::endl;
+        std::cout<<"        ←  "<<distance_left<<"    "<<distance_right<<" → "<<std::endl;
+        std::cout<<"                "<<distance_low<<std::endl;
+        std::cout<<"                    ↓"<<std::endl;
+
+        std::cout<<std::endl;
+        std::cout<<std::endl;
+        
         r.sleep();
     }
     

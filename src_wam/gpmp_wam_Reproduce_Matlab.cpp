@@ -269,7 +269,10 @@ int main(int argc, char** argv){
             
             // // % unary obstacle factor
             // graph.add(ObstacleSDFFactorArm(key_pos, *arm_model, sdf, obs_sigma, epsilon_dist));
-            
+            // ObstacleSDFFactor(gtsam::Key poseKey, const Robot& robot,
+            //         const SignedDistanceField& sdf, double cost_sigma,
+            //         double epsilon)
+
             // // % interpolated obstacle factor
             // if(check_inter){
             //     for(int j=1; j<=check_inter; j++){

@@ -192,3 +192,35 @@ void MapObject::Update_object_size(double lenth, double width, double height)   
     mCuboid3D.width = width;
     mCuboid3D.height = height;
 }
+
+void MapObject::Update_corner() {
+
+        float x_min_obj = (-0.5)*mCuboid3D.lenth;
+        float x_max_obj = (0.5)*mCuboid3D.lenth;
+        float y_min_obj = (-0.5)*mCuboid3D.width;
+        float y_max_obj = (0.5)*mCuboid3D.width;
+        float z_min_obj = (-0.5)*mCuboid3D.height;
+        float z_max_obj = (0.5)*mCuboid3D.height;
+
+        // g2o::SE3Quat pose =  Converter::toSE3Quat( mCuboid3D.pose_mat);
+        auto pose = Converter::cvMattoIsometry3d( mCuboid3D.pose_mat);
+        mCuboid3D.corner_1 = pose * Eigen::Vector3d(x_min_obj, y_min_obj, z_min_obj) ;
+        mCuboid3D.corner_2 = pose * Eigen::Vector3d(x_max_obj, y_min_obj, z_min_obj) ;
+        mCuboid3D.corner_3 = pose * Eigen::Vector3d(x_max_obj, y_max_obj, z_min_obj) ;
+        mCuboid3D.corner_4 = pose * Eigen::Vector3d(x_min_obj, y_max_obj, z_min_obj) ;
+        mCuboid3D.corner_5 = pose * Eigen::Vector3d(x_min_obj, y_min_obj, z_max_obj) ;
+        mCuboid3D.corner_6 = pose * Eigen::Vector3d(x_max_obj, y_min_obj, z_max_obj) ;
+        mCuboid3D.corner_7 = pose * Eigen::Vector3d(x_max_obj, y_max_obj, z_max_obj) ;
+        mCuboid3D.corner_8 = pose * Eigen::Vector3d(x_min_obj, y_max_obj, z_max_obj) ;
+
+        mCuboid3D.x_max = std::max( std::max(mCuboid3D.corner_1[0],  mCuboid3D.corner_2[0]),
+                                            std::max(mCuboid3D.corner_3[0],  mCuboid3D.corner_4[0]));
+        mCuboid3D.x_min = std::min( std::min(mCuboid3D.corner_1[0],  mCuboid3D.corner_2[0]),
+                                            std::min(mCuboid3D.corner_3[0],  mCuboid3D.corner_4[0]));
+        mCuboid3D.y_max = std::max( std::max(mCuboid3D.corner_1[1],  mCuboid3D.corner_2[1]),
+                                            std::max(mCuboid3D.corner_3[1],  mCuboid3D.corner_4[1]));
+        mCuboid3D.y_min = std::min( std::min(mCuboid3D.corner_1[1],  mCuboid3D.corner_2[1]),
+                                            std::min(mCuboid3D.corner_3[1],  mCuboid3D.corner_4[1]));
+        mCuboid3D.z_max = mCuboid3D.corner_5[2];
+        mCuboid3D.z_min = mCuboid3D.corner_1[2];
+}

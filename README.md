@@ -20,18 +20,29 @@
 # 第二次准备融合g2o和gtsam     commit 18cb4a9540ca6c993d42a0e3c0928603b907bc1d
 + 添加到
 
-# 通过三角面可视化相机视场，并实现了点面距离的计算
+# 通过三角面可视化相机视场，并实现了点面距离的计算  commit b9a5d4d88226eb853f41507cc2122e989dc5ffd2
 + 删除了Thirdparty中的g2o，但是Ellipsoid.h还是到导入两个g2o头文件，但是我已经删除了啊？ 为什么还能找到并编译。
     #include "Thirdparty/g2o/g2o/core/base_multi_edge.h"
     #include "Thirdparty/g2o/g2o/types/types_six_dof_expmap.h"
   姑且可以认为融合了g2o和gtsam
 + 实现了一点和相机视场平面（四个包围面）的距离计算；
 + 通过三角面，在rviz中可视化相机视场
-+ 
+
+
+# 计算平面和视场包络面的距离
++ 建立专门的可视化线程
++ 实现了计算椭球体近端点与视场四个平面距离（四个平面的normal与相机z轴相同）的计算
++ 创建 BboxPlaneArmLink.h; ERROR为最小阈值距离减去各关节点与''视场下平面''的距离； ERROR导数与平面的normal相同；
+    + 待： 构建视场下平面；
+
+
+# 自制gtsam因子 
++ 待：验证BboxPlaneArmLink
++ 问题：引入lzw的椭球。椭球会不会和平面的距离计算函数（拉格朗日）会不会和gtsam冲突？
++ 构建BboxPlaneEllipsoid
+
 
 + 待：验证gpmp能否输入（GenerateCandidates_ellipse_by_circle）的结果，从而使的规划结果更顺滑。
-+ 待：验证cube四方体8角与平面距离的error
-+ 待：引入预设的椭球，
 + 待：暂时，在底盘的结果上加上扰动，代表底盘的运动。验证效果之后，再改回来
 
 # 安装的依赖项

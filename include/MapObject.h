@@ -101,7 +101,7 @@ public:
     void Update_Twobj();                // 原UpdateObjPose  更新物体在世界下的坐标
     void Update_Twobj(double x, double y, double z, double yaw);                // 原UpdateObjPose  更新物体在世界下的坐标
     void Update_object_size(double lenth, double width, double height)   ;   //更新物体的尺寸
-
+    void Update_corner();
 };
 
 
