@@ -73,6 +73,7 @@ all: CMakeFiles/ellipse_debug.dir/all
 all: CMakeFiles/utils.dir/all
 all: CMakeFiles/error_cube_camera_debug.dir/all
 all: CMakeFiles/error_plane_endlink_debug.dir/all
+all: CMakeFiles/TestBboxPlaneArmLink.dir/all
 all: gtest/all
 all: src_object/Polygon/all
 .PHONY : all
@@ -222,6 +223,7 @@ clean: CMakeFiles/ellipse_debug.dir/clean
 clean: CMakeFiles/utils.dir/clean
 clean: CMakeFiles/error_cube_camera_debug.dir/clean
 clean: CMakeFiles/error_plane_endlink_debug.dir/clean
+clean: CMakeFiles/TestBboxPlaneArmLink.dir/clean
 clean: gtest/clean
 clean: src_object/Polygon/clean
 .PHONY : clean
@@ -3650,7 +3652,7 @@ CMakeFiles/timing.dir/clean:
 CMakeFiles/sdf_visulization.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sdf_visulization.dir/build.make CMakeFiles/sdf_visulization.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sdf_visulization.dir/build.make CMakeFiles/sdf_visulization.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=33,34 "Built target sdf_visulization"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=40,41 "Built target sdf_visulization"
 .PHONY : CMakeFiles/sdf_visulization.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3676,7 +3678,7 @@ CMakeFiles/sdf_visulization.dir/clean:
 CMakeFiles/wam_ik_only_endpoint.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_ik_only_endpoint.dir/build.make CMakeFiles/wam_ik_only_endpoint.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_ik_only_endpoint.dir/build.make CMakeFiles/wam_ik_only_endpoint.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=41,42 "Built target wam_ik_only_endpoint"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=48,49 "Built target wam_ik_only_endpoint"
 .PHONY : CMakeFiles/wam_ik_only_endpoint.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3702,7 +3704,7 @@ CMakeFiles/wam_ik_only_endpoint.dir/clean:
 CMakeFiles/circle_wam.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/circle_wam.dir/build.make CMakeFiles/circle_wam.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/circle_wam.dir/build.make CMakeFiles/circle_wam.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=3,4 "Built target circle_wam"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=10,11 "Built target circle_wam"
 .PHONY : CMakeFiles/circle_wam.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3728,7 +3730,7 @@ CMakeFiles/circle_wam.dir/clean:
 CMakeFiles/object_direction.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/object_direction.dir/build.make CMakeFiles/object_direction.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/object_direction.dir/build.make CMakeFiles/object_direction.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=31,32 "Built target object_direction"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=38,39 "Built target object_direction"
 .PHONY : CMakeFiles/object_direction.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3754,7 +3756,7 @@ CMakeFiles/object_direction.dir/clean:
 CMakeFiles/wam_getfromik.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_getfromik.dir/build.make CMakeFiles/wam_getfromik.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_getfromik.dir/build.make CMakeFiles/wam_getfromik.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=39,40 "Built target wam_getfromik"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=46,47 "Built target wam_getfromik"
 .PHONY : CMakeFiles/wam_getfromik.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3780,7 +3782,7 @@ CMakeFiles/wam_getfromik.dir/clean:
 CMakeFiles/gpmp_wam_Reproduce_Matlab.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gpmp_wam_Reproduce_Matlab.dir/build.make CMakeFiles/gpmp_wam_Reproduce_Matlab.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gpmp_wam_Reproduce_Matlab.dir/build.make CMakeFiles/gpmp_wam_Reproduce_Matlab.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=25,26 "Built target gpmp_wam_Reproduce_Matlab"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=32,33 "Built target gpmp_wam_Reproduce_Matlab"
 .PHONY : CMakeFiles/gpmp_wam_Reproduce_Matlab.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3806,7 +3808,7 @@ CMakeFiles/gpmp_wam_Reproduce_Matlab.dir/clean:
 CMakeFiles/ellipse_debug.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ellipse_debug.dir/build.make CMakeFiles/ellipse_debug.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ellipse_debug.dir/build.make CMakeFiles/ellipse_debug.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=5,6 "Built target ellipse_debug"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=12,13 "Built target ellipse_debug"
 .PHONY : CMakeFiles/ellipse_debug.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3832,7 +3834,7 @@ CMakeFiles/ellipse_debug.dir/clean:
 CMakeFiles/utils.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/utils.dir/build.make CMakeFiles/utils.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/utils.dir/build.make CMakeFiles/utils.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=35,36,37,38 "Built target utils"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=42,43,44,45 "Built target utils"
 .PHONY : CMakeFiles/utils.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3859,7 +3861,7 @@ CMakeFiles/error_cube_camera_debug.dir/all: CMakeFiles/utils.dir/all
 CMakeFiles/error_cube_camera_debug.dir/all: src_object/Polygon/CMakeFiles/Polygon.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=7,8,9,10,11,12,13 "Built target error_cube_camera_debug"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=14,15,16,17,18,19,20 "Built target error_cube_camera_debug"
 .PHONY : CMakeFiles/error_cube_camera_debug.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3886,7 +3888,7 @@ CMakeFiles/error_plane_endlink_debug.dir/all: CMakeFiles/utils.dir/all
 CMakeFiles/error_plane_endlink_debug.dir/all: src_object/Polygon/CMakeFiles/Polygon.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=14,15,16,17,18,19,20 "Built target error_plane_endlink_debug"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=21,22,23,24,25,26,27 "Built target error_plane_endlink_debug"
 .PHONY : CMakeFiles/error_plane_endlink_debug.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3906,13 +3908,40 @@ CMakeFiles/error_plane_endlink_debug.dir/clean:
 .PHONY : CMakeFiles/error_plane_endlink_debug.dir/clean
 
 #=============================================================================
+# Target rules for target CMakeFiles/TestBboxPlaneArmLink.dir
+
+# All Build rule for target.
+CMakeFiles/TestBboxPlaneArmLink.dir/all: CMakeFiles/utils.dir/all
+CMakeFiles/TestBboxPlaneArmLink.dir/all: src_object/Polygon/CMakeFiles/Polygon.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=3,4,5,6,7,8,9 "Built target TestBboxPlaneArmLink"
+.PHONY : CMakeFiles/TestBboxPlaneArmLink.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/TestBboxPlaneArmLink.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles 13
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/TestBboxPlaneArmLink.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles 0
+.PHONY : CMakeFiles/TestBboxPlaneArmLink.dir/rule
+
+# Convenience name for target.
+TestBboxPlaneArmLink: CMakeFiles/TestBboxPlaneArmLink.dir/rule
+.PHONY : TestBboxPlaneArmLink
+
+# clean rule for target.
+CMakeFiles/TestBboxPlaneArmLink.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/clean
+.PHONY : CMakeFiles/TestBboxPlaneArmLink.dir/clean
+
+#=============================================================================
 # Target rules for target gtest/googlemock/CMakeFiles/gmock.dir
 
 # All Build rule for target.
 gtest/googlemock/CMakeFiles/gmock.dir/all: gtest/googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) $(MAKESILENT) -f gtest/googlemock/CMakeFiles/gmock.dir/build.make gtest/googlemock/CMakeFiles/gmock.dir/depend
 	$(MAKE) $(MAKESILENT) -f gtest/googlemock/CMakeFiles/gmock.dir/build.make gtest/googlemock/CMakeFiles/gmock.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=21,22 "Built target gmock"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=28,29 "Built target gmock"
 .PHONY : gtest/googlemock/CMakeFiles/gmock.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3939,7 +3968,7 @@ gtest/googlemock/CMakeFiles/gmock_main.dir/all: gtest/googlemock/CMakeFiles/gmoc
 gtest/googlemock/CMakeFiles/gmock_main.dir/all: gtest/googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) $(MAKESILENT) -f gtest/googlemock/CMakeFiles/gmock_main.dir/build.make gtest/googlemock/CMakeFiles/gmock_main.dir/depend
 	$(MAKE) $(MAKESILENT) -f gtest/googlemock/CMakeFiles/gmock_main.dir/build.make gtest/googlemock/CMakeFiles/gmock_main.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=23,24 "Built target gmock_main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=30,31 "Built target gmock_main"
 .PHONY : gtest/googlemock/CMakeFiles/gmock_main.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3965,7 +3994,7 @@ gtest/googlemock/CMakeFiles/gmock_main.dir/clean:
 gtest/googletest/CMakeFiles/gtest.dir/all:
 	$(MAKE) $(MAKESILENT) -f gtest/googletest/CMakeFiles/gtest.dir/build.make gtest/googletest/CMakeFiles/gtest.dir/depend
 	$(MAKE) $(MAKESILENT) -f gtest/googletest/CMakeFiles/gtest.dir/build.make gtest/googletest/CMakeFiles/gtest.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=27,28 "Built target gtest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=34,35 "Built target gtest"
 .PHONY : gtest/googletest/CMakeFiles/gtest.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3991,7 +4020,7 @@ gtest/googletest/CMakeFiles/gtest.dir/clean:
 gtest/googletest/CMakeFiles/gtest_main.dir/all: gtest/googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) $(MAKESILENT) -f gtest/googletest/CMakeFiles/gtest_main.dir/build.make gtest/googletest/CMakeFiles/gtest_main.dir/depend
 	$(MAKE) $(MAKESILENT) -f gtest/googletest/CMakeFiles/gtest_main.dir/build.make gtest/googletest/CMakeFiles/gtest_main.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=29,30 "Built target gtest_main"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=36,37 "Built target gtest_main"
 .PHONY : gtest/googletest/CMakeFiles/gtest_main.dir/all
 
 # Build rule for subdir invocation for target.

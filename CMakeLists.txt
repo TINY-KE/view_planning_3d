@@ -275,3 +275,22 @@ target_link_libraries(error_plane_endlink_debug
               Boost::system
               ${GTSAM_LIBRARIES} gpmp2
               )
+
+add_executable(TestBboxPlaneArmLink 
+              src_example/TestBboxPlaneArmLink.cpp
+              src_object/MapObject.cpp
+              src_object/Converter.cc
+              src_object/core/Plane.cpp
+              src_object/core/ConstrainPlane.cpp
+              src_object/core/Ellipsoid.cpp
+              # src_object/
+              )
+target_link_libraries(TestBboxPlaneArmLink   
+              ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} 
+              utils
+              Polygon
+              # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
+              Boost::filesystem
+              Boost::system
+              ${GTSAM_LIBRARIES} gpmp2
+              )

@@ -137,6 +137,7 @@
 /home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles/utils.dir
 /home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles/error_cube_camera_debug.dir
 /home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles/error_plane_endlink_debug.dir
+/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles/TestBboxPlaneArmLink.dir
 /home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles/test.dir
 /home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles/edit_cache.dir
 /home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles/rebuild_cache.dir

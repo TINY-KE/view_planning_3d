@@ -26,6 +26,8 @@ typedef Eigen::Matrix<double, 6, 6> Matrix6d;
 namespace g2o
 {
 
+
+
 class plane;
 class ConstrainPlane;
 class ellipsoid{

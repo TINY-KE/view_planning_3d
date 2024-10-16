@@ -1979,6 +1979,19 @@ error_plane_endlink_debug/fast:
 .PHONY : error_plane_endlink_debug/fast
 
 #=============================================================================
+# Target rules for targets named TestBboxPlaneArmLink
+
+# Build rule for target.
+TestBboxPlaneArmLink: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 TestBboxPlaneArmLink
+.PHONY : TestBboxPlaneArmLink
+
+# fast build rule for target.
+TestBboxPlaneArmLink/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/build
+.PHONY : TestBboxPlaneArmLink/fast
+
+#=============================================================================
 # Target rules for targets named gmock
 
 # Build rule for target.
@@ -2043,6 +2056,30 @@ Polygon/fast:
 	$(MAKE) $(MAKESILENT) -f src_object/Polygon/CMakeFiles/Polygon.dir/build.make src_object/Polygon/CMakeFiles/Polygon.dir/build
 .PHONY : Polygon/fast
 
+src_example/TestBboxPlaneArmLink.o: src_example/TestBboxPlaneArmLink.cpp.o
+.PHONY : src_example/TestBboxPlaneArmLink.o
+
+# target to build an object file
+src_example/TestBboxPlaneArmLink.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_example/TestBboxPlaneArmLink.cpp.o
+.PHONY : src_example/TestBboxPlaneArmLink.cpp.o
+
+src_example/TestBboxPlaneArmLink.i: src_example/TestBboxPlaneArmLink.cpp.i
+.PHONY : src_example/TestBboxPlaneArmLink.i
+
+# target to preprocess a source file
+src_example/TestBboxPlaneArmLink.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_example/TestBboxPlaneArmLink.cpp.i
+.PHONY : src_example/TestBboxPlaneArmLink.cpp.i
+
+src_example/TestBboxPlaneArmLink.s: src_example/TestBboxPlaneArmLink.cpp.s
+.PHONY : src_example/TestBboxPlaneArmLink.s
+
+# target to generate assembly for a file
+src_example/TestBboxPlaneArmLink.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_example/TestBboxPlaneArmLink.cpp.s
+.PHONY : src_example/TestBboxPlaneArmLink.cpp.s
+
 src_object/Converter.o: src_object/Converter.cc.o
 .PHONY : src_object/Converter.o
 
@@ -2050,6 +2087,7 @@ src_object/Converter.o: src_object/Converter.cc.o
 src_object/Converter.cc.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/Converter.cc.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/Converter.cc.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/Converter.cc.o
 .PHONY : src_object/Converter.cc.o
 
 src_object/Converter.i: src_object/Converter.cc.i
@@ -2059,6 +2097,7 @@ src_object/Converter.i: src_object/Converter.cc.i
 src_object/Converter.cc.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/Converter.cc.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/Converter.cc.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/Converter.cc.i
 .PHONY : src_object/Converter.cc.i
 
 src_object/Converter.s: src_object/Converter.cc.s
@@ -2068,6 +2107,7 @@ src_object/Converter.s: src_object/Converter.cc.s
 src_object/Converter.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/Converter.cc.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/Converter.cc.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/Converter.cc.s
 .PHONY : src_object/Converter.cc.s
 
 src_object/MapObject.o: src_object/MapObject.cpp.o
@@ -2077,6 +2117,7 @@ src_object/MapObject.o: src_object/MapObject.cpp.o
 src_object/MapObject.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/MapObject.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/MapObject.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/MapObject.cpp.o
 .PHONY : src_object/MapObject.cpp.o
 
 src_object/MapObject.i: src_object/MapObject.cpp.i
@@ -2086,6 +2127,7 @@ src_object/MapObject.i: src_object/MapObject.cpp.i
 src_object/MapObject.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/MapObject.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/MapObject.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/MapObject.cpp.i
 .PHONY : src_object/MapObject.cpp.i
 
 src_object/MapObject.s: src_object/MapObject.cpp.s
@@ -2095,6 +2137,7 @@ src_object/MapObject.s: src_object/MapObject.cpp.s
 src_object/MapObject.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/MapObject.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/MapObject.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/MapObject.cpp.s
 .PHONY : src_object/MapObject.cpp.s
 
 src_object/core/ConstrainPlane.o: src_object/core/ConstrainPlane.cpp.o
@@ -2104,6 +2147,7 @@ src_object/core/ConstrainPlane.o: src_object/core/ConstrainPlane.cpp.o
 src_object/core/ConstrainPlane.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/ConstrainPlane.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/ConstrainPlane.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/ConstrainPlane.cpp.o
 .PHONY : src_object/core/ConstrainPlane.cpp.o
 
 src_object/core/ConstrainPlane.i: src_object/core/ConstrainPlane.cpp.i
@@ -2113,6 +2157,7 @@ src_object/core/ConstrainPlane.i: src_object/core/ConstrainPlane.cpp.i
 src_object/core/ConstrainPlane.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/ConstrainPlane.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/ConstrainPlane.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/ConstrainPlane.cpp.i
 .PHONY : src_object/core/ConstrainPlane.cpp.i
 
 src_object/core/ConstrainPlane.s: src_object/core/ConstrainPlane.cpp.s
@@ -2122,6 +2167,7 @@ src_object/core/ConstrainPlane.s: src_object/core/ConstrainPlane.cpp.s
 src_object/core/ConstrainPlane.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/ConstrainPlane.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/ConstrainPlane.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/ConstrainPlane.cpp.s
 .PHONY : src_object/core/ConstrainPlane.cpp.s
 
 src_object/core/Ellipsoid.o: src_object/core/Ellipsoid.cpp.o
@@ -2131,6 +2177,7 @@ src_object/core/Ellipsoid.o: src_object/core/Ellipsoid.cpp.o
 src_object/core/Ellipsoid.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Ellipsoid.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Ellipsoid.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/Ellipsoid.cpp.o
 .PHONY : src_object/core/Ellipsoid.cpp.o
 
 src_object/core/Ellipsoid.i: src_object/core/Ellipsoid.cpp.i
@@ -2140,6 +2187,7 @@ src_object/core/Ellipsoid.i: src_object/core/Ellipsoid.cpp.i
 src_object/core/Ellipsoid.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Ellipsoid.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Ellipsoid.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/Ellipsoid.cpp.i
 .PHONY : src_object/core/Ellipsoid.cpp.i
 
 src_object/core/Ellipsoid.s: src_object/core/Ellipsoid.cpp.s
@@ -2149,6 +2197,7 @@ src_object/core/Ellipsoid.s: src_object/core/Ellipsoid.cpp.s
 src_object/core/Ellipsoid.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Ellipsoid.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Ellipsoid.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/Ellipsoid.cpp.s
 .PHONY : src_object/core/Ellipsoid.cpp.s
 
 src_object/core/Plane.o: src_object/core/Plane.cpp.o
@@ -2158,6 +2207,7 @@ src_object/core/Plane.o: src_object/core/Plane.cpp.o
 src_object/core/Plane.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Plane.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Plane.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/Plane.cpp.o
 .PHONY : src_object/core/Plane.cpp.o
 
 src_object/core/Plane.i: src_object/core/Plane.cpp.i
@@ -2167,6 +2217,7 @@ src_object/core/Plane.i: src_object/core/Plane.cpp.i
 src_object/core/Plane.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Plane.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Plane.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/Plane.cpp.i
 .PHONY : src_object/core/Plane.cpp.i
 
 src_object/core/Plane.s: src_object/core/Plane.cpp.s
@@ -2176,6 +2227,7 @@ src_object/core/Plane.s: src_object/core/Plane.cpp.s
 src_object/core/Plane.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Plane.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Plane.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/Plane.cpp.s
 .PHONY : src_object/core/Plane.cpp.s
 
 src_object/error_cube_camera_debug.o: src_object/error_cube_camera_debug.cpp.o
@@ -2609,6 +2661,7 @@ help:
 	@echo "... visualization_msgs_generate_messages_nodejs"
 	@echo "... visualization_msgs_generate_messages_py"
 	@echo "... Polygon"
+	@echo "... TestBboxPlaneArmLink"
 	@echo "... circle_wam"
 	@echo "... ellipse_debug"
 	@echo "... error_cube_camera_debug"
@@ -2623,6 +2676,9 @@ help:
 	@echo "... utils"
 	@echo "... wam_getfromik"
 	@echo "... wam_ik_only_endpoint"
+	@echo "... src_example/TestBboxPlaneArmLink.o"
+	@echo "... src_example/TestBboxPlaneArmLink.i"
+	@echo "... src_example/TestBboxPlaneArmLink.s"
 	@echo "... src_object/Converter.o"
 	@echo "... src_object/Converter.i"
 	@echo "... src_object/Converter.s"

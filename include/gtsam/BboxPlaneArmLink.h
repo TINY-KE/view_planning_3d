@@ -14,11 +14,41 @@
 #include <gtsam/base/Vector.h>
 #include <gtsam/geometry/Point3.h>
 #include <gtsam/nonlinear/NonlinearFactor.h>
+#include <gtsam/geometry/Pose3.h>
 
 #include <iostream>
 #include <vector>
 
 #include "core/Plane.h"
+
+typedef Eigen::Matrix<double, 3, 1> Vector3d;
+typedef Eigen::Matrix<double, 9, 1> Vector9d;
+typedef Eigen::Matrix<double, 9, 9> Matrix9d;
+typedef Eigen::Matrix<double, 5, 5> Matrix5d;
+typedef Eigen::Matrix<double, 3, 8> Matrix38d;
+typedef Eigen::Matrix<double, 10, 1> Vector10d;
+typedef Eigen::Matrix<double, 6, 1> Vector6d;
+typedef Eigen::Matrix<double, 5, 1> Vector5d;
+typedef Eigen::Matrix<double, 2, 1> Vector2d;
+typedef Eigen::Matrix<double, 4, 1> Vector4d;
+typedef Eigen::Matrix<double, 6, 6> Matrix6d;
+typedef Eigen::Matrix<double, 3, 3> Matrix3d;
+
+namespace g2o {
+  g2o::SE3Quat toSE3Quat(const Eigen::Matrix4f &T)
+  {
+      Eigen::Matrix<double, 3, 3> R = T.topLeftCorner<3, 3>().cast<double>();
+      Eigen::Matrix<double, 3, 1> t = T.topRightCorner<3, 1>().cast<double>();
+      return g2o::SE3Quat(R, t);
+  }
+
+  Eigen::Matrix4f toMatrix4f(const g2o::SE3Quat &SE3)
+  {
+      Eigen::Matrix4f eigMat = SE3.to_homogeneous_matrix().cast<float>();
+      return eigMat;
+  }
+
+}
 
 namespace gpmp2 {
 
@@ -45,6 +75,13 @@ class BboxPlaneArmLink
   // arm: planar one, all alpha = 0
   const Robot& robot_;
 
+  // 图像宽度和高度
+  int miImageCols; // = Config::Get<int>("Camera.width");
+  int miImageRows; // = Config::Get<int>("Camera.height");
+  Matrix3d mCalib;
+  g2o::plane* mPlaneLow;
+
+
  public:
   /// shorthand for a smart pointer to a factor
   typedef std::shared_ptr<This> shared_ptr;
@@ -60,22 +97,31 @@ class BboxPlaneArmLink
    */
   BboxPlaneArmLink(gtsam::Key poseKey, const Robot& robot,
                     double cost_sigma,
-                    double epsilon)
+                    double epsilon,
+                    int width, int height, Matrix3d calib)
       : Base(gtsam::noiseModel::Isotropic::Sigma(robot.nr_body_spheres(),
                                                  cost_sigma),
              poseKey),
         epsilon_(epsilon),
-        robot_(robot)
-        {}
+        robot_(robot),
+        miImageCols(width),
+        miImageRows(height),
+        mCalib(calib)
+        {
+          GenerateBboxBlowPlane_g2o();
+        }
 
   virtual ~BboxPlaneArmLink() {}
 
   /// error function
   /// numerical jacobians / analytic jacobians from cost function
+  // zhjd: 此处的Robot::Pose对应的是gtsam::Vector。   根据 ForwardKinematics<gtsam::Vector, gtsam::Vector>。 因此这里的pose就是关节角度。
   gtsam::Vector evaluateError(
       const typename Robot::Pose& conf,
       gtsam::OptionalMatrixType H1 = nullptr) const override;
 
+   g2o::plane*  computeplane(
+          const typename Robot::Pose& conf, bool output = false);
   /// @return a deep copy of this factor
   virtual gtsam::NonlinearFactor::shared_ptr clone() const {
     return std::static_pointer_cast<gtsam::NonlinearFactor>(
@@ -99,18 +145,17 @@ class BboxPlaneArmLink
         "NoiseModelFactor1", boost::serialization::base_object<Base>(*this));
   }
 #endif
+
+
+private:
+  Eigen::Matrix3Xd generateProjectionMatrix();
+  Eigen::MatrixXd fromDetectionsToLines();
+  Eigen::MatrixXd GenerateBboxBlowPlane();
+  void GenerateBboxBlowPlane_g2o();
+
 };
 
 }  // namespace gpmp2
-
-
-
-
-
-
-
-
-
 
 
 
@@ -153,8 +198,6 @@ double hingeLossFovCost(
 
 
 
-
-
 #include <gpmp2/obstacle/ObstacleCost.h>
 
 using namespace std;
@@ -163,12 +206,80 @@ using namespace gtsam;
 namespace gpmp2 {
 
  /* ************************************************************************** */
+
+ template <class ROBOT>
+ g2o::plane*  BboxPlaneArmLink<ROBOT>::computeplane(
+     const typename Robot::Pose& conf, bool output)  {
+
+  // 更改平面的位置
+  using namespace gtsam;
+  // 相机相对于endlink的位姿
+  Eigen::Matrix4f T_endlink_to_c;
+  T_endlink_to_c << 0, 0, 1, 0.02,
+                    -1, 0, 0, -0.013,
+                    0, -1, 0, 0.13,
+                    0, 0, 0, 1;
+  // 机械臂endlink的位姿
+  std::vector<Pose3> joint_pos;   //  link poses in 3D work space
+  std::vector<Matrix> J_jpx_jp;   //  et al. optional Jacobians
+  robot_.fk_model().forwardKinematics(conf, {}, joint_pos);
+  Pose3 pose_end_link = joint_pos[joint_pos.size()-1];
+  if(output)
+      pose_end_link.print("[zhjd-debug] pose_end_link: \n");
+  // 将 gtsam::Pose3 转换为 Eigen::Matrix4f
+  Eigen::Matrix4f T_baselink_endlink = Eigen::Matrix4f::Identity();  // 创建 4x4 单位矩阵
+  // 获取 gtsam::Pose3 的 3x3 旋转矩阵并赋值到 eigenMatrix 的左上角
+  T_baselink_endlink.block<3, 3>(0, 0) = pose_end_link.rotation().matrix().cast<float>();
+  // 获取 gtsam::Pose3 的 3x1 平移向量并赋值到 eigenMatrix 的右侧
+  T_baselink_endlink.block<3, 1>(0, 3) << pose_end_link.x(), pose_end_link.y(), pose_end_link.z();
+  if(output)
+      std::cout<<"[zhjd-debug] T_baselink_endlink: "<<std::endl<<T_baselink_endlink<<std::endl;
+
+  Eigen::Matrix4f T_baselink_2_c = T_baselink_endlink * T_endlink_to_c;
+  g2o::SE3Quat T_baselink_2_c_g2o = g2o::toSE3Quat(T_baselink_2_c);
+  if(output)
+      std::cout<<"[zhjd-debug] T_baselink_2_c_g2o: "<<std::endl<<T_baselink_2_c_g2o.to_homogeneous_matrix()<<std::endl;
+
+  // 将平面变到baselink坐标系
+  g2o::plane* pl_in_baselink = new g2o::plane(*mPlaneLow);
+  pl_in_baselink->transform(T_baselink_2_c_g2o);
+
+  return pl_in_baselink;
+ }
+
+
+
+
  template <class ROBOT>
  gtsam::Vector BboxPlaneArmLink<ROBOT>::evaluateError(
      const typename Robot::Pose& conf, gtsam::OptionalMatrixType H1) const {
+  
+  // 更改平面的位置
+  using namespace gtsam;
+  // 相机相对于endlink的位姿
+  Eigen::Matrix4f T_endlink_to_c;
+  T_endlink_to_c << 0, 0, 1, 0.02,
+                    -1, 0, 0, -0.013,
+                    0, -1, 0, 0.13,
+                    0, 0, 0, 1;
+  // 机械臂endlink的位姿
+  std::vector<Pose3> joint_pos;   //  link poses in 3D work space
+  std::vector<Matrix> J_jpx_jp;   //  et al. optional Jacobians
+  robot_.fk_model().forwardKinematics(conf, {}, joint_pos);
+  Pose3 pose_end_link = joint_pos[joint_pos.size()-1];
+  // 将 gtsam::Pose3 转换为 Eigen::Matrix4f
+  Eigen::Matrix4f T_baselink_endlink = Eigen::Matrix4f::Identity();  // 创建 4x4 单位矩阵
+  // 获取 gtsam::Pose3 的 3x3 旋转矩阵并赋值到 eigenMatrix 的左上角
+  T_baselink_endlink.block<3, 3>(0, 0) = pose_end_link.rotation().matrix().cast<float>();
+  // 获取 gtsam::Pose3 的 3x1 平移向量并赋值到 eigenMatrix 的右侧
+  T_baselink_endlink.block<3, 1>(0, 3) << pose_end_link.x(), pose_end_link.y(), pose_end_link.z();
 
-  // 计算视场的下平面
-  g2o::plane* plane_low;
+  Eigen::Matrix4f T_baselink_2_c = T_baselink_endlink * T_endlink_to_c;
+  g2o::SE3Quat T_baselink_2_c_g2o = g2o::toSE3Quat(T_baselink_2_c);
+
+  // 将平面变到baselink坐标系
+  g2o::plane* pl_in_baselink = new g2o::plane(*mPlaneLow);
+  pl_in_baselink->transform(T_baselink_2_c_g2o);
 
   // if Jacobians used, initialize as zeros
   // size: arm_nr_points_ * DOF
@@ -191,7 +302,7 @@ namespace gpmp2 {
 
    if (H1) {
     Matrix13 Jerr_point;
-    err(sph_idx) = hingeLossFovCost(sph_centers[sph_idx], plane_low,
+    err(sph_idx) = hingeLossFovCost(sph_centers[sph_idx], pl_in_baselink,
                                          total_eps, Jerr_point);
 
     // chain rules
@@ -199,12 +310,114 @@ namespace gpmp2 {
 
    } else {
     err(sph_idx) =
-        hingeLossFovCost(sph_centers[sph_idx], plane_low, total_eps);
+        hingeLossFovCost(sph_centers[sph_idx], pl_in_baselink, total_eps);
    }
   }
 
   return err;
  }
+
+
+
+ template <class ROBOT>
+Eigen::Matrix3Xd BboxPlaneArmLink<ROBOT>::generateProjectionMatrix() {
+    Eigen::Matrix3Xd identity_lefttop;
+    identity_lefttop.resize(3, 4);
+    identity_lefttop.col(3) = Vector3d(0, 0, 0);
+    identity_lefttop.topLeftCorner<3, 3>() = Matrix3d::Identity(3, 3);
+
+    Eigen::Matrix3Xd proj_mat = mCalib * identity_lefttop;
+
+    g2o::SE3Quat campose_wc = g2o::SE3Quat();
+    g2o::SE3Quat campose_cw = campose_wc.inverse();
+    proj_mat = proj_mat * campose_cw.to_homogeneous_matrix();
+
+    return proj_mat;
+}
+
+ template <class ROBOT>
+Eigen::MatrixXd BboxPlaneArmLink<ROBOT>::fromDetectionsToLines() {
+    bool flag_openFilter = false; // filter those lines lying on the image boundary
+
+    double x1 = 0;
+    double y1 = 0;
+    double x2 = miImageCols;
+    double y2 = miImageRows;
+
+    // line4表示一条底部水平线的平面方程，其方程为： y = y2
+    // 通过向量形式表示为： 0*x + 1*y - y2 = 0
+    Eigen::Vector3d line4(0, 1, -y2);
+
+    // those lying on the image boundary have been marked -1
+    Eigen::MatrixXd line_selected(3, 0);
+    Eigen::MatrixXd line_selected_none(3, 0);
+
+    int config_border_pixel = 10;
+    
+    // if (!flag_openFilter || (x1 > config_border_pixel && x1 < miImageCols - config_border_pixel)) {
+    //     line_selected.conservativeResize(3, line_selected.cols() + 1);
+    //     line_selected.col(line_selected.cols() - 1) = line1;
+    // }
+    // if (!flag_openFilter || (y1 > config_border_pixel && y1 < miImageRows - config_border_pixel)) {
+    //     line_selected.conservativeResize(3, line_selected.cols() + 1);
+    //     line_selected.col(line_selected.cols() - 1) = line2;
+    // }
+    // if (!flag_openFilter || (x2 > config_border_pixel && x2 < miImageCols - config_border_pixel)) {
+    //     line_selected.conservativeResize(3, line_selected.cols() + 1);
+    //     line_selected.col(line_selected.cols() - 1) = line3;
+    // }
+    // if (!flag_openFilter || (y2 > config_border_pixel && y2 < miImageRows - config_border_pixel)) {
+        // 将其列数增加 1。
+        line_selected.conservativeResize(3, line_selected.cols() + 1);
+        // 将向量 line4 赋值给矩阵 line_selected 的最后一列。
+        line_selected.col(line_selected.cols() - 1) = line4;
+    // }
+
+    return line_selected;
+}
+
+ template <class ROBOT>
+Eigen::MatrixXd BboxPlaneArmLink<ROBOT>::GenerateBboxBlowPlane() {
+        Eigen::MatrixXd planes_all(4, 0);
+        // std::cout << " [debug] calib : \n " << calib << std::endl;
+        // get projection matrix
+        
+        Eigen::MatrixXd P = generateProjectionMatrix();
+
+        Eigen::MatrixXd low_line = fromDetectionsToLines();
+        Eigen::MatrixXd low_plane = P.transpose() * low_line;
+
+        // 相机z轴方向，各个平面的normal应该与camera_direction 夹角小于90度
+        Eigen::Vector3d camera_direction(0,0,1);  // Z轴方向
+
+        // add to matrix
+        for (int m = 0; m < low_plane.cols(); m++) {
+            // 获取平面的法向量 (a, b, c)
+            Eigen::Vector3d normal = low_plane.block<3, 1>(0, m);
+
+            // 检查法向量与z轴朝向相同，如果不是则反转法向量
+            if (normal.dot(camera_direction) < 0) {
+                // 反转法向量方向
+                low_plane.col(m) = -low_plane.col(m);
+            }
+
+            planes_all.conservativeResize(planes_all.rows(), planes_all.cols() + 1);
+            planes_all.col(planes_all.cols() - 1) = low_plane.col(m);
+        }
+
+        return planes_all;
+    }
+
+
+ template <class ROBOT>
+void BboxPlaneArmLink<ROBOT>::GenerateBboxBlowPlane_g2o() {
+      Eigen::MatrixXd mPlanesParamLocal_Col = GenerateBboxBlowPlane();  // attention: store as 列
+      Eigen::MatrixXd mPlanesParamLocal = mPlanesParamLocal_Col.transpose(); 
+      Eigen::Vector4d vec = mPlanesParamLocal.row(0);
+      mPlaneLow = new g2o::plane(vec.head(4));
+}
+
+
 
 }  // namespace gpmp2
 

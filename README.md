@@ -3,7 +3,17 @@
     source ws_gazebo_moveit/devel/setup.bash   &&  roslaunch wam_arm_moveit wam_kinectv1_bringup_moveit_onlyrobot.launch 
 + 视点规划
     rosrun view_planning  gpmp_wam_getfromik 
-
++ rosrun tf tf_echo /wam/wrist_palm_link /camera_rgb_optical_frame
+    At time 0.000
+    - Translation: [0.020, -0.013, 0.130]
+    - Rotation: in Quaternion [-0.500, 0.500, -0.500, 0.500]
+                in RPY (radian) [-1.571, -0.000, -1.571]
+                in RPY (degree) [-90.000, -0.000, -90.000]
+        旋转矩阵 [0 0 1 0.02; -1 0 0 -0.013; 0 -1 0 0.13; 0 0 0 1]
+        GTSAM:
+        Rot3 R = Rot3::RzRyRx(-1.571,  -0.000, -1.571);
+        Point3 t(0.020, -0.013, 0.130);
+        Pose3 pose_camera_to_endlink(R, t);  // 第一个位姿 (T1)
 
 # 利用椭圆+圆+moveit ik，实现环绕观测 commit 72c828759ba615f3a0c04c02b9d2e436e54966b6
 + gpmp_wam_Reproduce_Matlab
@@ -29,7 +39,7 @@
 + 通过三角面，在rviz中可视化相机视场
 
 
-# 计算平面和视场包络面的距离
+# 计算点和视场包络面的距离，并构建误差因子  commit 211e71a33b8799756cd2af9a3b4b33c44e274f12
 + 建立专门的可视化线程
 + 实现了计算椭球体近端点与视场四个平面距离（四个平面的normal与相机z轴相同）的计算
 + 创建 BboxPlaneArmLink.h; ERROR为最小阈值距离减去各关节点与''视场下平面''的距离； ERROR导数与平面的normal相同；
@@ -37,7 +47,8 @@
 
 
 # 自制gtsam因子 
-+ 待：验证BboxPlaneArmLink
++ 验证BboxPlaneArmLink的Error基本正确
++ 待可视化机械臂的避障球    
 + 问题：引入lzw的椭球。椭球会不会和平面的距离计算函数（拉格朗日）会不会和gtsam冲突？
 + 构建BboxPlaneEllipsoid
 

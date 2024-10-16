@@ -18,6 +18,7 @@
 #include "Object.h"
 #include "MapObject.h"
 #include "ConverterTools.h"
+// #include "core/Plane.h"
 
 geometry_msgs::Pose  get_link_pose(ros::NodeHandle& n, std::string link_name, std::string reference_name = "world", bool output = false){
     ros::ServiceClient get_link_sate_client = n.serviceClient<gazebo_msgs::GetLinkState>("/gazebo/get_link_state");
@@ -117,7 +118,31 @@ void setPose(ros::NodeHandle& n, std::string name, double x, double y, double z,
     set_model_state_client.call(object_state);
 }
 
+geometry_msgs::TransformStamped getTFTransform(std::string parent_name, std::string source_name, tf::Transform& out) {
+    tf2_ros::Buffer tf_buffer;
+    tf2_ros::TransformListener tf_listener(tf_buffer);
 
+    geometry_msgs::TransformStamped transform_stamped;
+
+    transform_stamped = tf_buffer.lookupTransform(parent_name, source_name, ros::Time(0), ros::Duration(1.0));
+
+    // 将 TransformStamped 转换为 PoseStamped
+    geometry_msgs::PoseStamped end_pose;
+    end_pose.header.stamp = transform_stamped.header.stamp;
+    end_pose.header.frame_id = transform_stamped.header.frame_id;
+
+    // 设置位置
+    end_pose.pose.position.x = transform_stamped.transform.translation.x;
+    end_pose.pose.position.y = transform_stamped.transform.translation.y;
+    end_pose.pose.position.z = transform_stamped.transform.translation.z;
+
+    // 设置方向（四元数）
+    end_pose.pose.orientation = transform_stamped.transform.rotation;
+
+    // // 输出相机在 odom 坐标系下的位姿
+    // ROS_INFO_STREAM("Pose of camera_rgb_frame in odom: \n" << end_pose);
+    return transform_stamped;
+}
 
 class Visualize_Tools{
     public:
@@ -131,7 +156,7 @@ class Visualize_Tools{
             publisher_ellipsoid = nh.advertise<visualization_msgs::Marker>("ellipsoid", 1000);
             point_pub = nh.advertise<visualization_msgs::Marker>("/point", 10);
             bbox_plane_pub = nh.advertise<visualization_msgs::Marker>("bbox_plane", 1);
-
+            normal_plane_pub = nh.advertise<visualization_msgs::Marker>("normal_plane", 1);
         }
         void visualize_geometry_pose(geometry_msgs::Pose pose, std::string frame_id = "world",  double id_num = 1,  std::string name = "no-name", bool output = false);
         void visualize_object(SdfObject& ob, std::string frame_id);
@@ -140,6 +165,7 @@ class Visualize_Tools{
         void visualize_ellipsoid(double x, double y, double z, double a, double b, double c, double roll, double pitch, double yaw, std::string frame_id, double id);
         void visualize_point(Eigen::Vector3d& p , std::string frame_id, double id);
         void visualize_plane_triangle_bypoint(std::vector<geometry_msgs::Point>& points, int id, std::string frame_id = "world");
+        void visualize_plane_rectangle(Eigen::Vector4d plane_param, int id, std::string frame_id = "world");
 
 
         void Run();
@@ -154,11 +180,15 @@ class Visualize_Tools{
         ros::Publisher publisher_ellipsoid;
         ros::Publisher point_pub;
         ros::Publisher bbox_plane_pub;
+        ros::Publisher normal_plane_pub;
 
     public:
         std::vector<std::vector<geometry_msgs::Point>> BboxPlanesTrianglePointsInWorld;
 
         std::vector<MapObject*> MapObjects;
+        // std::vector<g2o::plane*> MapPlanes;
+        std::vector<Eigen::Vector4d> MapPlaneNormals;
+
 };
 
 
@@ -176,7 +206,10 @@ void Visualize_Tools::Run()
             visualize_plane_triangle_bypoint(BboxPlanesTrianglePointsInWorld[i], i, "world");
             // std::cout << "Publishing triangle marker..." << std::endl;
         }
-        
+
+        for(int i=0; i<MapPlaneNormals.size(); i++) {
+            visualize_plane_rectangle(MapPlaneNormals[i], i, "world");
+        }
         r.sleep();
 
     }
@@ -393,6 +426,55 @@ void publish_plane_triangle(ros::Publisher& marker_pub, Eigen::Vector4d plane_pa
 
     // 发布Marker消息
     marker_pub.publish(marker);
+}
+
+// 以三角的形式显示平面
+void  Visualize_Tools::visualize_plane_rectangle(Eigen::Vector4d plane_param, int id, std::string frame_id) {
+    double a = plane_param[0];
+    double b = plane_param[1];
+    double c = plane_param[2];
+    double d = plane_param[3];
+
+    // 创建一个Marker消息
+    // 创建一个 Marker 消息
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "world";  // 使用世界坐标系
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "rectangle";
+    marker.id = id;
+    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;  // 使用三角形列表
+    marker.action = visualization_msgs::Marker::ADD;
+
+    // 设置颜色和透明度
+    marker.color.a = 0.2;  // 不透明
+    marker.color.r = 1.0;  // 红色
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+
+    // 设置比例
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+
+    double size = 2.0;
+    geometry_msgs::Point p1 = generatePointOnPlane(a, b, c, d, size, size);
+    geometry_msgs::Point p2 = generatePointOnPlane(a, b, c, d, size, -1*size);
+    geometry_msgs::Point p3 = generatePointOnPlane(a, b, c, d, -1*size, size);
+    geometry_msgs::Point p4 = generatePointOnPlane(a, b, c, d, -1*size, -1*size);
+    // 生成平面上的点
+    std::vector<geometry_msgs::Point> points;
+    points.push_back(p1);
+    points.push_back(p2);
+    points.push_back(p3);
+
+    points.push_back(p4);
+    points.push_back(p2);
+    points.push_back(p3);
+
+    marker.points = points;
+
+    // 发布Marker消息
+    normal_plane_pub.publish(marker);
 }
 
 
