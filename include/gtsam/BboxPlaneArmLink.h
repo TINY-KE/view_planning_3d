@@ -211,40 +211,40 @@ namespace gpmp2 {
  g2o::plane*  BboxPlaneArmLink<ROBOT>::computeplane(
      const typename Robot::Pose& conf, bool output)  {
 
-  // 更改平面的位置
-  using namespace gtsam;
-  // 相机相对于endlink的位姿
-  Eigen::Matrix4f T_endlink_to_c;
-  T_endlink_to_c << 0, 0, 1, 0.02,
-                    -1, 0, 0, -0.013,
-                    0, -1, 0, 0.13,
-                    0, 0, 0, 1;
-  // 机械臂endlink的位姿
-  std::vector<Pose3> joint_pos;   //  link poses in 3D work space
-  std::vector<Matrix> J_jpx_jp;   //  et al. optional Jacobians
-  robot_.fk_model().forwardKinematics(conf, {}, joint_pos);
-  Pose3 pose_end_link = joint_pos[joint_pos.size()-1];
-  if(output)
-      pose_end_link.print("[zhjd-debug] pose_end_link: \n");
-  // 将 gtsam::Pose3 转换为 Eigen::Matrix4f
-  Eigen::Matrix4f T_baselink_endlink = Eigen::Matrix4f::Identity();  // 创建 4x4 单位矩阵
-  // 获取 gtsam::Pose3 的 3x3 旋转矩阵并赋值到 eigenMatrix 的左上角
-  T_baselink_endlink.block<3, 3>(0, 0) = pose_end_link.rotation().matrix().cast<float>();
-  // 获取 gtsam::Pose3 的 3x1 平移向量并赋值到 eigenMatrix 的右侧
-  T_baselink_endlink.block<3, 1>(0, 3) << pose_end_link.x(), pose_end_link.y(), pose_end_link.z();
-  if(output)
-      std::cout<<"[zhjd-debug] T_baselink_endlink: "<<std::endl<<T_baselink_endlink<<std::endl;
+      // 更改平面的位置
+      using namespace gtsam;
+      // 相机相对于endlink的位姿
+      Eigen::Matrix4f T_endlink_to_c;
+      T_endlink_to_c << 0, 0, 1, 0.02,
+                        -1, 0, 0, -0.013,
+                        0, -1, 0, 0.07,  //实际为0.13，改为0.07
+                        0, 0, 0, 1;
+      // 机械臂endlink的位姿
+      std::vector<Pose3> joint_pos;   //  link poses in 3D work space
+      std::vector<Matrix> J_jpx_jp;   //  et al. optional Jacobians
+      robot_.fk_model().forwardKinematics(conf, {}, joint_pos);
+      Pose3 pose_end_link = joint_pos[joint_pos.size()-1];
+      if(output)
+          pose_end_link.print("[zhjd-debug] pose_end_link: \n");
+      // 将 gtsam::Pose3 转换为 Eigen::Matrix4f
+      Eigen::Matrix4f T_baselink_endlink = Eigen::Matrix4f::Identity();  // 创建 4x4 单位矩阵
+      // 获取 gtsam::Pose3 的 3x3 旋转矩阵并赋值到 eigenMatrix 的左上角
+      T_baselink_endlink.block<3, 3>(0, 0) = pose_end_link.rotation().matrix().cast<float>();
+      // 获取 gtsam::Pose3 的 3x1 平移向量并赋值到 eigenMatrix 的右侧
+      T_baselink_endlink.block<3, 1>(0, 3) << pose_end_link.x(), pose_end_link.y(), pose_end_link.z();
+      if(output)
+          std::cout<<"[zhjd-debug] T_baselink_endlink: "<<std::endl<<T_baselink_endlink<<std::endl;
 
-  Eigen::Matrix4f T_baselink_2_c = T_baselink_endlink * T_endlink_to_c;
-  g2o::SE3Quat T_baselink_2_c_g2o = g2o::toSE3Quat(T_baselink_2_c);
-  if(output)
-      std::cout<<"[zhjd-debug] T_baselink_2_c_g2o: "<<std::endl<<T_baselink_2_c_g2o.to_homogeneous_matrix()<<std::endl;
+      Eigen::Matrix4f T_baselink_2_c = T_baselink_endlink * T_endlink_to_c;
+      g2o::SE3Quat T_baselink_2_c_g2o = g2o::toSE3Quat(T_baselink_2_c);
+      if(output)
+          std::cout<<"[zhjd-debug] T_baselink_2_c_g2o: "<<std::endl<<T_baselink_2_c_g2o.to_homogeneous_matrix()<<std::endl;
 
-  // 将平面变到baselink坐标系
-  g2o::plane* pl_in_baselink = new g2o::plane(*mPlaneLow);
-  pl_in_baselink->transform(T_baselink_2_c_g2o);
+      // 将平面变到baselink坐标系
+      g2o::plane* pl_in_baselink = new g2o::plane(*mPlaneLow);
+      pl_in_baselink->transform(T_baselink_2_c_g2o);
 
-  return pl_in_baselink;
+      return pl_in_baselink;
  }
 
 
@@ -252,69 +252,74 @@ namespace gpmp2 {
 
  template <class ROBOT>
  gtsam::Vector BboxPlaneArmLink<ROBOT>::evaluateError(
-     const typename Robot::Pose& conf, gtsam::OptionalMatrixType H1) const {
-  
-  // 更改平面的位置
-  using namespace gtsam;
-  // 相机相对于endlink的位姿
-  Eigen::Matrix4f T_endlink_to_c;
-  T_endlink_to_c << 0, 0, 1, 0.02,
-                    -1, 0, 0, -0.013,
-                    0, -1, 0, 0.13,
-                    0, 0, 0, 1;
-  // 机械臂endlink的位姿
-  std::vector<Pose3> joint_pos;   //  link poses in 3D work space
-  std::vector<Matrix> J_jpx_jp;   //  et al. optional Jacobians
-  robot_.fk_model().forwardKinematics(conf, {}, joint_pos);
-  Pose3 pose_end_link = joint_pos[joint_pos.size()-1];
-  // 将 gtsam::Pose3 转换为 Eigen::Matrix4f
-  Eigen::Matrix4f T_baselink_endlink = Eigen::Matrix4f::Identity();  // 创建 4x4 单位矩阵
-  // 获取 gtsam::Pose3 的 3x3 旋转矩阵并赋值到 eigenMatrix 的左上角
-  T_baselink_endlink.block<3, 3>(0, 0) = pose_end_link.rotation().matrix().cast<float>();
-  // 获取 gtsam::Pose3 的 3x1 平移向量并赋值到 eigenMatrix 的右侧
-  T_baselink_endlink.block<3, 1>(0, 3) << pose_end_link.x(), pose_end_link.y(), pose_end_link.z();
+        const typename Robot::Pose& conf, gtsam::OptionalMatrixType H1) const {
 
-  Eigen::Matrix4f T_baselink_2_c = T_baselink_endlink * T_endlink_to_c;
-  g2o::SE3Quat T_baselink_2_c_g2o = g2o::toSE3Quat(T_baselink_2_c);
+      // 更改平面的位置
+      using namespace gtsam;
+      // 相机相对于endlink的位姿
+      Eigen::Matrix4f T_endlink_to_c;
+      T_endlink_to_c << 0, 0, 1, 0.02,
+                        -1, 0, 0, -0.013,
+                        0, -1, 0, 0.07,  //实际为0.13，改为0.07
+                        0, 0, 0, 1;
+      // 机械臂endlink的位姿
+      std::vector<Pose3> joint_pos;   //  link poses in 3D work space
+      std::vector<Matrix> J_jpx_jp;   //  et al. optional Jacobians
+      robot_.fk_model().forwardKinematics(conf, {}, joint_pos);
+      Pose3 pose_end_link = joint_pos[joint_pos.size()-1];
+      // 将 gtsam::Pose3 转换为 Eigen::Matrix4f
+      Eigen::Matrix4f T_baselink_endlink = Eigen::Matrix4f::Identity();  // 创建 4x4 单位矩阵
+      // 获取 gtsam::Pose3 的 3x3 旋转矩阵并赋值到 eigenMatrix 的左上角
+      T_baselink_endlink.block<3, 3>(0, 0) = pose_end_link.rotation().matrix().cast<float>();
+      // 获取 gtsam::Pose3 的 3x1 平移向量并赋值到 eigenMatrix 的右侧
+      T_baselink_endlink.block<3, 1>(0, 3) << pose_end_link.x(), pose_end_link.y(), pose_end_link.z();
 
-  // 将平面变到baselink坐标系
-  g2o::plane* pl_in_baselink = new g2o::plane(*mPlaneLow);
-  pl_in_baselink->transform(T_baselink_2_c_g2o);
+      Eigen::Matrix4f T_baselink_2_c = T_baselink_endlink * T_endlink_to_c;
+      g2o::SE3Quat T_baselink_2_c_g2o = g2o::toSE3Quat(T_baselink_2_c);
 
-  // if Jacobians used, initialize as zeros
-  // size: arm_nr_points_ * DOF
-  if (H1) *H1 = Matrix::Zero(robot_.nr_body_spheres(), robot_.dof());
+      // 将平面变到baselink坐标系
+      g2o::plane* pl_in_baselink = new g2o::plane(*mPlaneLow);
+      pl_in_baselink->transform(T_baselink_2_c_g2o);
 
-  // run forward kinematics of this configuration
-  vector<Point3> sph_centers;
-  vector<Matrix> J_px_jp;
-  if (H1)
-   robot_.sphereCenters(conf, sph_centers, &J_px_jp);
-  else
-   robot_.sphereCenters(conf, sph_centers);
+      // if Jacobians used, initialize as zeros
+      // size: arm_nr_points_ * DOF
+      if (H1) *H1 = Matrix::Zero(robot_.nr_body_spheres(), robot_.dof());
 
-  // allocate cost vector
-  Vector err(robot_.nr_body_spheres());
+      // run forward kinematics of this configuration
+      vector<Point3> sph_centers;
+      vector<Matrix> J_px_jp;
+      if (H1)
+       robot_.sphereCenters(conf, sph_centers, &J_px_jp);
+      else
+       robot_.sphereCenters(conf, sph_centers);
 
-  // for each point on arm stick, get error
-  for (size_t sph_idx = 0; sph_idx < robot_.nr_body_spheres(); sph_idx++) {
-   const double total_eps = robot_.sphere_radius(sph_idx) + epsilon_;
+      // allocate cost vector
+      Vector err(robot_.nr_body_spheres());
 
-   if (H1) {
-    Matrix13 Jerr_point;
-    err(sph_idx) = hingeLossFovCost(sph_centers[sph_idx], pl_in_baselink,
-                                         total_eps, Jerr_point);
+      // for each point on arm stick, get error
+      for (size_t sph_idx = 0; sph_idx < robot_.nr_body_spheres(); sph_idx++) {
+       const double total_eps = robot_.sphere_radius(sph_idx) + epsilon_;
 
-    // chain rules
-    H1->row(sph_idx) = Jerr_point * J_px_jp[sph_idx];
+                // 对于最后一个
+                if(sph_idx == robot_.nr_body_spheres()-1) {
 
-   } else {
-    err(sph_idx) =
-        hingeLossFovCost(sph_centers[sph_idx], pl_in_baselink, total_eps);
-   }
-  }
+                }
 
-  return err;
+               if (H1) {
+                Matrix13 Jerr_point;
+                err(sph_idx) = hingeLossFovCost(sph_centers[sph_idx], pl_in_baselink,
+                                                     total_eps, Jerr_point);
+
+                // chain rules
+                H1->row(sph_idx) = Jerr_point * J_px_jp[sph_idx];
+
+               } else {
+                err(sph_idx) =
+                    hingeLossFovCost(sph_centers[sph_idx], pl_in_baselink, total_eps);
+               }
+      }
+
+      return err;
  }
 
 

@@ -115,7 +115,7 @@ enum opt_type {
 int main(int argc, char** argv){
     ros::init(argc, argv, "gpmp_wam", ros::init_options::AnonymousName);
     ros::NodeHandle nh;
-    Visualize_Tools vis_tools(nh);
+    Visualize_Tools vis_tools(nh, "wam/base_link");
     ros::Rate loop_rate(2);  // 设置发布频率
 
 

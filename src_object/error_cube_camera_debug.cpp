@@ -200,7 +200,7 @@ std::vector<std::vector<geometry_msgs::Point>> GenerateBboxPlanesTrianglePoints(
 int main(int argc, char** argv){
     ros::init(argc, argv, "triangle_marker_node");
     ros::NodeHandle nh;
-    Visualize_Tools* vis_tools = new Visualize_Tools(nh);
+    Visualize_Tools* vis_tools = new Visualize_Tools(nh, "wam/base_link");
     std::thread* mptVisualizeTools;
     mptVisualizeTools = new std::thread(&Visualize_Tools::Run, vis_tools);
 

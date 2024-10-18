@@ -17,6 +17,8 @@
 #include "gtsam/BboxPlaneArmLink.h"
 #include "GenerateArm.h"
 
+#include "visualize_arm_tools.h"
+
 using namespace Eigen;
 using namespace gtsam;
 using namespace gpmp2;
@@ -26,7 +28,7 @@ typedef BboxPlaneArmLink<ArmModel> BboxPlaneArmLinkArm;
 int main(int argc, char** argv){
     ros::init(argc, argv, "triangle_marker_node");
     ros::NodeHandle nh;
-    Visualize_Tools* vis_tools = new Visualize_Tools(nh);
+    Visualize_Tools* vis_tools = new Visualize_Tools(nh, "wam/base_link");
     std::thread* mptVisualizeTools;
     mptVisualizeTools = new std::thread(&Visualize_Tools::Run, vis_tools);
 
@@ -92,6 +94,10 @@ int main(int argc, char** argv){
 	ros::AsyncSpinner spinner(1);
 	spinner.start();
     moveit::planning_interface::MoveGroupInterface move_group("arm");
+	Visualize_Arm_Tools vis_arm_tools(nh, *arm_model, move_group, "wam/base_link" );
+	std::thread* mptVisualizeArmTools;
+	mptVisualizeArmTools = new std::thread(&Visualize_Arm_Tools::Run, vis_arm_tools);
+
     std::string end_effector_link=move_group.getEndEffectorLink();
 	ROS_INFO_NAMED("WAM_arm", "End effector link: %s", end_effector_link.c_str());
 
@@ -112,8 +118,11 @@ int main(int argc, char** argv){
     while (ros::ok())
     {
     	// 获取当前关节角度
-    	std::vector<double> joint_angles = move_group.getCurrentJointValues();
-    	config << joint_angles[0], joint_angles[1], joint_angles[2], joint_angles[3], joint_angles[4], joint_angles[5], joint_angles[6];
+  		std::vector<double> joint_angles = move_group.getCurrentJointValues();
+  		config << joint_angles[0], joint_angles[1], joint_angles[2], joint_angles[3], joint_angles[4], joint_angles[5], joint_angles[6];
+
+  //   	vis_arm_tools.publish_collision_spheres(config) ;
+		// vis_arm_tools.publish_arm_link_spheres(config) ;
 
         // std::cout<<"[debug] joint_angles: ";
         // for(int i=0; i<joint_angles.size(); i++){

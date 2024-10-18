@@ -18,7 +18,8 @@
 #include "Object.h"
 #include "MapObject.h"
 #include "ConverterTools.h"
-// #include "core/Plane.h"
+
+
 
 geometry_msgs::Pose  get_link_pose(ros::NodeHandle& n, std::string link_name, std::string reference_name = "world", bool output = false){
     ros::ServiceClient get_link_sate_client = n.serviceClient<gazebo_msgs::GetLinkState>("/gazebo/get_link_state");
@@ -144,10 +145,13 @@ geometry_msgs::TransformStamped getTFTransform(std::string parent_name, std::str
     return transform_stamped;
 }
 
+
+
 class Visualize_Tools{
     public:
-        Visualize_Tools(ros::NodeHandle& nh){
-            candidate_quaterniond_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("candidate_pose_quaterniond", 1);
+        Visualize_Tools(ros::NodeHandle& nh, std::string default_frame ):default_frame_(default_frame){
+            candidate_quaterniond_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>(
+                "candidate_pose_quaterniond", 1);
             pub_field = nh.advertise<visualization_msgs::Marker>("field", 1);
             pub_sdf = nh.advertise<visualization_msgs::Marker>("sdf", 1);
             joint_values_pub = nh.advertise<std_msgs::Float64MultiArray>("joint_values_gpmp", 10);
@@ -158,6 +162,7 @@ class Visualize_Tools{
             bbox_plane_pub = nh.advertise<visualization_msgs::Marker>("bbox_plane", 1);
             normal_plane_pub = nh.advertise<visualization_msgs::Marker>("normal_plane", 1);
         }
+
         void visualize_geometry_pose(geometry_msgs::Pose pose, std::string frame_id = "world",  double id_num = 1,  std::string name = "no-name", bool output = false);
         void visualize_object(SdfObject& ob, std::string frame_id);
         // void visualize_MapObject(SdfObject& ob, std::string frame_id);
@@ -181,6 +186,9 @@ class Visualize_Tools{
         ros::Publisher point_pub;
         ros::Publisher bbox_plane_pub;
         ros::Publisher normal_plane_pub;
+        // Visualize_Arm_Tools arm_pub;
+
+        std::string default_frame_ = "wam/base_link";
 
     public:
         std::vector<std::vector<geometry_msgs::Point>> BboxPlanesTrianglePointsInWorld;
@@ -196,19 +204,20 @@ void Visualize_Tools::Run()
 {   
     ros::Rate r(50);
 
+
     while(1){
 
         for(int i=0; i<MapObjects.size(); i++ ){
-            visualize_ellipsoid( MapObjects[i], "world", i);
+            visualize_ellipsoid( MapObjects[i], default_frame_, i);
         }
 
         for(int i=0; i<BboxPlanesTrianglePointsInWorld.size(); i++ ){
-            visualize_plane_triangle_bypoint(BboxPlanesTrianglePointsInWorld[i], i, "world");
+            visualize_plane_triangle_bypoint(BboxPlanesTrianglePointsInWorld[i], i, default_frame_);
             // std::cout << "Publishing triangle marker..." << std::endl;
         }
 
         for(int i=0; i<MapPlaneNormals.size(); i++) {
-            visualize_plane_rectangle(MapPlaneNormals[i], i, "world");
+            visualize_plane_rectangle(MapPlaneNormals[i], i, default_frame_);
         }
         r.sleep();
 
@@ -438,7 +447,7 @@ void  Visualize_Tools::visualize_plane_rectangle(Eigen::Vector4d plane_param, in
     // 创建一个Marker消息
     // 创建一个 Marker 消息
     visualization_msgs::Marker marker;
-    marker.header.frame_id = "world";  // 使用世界坐标系
+    marker.header.frame_id = frame_id;  // 使用世界坐标系
     marker.header.stamp = ros::Time::now();
     marker.ns = "rectangle";
     marker.id = id;

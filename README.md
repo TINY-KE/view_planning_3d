@@ -46,9 +46,12 @@
     + 待： 构建视场下平面；
 
 
-# 自制gtsam因子 
+# 自制本体视场避遮挡gtsam因子, 可视化避障球
 + 验证BboxPlaneArmLink的Error基本正确
-+ 待可视化机械臂的避障球    
++ 修改WAM机械臂的DH参数
++ 构建新类Visualize_Arm_Tools，可视化机械臂的避障球和各关节坐标   
+
+# 自制本体视场避遮挡gtsam因子, 可视化避障球
 + 问题：引入lzw的椭球。椭球会不会和平面的距离计算函数（拉格朗日）会不会和gtsam冲突？
 + 构建BboxPlaneEllipsoid
 
