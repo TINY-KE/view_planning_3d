@@ -14,16 +14,19 @@
 
 // #include "gtsam/BboxPlaneEllipsoidFactor.h"
 // #include "gtsam/JointLimitFactorVector.h"
-#include "gtsam/BboxPlaneArmLink.h"
+#include "gtsam/BboxPlaneArmLinkFactor.h"
+#include "gtsam/BboxPlaneEllipsoidFactor.h"
 #include "GenerateArm.h"
 
 #include "visualize_arm_tools.h"
+
+#include "gtsam_quadrics/geometry/BoundingBoxFactor.h"
 
 using namespace Eigen;
 using namespace gtsam;
 using namespace gpmp2;
 
-typedef BboxPlaneArmLink<ArmModel> BboxPlaneArmLinkArm;
+typedef BboxPlaneArmLinkFactor<ArmModel> BboxPlaneArmLinkArm;
 
 int main(int argc, char** argv){
     ros::init(argc, argv, "triangle_marker_node");
@@ -51,8 +54,6 @@ int main(int argc, char** argv){
 
     // 二、构建因子
     ArmModel* arm_model = generateArm("WAMArm");
-    double obs_eps = 0.2;
-    double epsilon_dist = 0.05;
     int CameraWidth = 640;
     int CameraHeight = 480;
     float fx = 554.254691191187;
@@ -74,12 +75,48 @@ int main(int argc, char** argv){
 //                    double cost_sigma,
 //                    double epsilon,
 //                    int width, int height, Matrix3d calib)
-	BboxPlaneArmLink<ArmModel> factor(0, *arm_model,
+
+	// (1) 构建视场和机器人本体的因子
+	double epsilon_dist = 0.05;  // 避障球与平面的最小距离
+	BboxPlaneArmLinkFactor<ArmModel> factor(0, *arm_model,
                                1.0,
                                epsilon_dist,
                                CameraWidth, CameraHeight,
                                Calib
                                );
+	//(2) 构建视场和lzw椭球体的因子
+	Eigen::Matrix4f RobotPose = Eigen::Matrix4f::Identity();
+    // RobotPose << 0, -1, 0, 0,
+    //              1, 0, 0, 10,
+    //              0, 0, 1, 0,
+    //              0, 0, 0, 1;
+	BboxPlaneEllipsoidFactor<ArmModel> factor2(0, *arm_model,
+						1.0,
+						ob,
+						RobotPose,
+						CameraWidth, CameraHeight,
+						Calib);
+
+    // （3）构建视场和gtsam椭球体的因子
+	double s = 100;
+	gtsam_quadrics::AlignedBox2 gtsam_bbox(0+s, 0+s, CameraWidth-s, CameraHeight-s);
+	// gtsam::Cal3_S2 gtsam_calib(fx, fy, 0.0, cx, cy);
+	boost::shared_ptr<gtsam::Cal3_S2> gtsam_calib = boost::make_shared<gtsam::Cal3_S2>(fx, fy, 0.0, cx, cy);
+	// 使用数组中的值创建噪声模型
+	double sigmasArray[4] = {10.0, 10.0, 10.0, 10.0};
+	gtsam::SharedNoiseModel bbox_noise = gtsam::noiseModel::Diagonal::Sigmas(gtsam::Vector4(sigmasArray));
+    // BoundingBoxFactor(const AlignedBox2& measured,
+    //                 const boost::shared_ptr<gtsam::Cal3_S2>& calibration,
+    //                 const gtsam::Key& poseKey, const gtsam::Key& quadricKey,
+    //                 const gtsam::SharedNoiseModel& model,
+    //                 const MeasurementModel& errorType = STANDARD)
+	gtsam::Key Key1, Key2;
+	// gtsam_quadrics::BoundingBoxFactor factor3(gtsam_bbox, gtsam_calib, Key1, Key2, bbox_noise);
+	// gtsam_quadrics::BoundingBoxFactor factor3;
+
+
+
+    
 	Eigen::MatrixXd H1_act;
 	Eigen::Matrix<double, 7, 1> config;
 	// origin zero case
@@ -94,7 +131,7 @@ int main(int argc, char** argv){
 	ros::AsyncSpinner spinner(1);
 	spinner.start();
     moveit::planning_interface::MoveGroupInterface move_group("arm");
-	Visualize_Arm_Tools vis_arm_tools(nh, *arm_model, move_group, "wam/base_link" );
+	Visualize_Arm_Tools vis_arm_tools(nh, *arm_model, move_group, CameraWidth, CameraHeight, Calib, "wam/base_link" );
 	std::thread* mptVisualizeArmTools;
 	mptVisualizeArmTools = new std::thread(&Visualize_Arm_Tools::Run, vis_arm_tools);
 
@@ -129,9 +166,13 @@ int main(int argc, char** argv){
         //     std::cout<<joint_angles[i]<<" "<<config[i]<<std::endl;
         // }
 
-        g2o::plane* plane_in_baselink = factor.computeplane(config);
-        vis_tools->MapPlaneNormals.clear();
-        vis_tools->MapPlaneNormals.push_back(plane_in_baselink->param);
+        // g2o::plane* plane_in_baselink = factor.computeplane(config);
+		auto planesWorld= factor2.computeplanes(config);
+    	vis_tools->MapPlaneNormals.clear();
+    	// vis_tools->MapPlaneNormals.push_back(planesWorld[0]->param);
+    	// vis_tools->MapPlaneNormals.push_back(planesWorld[1]->param);
+    	// vis_tools->MapPlaneNormals.push_back(planesWorld[2]->param);
+    	// vis_tools->MapPlaneNormals.push_back(planesWorld[3]->param);
 
         Eigen::VectorXd err_act = factor.evaluateError(config, &H1_act);
         std::cout<<" [debug] err_act: "<<err_act<<std::endl;

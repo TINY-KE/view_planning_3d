@@ -14,7 +14,7 @@
 
 // #include "gtsam/BboxPlaneEllipsoidFactor.h"
 // #include "gtsam/JointLimitFactorVector.h"
-#include "gtsam/BboxPlaneArmLink.h"
+#include "gtsam/BboxPlaneArmLinkFactor.h"
 
 using namespace Eigen;
 // ZHJD 移植

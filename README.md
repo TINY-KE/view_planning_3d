@@ -46,14 +46,17 @@
     + 待： 构建视场下平面；
 
 
-# 自制本体视场避遮挡gtsam因子, 可视化避障球
+# 自制本体视场避遮挡gtsam因子, 可视化避障球 commit 375b6b6c578e97281db4b3c7431a8d30b6683b93
 + 验证BboxPlaneArmLink的Error基本正确
-+ 修改WAM机械臂的DH参数
++ 修改WAM机械臂的DH参数和去掉了抓持爪子的避障球
 + 构建新类Visualize_Arm_Tools，可视化机械臂的避障球和各关节坐标   
 
-# 自制本体视场避遮挡gtsam因子, 可视化避障球
-+ 问题：引入lzw的椭球。椭球会不会和平面的距离计算函数（拉格朗日）会不会和gtsam冲突？
-+ 构建BboxPlaneEllipsoid
+# 自制本体视场和椭球体的gtsam因子, 失败
++ 生成BboxPlaneEllipsoidFactor因子，
++ 在TestBboxPlaneArmLink.cpp中验证了bbox平面的准确性
++ 构建evaluateError。
++ 在Visualize_Arm_Tools，可视化bbox平面？？ 
++ 待解决 误差和偏导·+问题：引入lzw的椭球。椭球会不会和平面的距离计算函数（拉格朗日）会不会和gtsam冲突？
 
 
 + 待：验证gpmp能否输入（GenerateCandidates_ellipse_by_circle）的结果，从而使的规划结果更顺滑。

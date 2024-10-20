@@ -32,21 +32,7 @@ typedef Eigen::Matrix<double, 4, 1> Vector4d;
 typedef Eigen::Matrix<double, 6, 6> Matrix6d;
 typedef Eigen::Matrix<double, 3, 3> Matrix3d;
 
-namespace g2o2 {
-    g2o::SE3Quat toSE3Quat(const Eigen::Matrix4f &T)
-    {
-        Eigen::Matrix<double, 3, 3> R = T.topLeftCorner<3, 3>().cast<double>();
-        Eigen::Matrix<double, 3, 1> t = T.topRightCorner<3, 1>().cast<double>();
-        return g2o::SE3Quat(R, t);
-    }
 
-    Eigen::Matrix4f toMatrix4f(const g2o::SE3Quat &SE3)
-    {
-        Eigen::Matrix4f eigMat = SE3.to_homogeneous_matrix().cast<float>();
-        return eigMat;
-    }
-
-}
 
 namespace gpmp2 {
     /**
@@ -69,12 +55,7 @@ namespace gpmp2 {
         const Robot& robot_;     // Robot
         int joint_;              // joint on the robot to be constrained
 
-        // 图像宽度和高度
-        int miImageCols; // = Config::Get<int>("Camera.width");
-        int miImageRows; // = Config::Get<int>("Camera.height");
-
-        // 相机标定参数
-        Matrix3d mCalib;
+//        boost::shared_ptr<gtsam::Cal3_S2> gtsam_calib = boost::make_shared<gtsam::Cal3_S2>(fx, fy, 0.0, cx, cy);
 
         // 相机坐标系中的四个平面
         std::vector<g2o::plane*> mPlanes;   // 顺序： 左上右小

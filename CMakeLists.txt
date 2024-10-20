@@ -177,7 +177,6 @@ include_directories(
   ${PROJECT_SOURCE_DIR}
   /home/robotlab/QSP-SLAM-ellipsoid-associdate
   # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o
-
 )
 
 
@@ -266,6 +265,7 @@ add_executable(error_plane_endlink_debug
             src_object/core/Ellipsoid.cpp
             # src_object/
             )
+
 target_link_libraries(error_plane_endlink_debug   
               ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} 
               utils
@@ -276,6 +276,19 @@ target_link_libraries(error_plane_endlink_debug
               ${GTSAM_LIBRARIES} gpmp2
               )
 
+
+set(SOURCE_GTSAM_QUADRIC_FILES
+        ./src_gtsam_quadrics/base/Utilities.cpp
+        ./src_gtsam_quadrics/geometry/ConstrainedDualQuadric.cpp
+        ./src_gtsam_quadrics/geometry/AlignedBox2.cpp
+        ./src_gtsam_quadrics/geometry/AlignedBox3.cpp
+        ./src_gtsam_quadrics/geometry/BoundingBoxFactor.cpp
+        ./src_gtsam_quadrics/geometry/QuadricAngleFactor.cpp
+        ./src_gtsam_quadrics/geometry/QuadricCamera.cpp
+        ./src_gtsam_quadrics/geometry/DualConic.cpp
+)
+
+
 add_executable(TestBboxPlaneArmLink 
               src_example/TestBboxPlaneArmLink.cpp
               src_object/MapObject.cpp
@@ -283,6 +296,7 @@ add_executable(TestBboxPlaneArmLink
               src_object/core/Plane.cpp
               src_object/core/ConstrainPlane.cpp
               src_object/core/Ellipsoid.cpp
+                ${SOURCE_FILES}
               # src_object/
               )
 target_link_libraries(TestBboxPlaneArmLink   
