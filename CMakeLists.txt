@@ -278,28 +278,31 @@ target_link_libraries(error_plane_endlink_debug
 
 
 set(SOURCE_GTSAM_QUADRIC_FILES
-        ./src_gtsam_quadrics/base/Utilities.cpp
-        ./src_gtsam_quadrics/geometry/ConstrainedDualQuadric.cpp
-        ./src_gtsam_quadrics/geometry/AlignedBox2.cpp
-        ./src_gtsam_quadrics/geometry/AlignedBox3.cpp
-        ./src_gtsam_quadrics/geometry/BoundingBoxFactor.cpp
-        ./src_gtsam_quadrics/geometry/QuadricAngleFactor.cpp
-        ./src_gtsam_quadrics/geometry/QuadricCamera.cpp
-        ./src_gtsam_quadrics/geometry/DualConic.cpp
+        ./src_gtsam_quadrics/Utilities.cpp
+        ./src_gtsam_quadrics/ConstrainedDualQuadric.cpp
+        ./src_gtsam_quadrics/AlignedBox2.cpp
+        ./src_gtsam_quadrics/AlignedBox3.cpp
+        ./src_gtsam_quadrics/BoundingBoxFactor.cpp
+        # ./src_gtsam_quadrics/QuadricAngleFactor.cpp
+        ./src_gtsam_quadrics/QuadricCamera.cpp
+        ./src_gtsam_quadrics/DualConic.cpp
 )
 
+set(CONVENIENCE_LIB_NAME "gtsam_quadrics")
+add_library(${CONVENIENCE_LIB_NAME} ${SOURCE_GTSAM_QUADRIC_FILES})
+# set_target_properties(${CONVENIENCE_LIB_NAME} PROPERTIES PREFIX "")
+target_link_libraries(${CONVENIENCE_LIB_NAME} gtsam)
 
-add_executable(TestBboxPlaneArmLink 
-              src_example/TestBboxPlaneArmLink.cpp
+add_executable(TestGtasmFactor
+        src_example/TestGtasmFactor.cpp
               src_object/MapObject.cpp
               src_object/Converter.cc
               src_object/core/Plane.cpp
               src_object/core/ConstrainPlane.cpp
               src_object/core/Ellipsoid.cpp
-                ${SOURCE_FILES}
               # src_object/
               )
-target_link_libraries(TestBboxPlaneArmLink   
+target_link_libraries(TestGtasmFactor   
               ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} 
               utils
               Polygon
@@ -307,4 +310,5 @@ target_link_libraries(TestBboxPlaneArmLink
               Boost::filesystem
               Boost::system
               ${GTSAM_LIBRARIES} gpmp2
+                ${CONVENIENCE_LIB_NAME}
               )

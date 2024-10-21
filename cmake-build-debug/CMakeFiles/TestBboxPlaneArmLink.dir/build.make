@@ -293,6 +293,7 @@ devel/lib/view_planning/TestBboxPlaneArmLink: devel/lib/libPolygon.so
 devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0
 devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0
 devel/lib/view_planning/TestBboxPlaneArmLink: /usr/local/lib/libgpmp2.so.1.0.0
+devel/lib/view_planning/TestBboxPlaneArmLink: devel/lib/libgtsam_quadrics.so
 devel/lib/view_planning/TestBboxPlaneArmLink: /home/robotlab/thirdparty/opencv-3.4.10/build/lib/libopencv_highgui.so.3.4.10
 devel/lib/view_planning/TestBboxPlaneArmLink: /home/robotlab/thirdparty/opencv-3.4.10/build/lib/libopencv_ml.so.3.4.10
 devel/lib/view_planning/TestBboxPlaneArmLink: /home/robotlab/thirdparty/opencv-3.4.10/build/lib/libopencv_objdetect.so.3.4.10
@@ -308,13 +309,10 @@ devel/lib/view_planning/TestBboxPlaneArmLink: /home/robotlab/thirdparty/opencv-3
 devel/lib/view_planning/TestBboxPlaneArmLink: /home/robotlab/thirdparty/opencv-3.4.10/build/lib/libopencv_imgcodecs.so.3.4.10
 devel/lib/view_planning/TestBboxPlaneArmLink: /home/robotlab/thirdparty/opencv-3.4.10/build/lib/libopencv_imgproc.so.3.4.10
 devel/lib/view_planning/TestBboxPlaneArmLink: /home/robotlab/thirdparty/opencv-3.4.10/build/lib/libopencv_core.so.3.4.10
+devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.71.0
 devel/lib/view_planning/TestBboxPlaneArmLink: /usr/local/lib/x86_64-linux-gnu/libgtsam.so.4.3a0
 devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0
 devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0
-devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libtbb.so.2
-devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libtbbmalloc.so.2
-devel/lib/view_planning/TestBboxPlaneArmLink: /usr/local/lib/x86_64-linux-gnu/libmetis-gtsam.a
-devel/lib/view_planning/TestBboxPlaneArmLink: /usr/local/lib/x86_64-linux-gnu/libcephes-gtsam.so.1.0.0
 devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libboost_serialization.so.1.71.0
 devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0
 devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libboost_atomic.so.1.71.0
@@ -322,7 +320,10 @@ devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libboost
 devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libboost_regex.so.1.71.0
 devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libboost_timer.so.1.71.0
 devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.71.0
-devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.71.0
+devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libtbb.so.2
+devel/lib/view_planning/TestBboxPlaneArmLink: /usr/lib/x86_64-linux-gnu/libtbbmalloc.so.2
+devel/lib/view_planning/TestBboxPlaneArmLink: /usr/local/lib/x86_64-linux-gnu/libmetis-gtsam.a
+devel/lib/view_planning/TestBboxPlaneArmLink: /usr/local/lib/x86_64-linux-gnu/libcephes-gtsam.so.1.0.0
 devel/lib/view_planning/TestBboxPlaneArmLink: CMakeFiles/TestBboxPlaneArmLink.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable devel/lib/view_planning/TestBboxPlaneArmLink"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/TestBboxPlaneArmLink.dir/link.txt --verbose=$(VERBOSE)

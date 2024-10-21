@@ -25,6 +25,7 @@
 #include <gtsam/nonlinear/NonlinearFactorGraph.h>
 #include <gtsam_quadrics/geometry/AlignedBox2.h>
 #include <gtsam_quadrics/geometry/ConstrainedDualQuadric.h>
+#include <boost/shared_ptr.hpp> 
 
 namespace gtsam_quadrics {
 
@@ -119,8 +120,18 @@ class BoundingBoxFactor
    */
   gtsam::Vector evaluateError(
       const gtsam::Pose3& pose, const ConstrainedDualQuadric& quadric,
-      boost::optional<gtsam::Matrix&> H1 = nullptr,
-      boost::optional<gtsam::Matrix&> H2 = nullptr) const;
+      gtsam::OptionalMatrixType H1 = nullptr,
+      gtsam::OptionalMatrixType H2 = nullptr) const;
+
+ gtsam::Vector getPredictedBounds(
+     const gtsam::Pose3& pose, const ConstrainedDualQuadric& quadric,
+     gtsam::OptionalMatrixType H1 = nullptr,
+     gtsam::OptionalMatrixType H2 = nullptr) const;
+
+ gtsam::Vector getMeasureBounds(
+      const gtsam::Pose3& pose, const ConstrainedDualQuadric& quadric,
+      gtsam::OptionalMatrixType H1 = nullptr,
+      gtsam::OptionalMatrixType H2 = nullptr) const;
 
   /** Evaluates the derivative of the error wrt pose */
   gtsam::Matrix evaluateH1(const gtsam::Pose3& pose,

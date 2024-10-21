@@ -56,6 +56,7 @@ DualConic DualConic::normalize(void) const {
 /// assert bounds are real-valued
 /// normalize conic
 AlignedBox2 DualConic::bounds(gtsam::OptionalJacobian<4, 9> H) const {
+  //
   double xmin =
       (dC_(0, 2) + sqrt(dC_(0, 2) * dC_(0, 2) - dC_(2, 2) * dC_(0, 0))) /
       dC_(2, 2);

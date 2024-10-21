@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "devel/lib/view_planning/wam_getfromik"
+			"path" : "devel/lib/view_planning/sdf_visulization"
 		}
 	],
 	"backtrace" : 1,
@@ -57,13 +57,13 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 203,
+				"line" : 184,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 204,
+				"line" : 185,
 				"parent" : 0
 			},
 			{
@@ -673,7 +673,7 @@
 			]
 		}
 	],
-	"id" : "wam_getfromik::@6890427a1f51a3e7e1df",
+	"id" : "sdf_visulization::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -1418,8 +1418,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "wam_getfromik",
-	"nameOnDisk" : "wam_getfromik",
+	"name" : "sdf_visulization",
+	"nameOnDisk" : "sdf_visulization",
 	"paths" : 
 	{
 		"build" : ".",
@@ -1440,7 +1440,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src_wam/wam_getfromik_debug.cpp",
+			"path" : "src_wam/sdf_visulization.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

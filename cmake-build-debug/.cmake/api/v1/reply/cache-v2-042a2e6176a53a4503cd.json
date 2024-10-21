@@ -2391,7 +2391,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "dart;dart;dart;dart"
+			"value" : "dart;dart;dart;dart;dart;dart"
 		},
 		{
 			"name" : "DART_MIN_BOOST_VERSION",
@@ -2603,7 +2603,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "[/usr/include][dart;dart;dart;dart][cfound components: dart ][v(6.6)]"
+			"value" : "[/usr/include][dart;dart;dart;dart;dart;dart][cfound components: dart ][v(6.6)]"
 		},
 		{
 			"name" : "FIND_PACKAGE_MESSAGE_DETAILS_DL",
@@ -11732,6 +11732,18 @@
 			],
 			"type" : "STATIC",
 			"value" : "general;gtest;"
+		},
+		{
+			"name" : "gtsam_quadrics_LIB_DEPENDS",
+			"properties" : 
+			[
+				{
+					"name" : "HELPSTRING",
+					"value" : "Dependencies for the target"
+				}
+			],
+			"type" : "STATIC",
+			"value" : "general;gtsam;"
 		},
 		{
 			"name" : "ignition-cmake2_DIR",

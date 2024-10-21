@@ -180,6 +180,12 @@ Eigen::Matrix4d Converter::cvMattoMatrix4d(const cv::Mat &cvMat4) {
     return eigenMat4d;
 }
 
+Eigen::Matrix4d Converter::geometryPosetoMatrix4d(const geometry_msgs::PoseStamped &pose) {
+    return Quation2Eigen(pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w,
+                            pose.pose.position.x, pose.pose.position.y, pose.pose.position.z
+                        );
+}
+
 
 Eigen::Matrix4d Converter::Quation2Eigen(const double qx, const double qy, const double qz, const double qw, const double tx,
                                  const double ty, const double tz) {

@@ -1979,17 +1979,30 @@ error_plane_endlink_debug/fast:
 .PHONY : error_plane_endlink_debug/fast
 
 #=============================================================================
-# Target rules for targets named TestBboxPlaneArmLink
+# Target rules for targets named gtsam_quadrics
 
 # Build rule for target.
-TestBboxPlaneArmLink: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 TestBboxPlaneArmLink
-.PHONY : TestBboxPlaneArmLink
+gtsam_quadrics: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 gtsam_quadrics
+.PHONY : gtsam_quadrics
 
 # fast build rule for target.
-TestBboxPlaneArmLink/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/build
-.PHONY : TestBboxPlaneArmLink/fast
+gtsam_quadrics/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/build
+.PHONY : gtsam_quadrics/fast
+
+#=============================================================================
+# Target rules for targets named TestGtasmFactor
+
+# Build rule for target.
+TestGtasmFactor: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 TestGtasmFactor
+.PHONY : TestGtasmFactor
+
+# fast build rule for target.
+TestGtasmFactor/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/build
+.PHONY : TestGtasmFactor/fast
 
 #=============================================================================
 # Target rules for targets named gmock
@@ -2056,29 +2069,197 @@ Polygon/fast:
 	$(MAKE) $(MAKESILENT) -f src_object/Polygon/CMakeFiles/Polygon.dir/build.make src_object/Polygon/CMakeFiles/Polygon.dir/build
 .PHONY : Polygon/fast
 
-src_example/TestBboxPlaneArmLink.o: src_example/TestBboxPlaneArmLink.cpp.o
-.PHONY : src_example/TestBboxPlaneArmLink.o
+src_example/TestGtasmFactor.o: src_example/TestGtasmFactor.cpp.o
+.PHONY : src_example/TestGtasmFactor.o
 
 # target to build an object file
-src_example/TestBboxPlaneArmLink.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_example/TestBboxPlaneArmLink.cpp.o
-.PHONY : src_example/TestBboxPlaneArmLink.cpp.o
+src_example/TestGtasmFactor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_example/TestGtasmFactor.cpp.o
+.PHONY : src_example/TestGtasmFactor.cpp.o
 
-src_example/TestBboxPlaneArmLink.i: src_example/TestBboxPlaneArmLink.cpp.i
-.PHONY : src_example/TestBboxPlaneArmLink.i
+src_example/TestGtasmFactor.i: src_example/TestGtasmFactor.cpp.i
+.PHONY : src_example/TestGtasmFactor.i
 
 # target to preprocess a source file
-src_example/TestBboxPlaneArmLink.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_example/TestBboxPlaneArmLink.cpp.i
-.PHONY : src_example/TestBboxPlaneArmLink.cpp.i
+src_example/TestGtasmFactor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_example/TestGtasmFactor.cpp.i
+.PHONY : src_example/TestGtasmFactor.cpp.i
 
-src_example/TestBboxPlaneArmLink.s: src_example/TestBboxPlaneArmLink.cpp.s
-.PHONY : src_example/TestBboxPlaneArmLink.s
+src_example/TestGtasmFactor.s: src_example/TestGtasmFactor.cpp.s
+.PHONY : src_example/TestGtasmFactor.s
 
 # target to generate assembly for a file
-src_example/TestBboxPlaneArmLink.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_example/TestBboxPlaneArmLink.cpp.s
-.PHONY : src_example/TestBboxPlaneArmLink.cpp.s
+src_example/TestGtasmFactor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_example/TestGtasmFactor.cpp.s
+.PHONY : src_example/TestGtasmFactor.cpp.s
+
+src_gtsam_quadrics/AlignedBox2.o: src_gtsam_quadrics/AlignedBox2.cpp.o
+.PHONY : src_gtsam_quadrics/AlignedBox2.o
+
+# target to build an object file
+src_gtsam_quadrics/AlignedBox2.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/AlignedBox2.cpp.o
+.PHONY : src_gtsam_quadrics/AlignedBox2.cpp.o
+
+src_gtsam_quadrics/AlignedBox2.i: src_gtsam_quadrics/AlignedBox2.cpp.i
+.PHONY : src_gtsam_quadrics/AlignedBox2.i
+
+# target to preprocess a source file
+src_gtsam_quadrics/AlignedBox2.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/AlignedBox2.cpp.i
+.PHONY : src_gtsam_quadrics/AlignedBox2.cpp.i
+
+src_gtsam_quadrics/AlignedBox2.s: src_gtsam_quadrics/AlignedBox2.cpp.s
+.PHONY : src_gtsam_quadrics/AlignedBox2.s
+
+# target to generate assembly for a file
+src_gtsam_quadrics/AlignedBox2.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/AlignedBox2.cpp.s
+.PHONY : src_gtsam_quadrics/AlignedBox2.cpp.s
+
+src_gtsam_quadrics/AlignedBox3.o: src_gtsam_quadrics/AlignedBox3.cpp.o
+.PHONY : src_gtsam_quadrics/AlignedBox3.o
+
+# target to build an object file
+src_gtsam_quadrics/AlignedBox3.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/AlignedBox3.cpp.o
+.PHONY : src_gtsam_quadrics/AlignedBox3.cpp.o
+
+src_gtsam_quadrics/AlignedBox3.i: src_gtsam_quadrics/AlignedBox3.cpp.i
+.PHONY : src_gtsam_quadrics/AlignedBox3.i
+
+# target to preprocess a source file
+src_gtsam_quadrics/AlignedBox3.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/AlignedBox3.cpp.i
+.PHONY : src_gtsam_quadrics/AlignedBox3.cpp.i
+
+src_gtsam_quadrics/AlignedBox3.s: src_gtsam_quadrics/AlignedBox3.cpp.s
+.PHONY : src_gtsam_quadrics/AlignedBox3.s
+
+# target to generate assembly for a file
+src_gtsam_quadrics/AlignedBox3.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/AlignedBox3.cpp.s
+.PHONY : src_gtsam_quadrics/AlignedBox3.cpp.s
+
+src_gtsam_quadrics/BoundingBoxFactor.o: src_gtsam_quadrics/BoundingBoxFactor.cpp.o
+.PHONY : src_gtsam_quadrics/BoundingBoxFactor.o
+
+# target to build an object file
+src_gtsam_quadrics/BoundingBoxFactor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/BoundingBoxFactor.cpp.o
+.PHONY : src_gtsam_quadrics/BoundingBoxFactor.cpp.o
+
+src_gtsam_quadrics/BoundingBoxFactor.i: src_gtsam_quadrics/BoundingBoxFactor.cpp.i
+.PHONY : src_gtsam_quadrics/BoundingBoxFactor.i
+
+# target to preprocess a source file
+src_gtsam_quadrics/BoundingBoxFactor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/BoundingBoxFactor.cpp.i
+.PHONY : src_gtsam_quadrics/BoundingBoxFactor.cpp.i
+
+src_gtsam_quadrics/BoundingBoxFactor.s: src_gtsam_quadrics/BoundingBoxFactor.cpp.s
+.PHONY : src_gtsam_quadrics/BoundingBoxFactor.s
+
+# target to generate assembly for a file
+src_gtsam_quadrics/BoundingBoxFactor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/BoundingBoxFactor.cpp.s
+.PHONY : src_gtsam_quadrics/BoundingBoxFactor.cpp.s
+
+src_gtsam_quadrics/ConstrainedDualQuadric.o: src_gtsam_quadrics/ConstrainedDualQuadric.cpp.o
+.PHONY : src_gtsam_quadrics/ConstrainedDualQuadric.o
+
+# target to build an object file
+src_gtsam_quadrics/ConstrainedDualQuadric.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/ConstrainedDualQuadric.cpp.o
+.PHONY : src_gtsam_quadrics/ConstrainedDualQuadric.cpp.o
+
+src_gtsam_quadrics/ConstrainedDualQuadric.i: src_gtsam_quadrics/ConstrainedDualQuadric.cpp.i
+.PHONY : src_gtsam_quadrics/ConstrainedDualQuadric.i
+
+# target to preprocess a source file
+src_gtsam_quadrics/ConstrainedDualQuadric.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/ConstrainedDualQuadric.cpp.i
+.PHONY : src_gtsam_quadrics/ConstrainedDualQuadric.cpp.i
+
+src_gtsam_quadrics/ConstrainedDualQuadric.s: src_gtsam_quadrics/ConstrainedDualQuadric.cpp.s
+.PHONY : src_gtsam_quadrics/ConstrainedDualQuadric.s
+
+# target to generate assembly for a file
+src_gtsam_quadrics/ConstrainedDualQuadric.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/ConstrainedDualQuadric.cpp.s
+.PHONY : src_gtsam_quadrics/ConstrainedDualQuadric.cpp.s
+
+src_gtsam_quadrics/DualConic.o: src_gtsam_quadrics/DualConic.cpp.o
+.PHONY : src_gtsam_quadrics/DualConic.o
+
+# target to build an object file
+src_gtsam_quadrics/DualConic.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/DualConic.cpp.o
+.PHONY : src_gtsam_quadrics/DualConic.cpp.o
+
+src_gtsam_quadrics/DualConic.i: src_gtsam_quadrics/DualConic.cpp.i
+.PHONY : src_gtsam_quadrics/DualConic.i
+
+# target to preprocess a source file
+src_gtsam_quadrics/DualConic.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/DualConic.cpp.i
+.PHONY : src_gtsam_quadrics/DualConic.cpp.i
+
+src_gtsam_quadrics/DualConic.s: src_gtsam_quadrics/DualConic.cpp.s
+.PHONY : src_gtsam_quadrics/DualConic.s
+
+# target to generate assembly for a file
+src_gtsam_quadrics/DualConic.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/DualConic.cpp.s
+.PHONY : src_gtsam_quadrics/DualConic.cpp.s
+
+src_gtsam_quadrics/QuadricCamera.o: src_gtsam_quadrics/QuadricCamera.cpp.o
+.PHONY : src_gtsam_quadrics/QuadricCamera.o
+
+# target to build an object file
+src_gtsam_quadrics/QuadricCamera.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/QuadricCamera.cpp.o
+.PHONY : src_gtsam_quadrics/QuadricCamera.cpp.o
+
+src_gtsam_quadrics/QuadricCamera.i: src_gtsam_quadrics/QuadricCamera.cpp.i
+.PHONY : src_gtsam_quadrics/QuadricCamera.i
+
+# target to preprocess a source file
+src_gtsam_quadrics/QuadricCamera.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/QuadricCamera.cpp.i
+.PHONY : src_gtsam_quadrics/QuadricCamera.cpp.i
+
+src_gtsam_quadrics/QuadricCamera.s: src_gtsam_quadrics/QuadricCamera.cpp.s
+.PHONY : src_gtsam_quadrics/QuadricCamera.s
+
+# target to generate assembly for a file
+src_gtsam_quadrics/QuadricCamera.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/QuadricCamera.cpp.s
+.PHONY : src_gtsam_quadrics/QuadricCamera.cpp.s
+
+src_gtsam_quadrics/Utilities.o: src_gtsam_quadrics/Utilities.cpp.o
+.PHONY : src_gtsam_quadrics/Utilities.o
+
+# target to build an object file
+src_gtsam_quadrics/Utilities.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/Utilities.cpp.o
+.PHONY : src_gtsam_quadrics/Utilities.cpp.o
+
+src_gtsam_quadrics/Utilities.i: src_gtsam_quadrics/Utilities.cpp.i
+.PHONY : src_gtsam_quadrics/Utilities.i
+
+# target to preprocess a source file
+src_gtsam_quadrics/Utilities.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/Utilities.cpp.i
+.PHONY : src_gtsam_quadrics/Utilities.cpp.i
+
+src_gtsam_quadrics/Utilities.s: src_gtsam_quadrics/Utilities.cpp.s
+.PHONY : src_gtsam_quadrics/Utilities.s
+
+# target to generate assembly for a file
+src_gtsam_quadrics/Utilities.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gtsam_quadrics.dir/build.make CMakeFiles/gtsam_quadrics.dir/src_gtsam_quadrics/Utilities.cpp.s
+.PHONY : src_gtsam_quadrics/Utilities.cpp.s
 
 src_object/Converter.o: src_object/Converter.cc.o
 .PHONY : src_object/Converter.o
@@ -2087,7 +2268,7 @@ src_object/Converter.o: src_object/Converter.cc.o
 src_object/Converter.cc.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/Converter.cc.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/Converter.cc.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/Converter.cc.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/Converter.cc.o
 .PHONY : src_object/Converter.cc.o
 
 src_object/Converter.i: src_object/Converter.cc.i
@@ -2097,7 +2278,7 @@ src_object/Converter.i: src_object/Converter.cc.i
 src_object/Converter.cc.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/Converter.cc.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/Converter.cc.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/Converter.cc.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/Converter.cc.i
 .PHONY : src_object/Converter.cc.i
 
 src_object/Converter.s: src_object/Converter.cc.s
@@ -2107,7 +2288,7 @@ src_object/Converter.s: src_object/Converter.cc.s
 src_object/Converter.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/Converter.cc.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/Converter.cc.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/Converter.cc.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/Converter.cc.s
 .PHONY : src_object/Converter.cc.s
 
 src_object/MapObject.o: src_object/MapObject.cpp.o
@@ -2117,7 +2298,7 @@ src_object/MapObject.o: src_object/MapObject.cpp.o
 src_object/MapObject.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/MapObject.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/MapObject.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/MapObject.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/MapObject.cpp.o
 .PHONY : src_object/MapObject.cpp.o
 
 src_object/MapObject.i: src_object/MapObject.cpp.i
@@ -2127,7 +2308,7 @@ src_object/MapObject.i: src_object/MapObject.cpp.i
 src_object/MapObject.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/MapObject.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/MapObject.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/MapObject.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/MapObject.cpp.i
 .PHONY : src_object/MapObject.cpp.i
 
 src_object/MapObject.s: src_object/MapObject.cpp.s
@@ -2137,7 +2318,7 @@ src_object/MapObject.s: src_object/MapObject.cpp.s
 src_object/MapObject.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/MapObject.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/MapObject.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/MapObject.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/MapObject.cpp.s
 .PHONY : src_object/MapObject.cpp.s
 
 src_object/core/ConstrainPlane.o: src_object/core/ConstrainPlane.cpp.o
@@ -2147,7 +2328,7 @@ src_object/core/ConstrainPlane.o: src_object/core/ConstrainPlane.cpp.o
 src_object/core/ConstrainPlane.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/ConstrainPlane.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/ConstrainPlane.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/ConstrainPlane.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/ConstrainPlane.cpp.o
 .PHONY : src_object/core/ConstrainPlane.cpp.o
 
 src_object/core/ConstrainPlane.i: src_object/core/ConstrainPlane.cpp.i
@@ -2157,7 +2338,7 @@ src_object/core/ConstrainPlane.i: src_object/core/ConstrainPlane.cpp.i
 src_object/core/ConstrainPlane.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/ConstrainPlane.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/ConstrainPlane.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/ConstrainPlane.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/ConstrainPlane.cpp.i
 .PHONY : src_object/core/ConstrainPlane.cpp.i
 
 src_object/core/ConstrainPlane.s: src_object/core/ConstrainPlane.cpp.s
@@ -2167,7 +2348,7 @@ src_object/core/ConstrainPlane.s: src_object/core/ConstrainPlane.cpp.s
 src_object/core/ConstrainPlane.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/ConstrainPlane.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/ConstrainPlane.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/ConstrainPlane.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/ConstrainPlane.cpp.s
 .PHONY : src_object/core/ConstrainPlane.cpp.s
 
 src_object/core/Ellipsoid.o: src_object/core/Ellipsoid.cpp.o
@@ -2177,7 +2358,7 @@ src_object/core/Ellipsoid.o: src_object/core/Ellipsoid.cpp.o
 src_object/core/Ellipsoid.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Ellipsoid.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Ellipsoid.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/Ellipsoid.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/Ellipsoid.cpp.o
 .PHONY : src_object/core/Ellipsoid.cpp.o
 
 src_object/core/Ellipsoid.i: src_object/core/Ellipsoid.cpp.i
@@ -2187,7 +2368,7 @@ src_object/core/Ellipsoid.i: src_object/core/Ellipsoid.cpp.i
 src_object/core/Ellipsoid.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Ellipsoid.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Ellipsoid.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/Ellipsoid.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/Ellipsoid.cpp.i
 .PHONY : src_object/core/Ellipsoid.cpp.i
 
 src_object/core/Ellipsoid.s: src_object/core/Ellipsoid.cpp.s
@@ -2197,7 +2378,7 @@ src_object/core/Ellipsoid.s: src_object/core/Ellipsoid.cpp.s
 src_object/core/Ellipsoid.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Ellipsoid.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Ellipsoid.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/Ellipsoid.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/Ellipsoid.cpp.s
 .PHONY : src_object/core/Ellipsoid.cpp.s
 
 src_object/core/Plane.o: src_object/core/Plane.cpp.o
@@ -2207,7 +2388,7 @@ src_object/core/Plane.o: src_object/core/Plane.cpp.o
 src_object/core/Plane.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Plane.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Plane.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/Plane.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/Plane.cpp.o
 .PHONY : src_object/core/Plane.cpp.o
 
 src_object/core/Plane.i: src_object/core/Plane.cpp.i
@@ -2217,7 +2398,7 @@ src_object/core/Plane.i: src_object/core/Plane.cpp.i
 src_object/core/Plane.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Plane.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Plane.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/Plane.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/Plane.cpp.i
 .PHONY : src_object/core/Plane.cpp.i
 
 src_object/core/Plane.s: src_object/core/Plane.cpp.s
@@ -2227,7 +2408,7 @@ src_object/core/Plane.s: src_object/core/Plane.cpp.s
 src_object/core/Plane.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Plane.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Plane.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestBboxPlaneArmLink.dir/build.make CMakeFiles/TestBboxPlaneArmLink.dir/src_object/core/Plane.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/Plane.cpp.s
 .PHONY : src_object/core/Plane.cpp.s
 
 src_object/error_cube_camera_debug.o: src_object/error_cube_camera_debug.cpp.o
@@ -2661,7 +2842,7 @@ help:
 	@echo "... visualization_msgs_generate_messages_nodejs"
 	@echo "... visualization_msgs_generate_messages_py"
 	@echo "... Polygon"
-	@echo "... TestBboxPlaneArmLink"
+	@echo "... TestGtasmFactor"
 	@echo "... circle_wam"
 	@echo "... ellipse_debug"
 	@echo "... error_cube_camera_debug"
@@ -2671,14 +2852,36 @@ help:
 	@echo "... gpmp_wam_Reproduce_Matlab"
 	@echo "... gtest"
 	@echo "... gtest_main"
+	@echo "... gtsam_quadrics"
 	@echo "... object_direction"
 	@echo "... sdf_visulization"
 	@echo "... utils"
 	@echo "... wam_getfromik"
 	@echo "... wam_ik_only_endpoint"
-	@echo "... src_example/TestBboxPlaneArmLink.o"
-	@echo "... src_example/TestBboxPlaneArmLink.i"
-	@echo "... src_example/TestBboxPlaneArmLink.s"
+	@echo "... src_example/TestGtasmFactor.o"
+	@echo "... src_example/TestGtasmFactor.i"
+	@echo "... src_example/TestGtasmFactor.s"
+	@echo "... src_gtsam_quadrics/AlignedBox2.o"
+	@echo "... src_gtsam_quadrics/AlignedBox2.i"
+	@echo "... src_gtsam_quadrics/AlignedBox2.s"
+	@echo "... src_gtsam_quadrics/AlignedBox3.o"
+	@echo "... src_gtsam_quadrics/AlignedBox3.i"
+	@echo "... src_gtsam_quadrics/AlignedBox3.s"
+	@echo "... src_gtsam_quadrics/BoundingBoxFactor.o"
+	@echo "... src_gtsam_quadrics/BoundingBoxFactor.i"
+	@echo "... src_gtsam_quadrics/BoundingBoxFactor.s"
+	@echo "... src_gtsam_quadrics/ConstrainedDualQuadric.o"
+	@echo "... src_gtsam_quadrics/ConstrainedDualQuadric.i"
+	@echo "... src_gtsam_quadrics/ConstrainedDualQuadric.s"
+	@echo "... src_gtsam_quadrics/DualConic.o"
+	@echo "... src_gtsam_quadrics/DualConic.i"
+	@echo "... src_gtsam_quadrics/DualConic.s"
+	@echo "... src_gtsam_quadrics/QuadricCamera.o"
+	@echo "... src_gtsam_quadrics/QuadricCamera.i"
+	@echo "... src_gtsam_quadrics/QuadricCamera.s"
+	@echo "... src_gtsam_quadrics/Utilities.o"
+	@echo "... src_gtsam_quadrics/Utilities.i"
+	@echo "... src_gtsam_quadrics/Utilities.s"
 	@echo "... src_object/Converter.o"
 	@echo "... src_object/Converter.i"
 	@echo "... src_object/Converter.s"

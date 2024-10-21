@@ -21,6 +21,7 @@
 #include "visualize_arm_tools.h"
 
 #include "gtsam_quadrics/geometry/BoundingBoxFactor.h"
+#include "gtsam/BboxEllipsoidFactor.h"
 
 using namespace Eigen;
 using namespace gtsam;
@@ -86,9 +87,9 @@ int main(int argc, char** argv){
                                );
 	//(2) 构建视场和lzw椭球体的因子
 	Eigen::Matrix4f RobotPose = Eigen::Matrix4f::Identity();
-    // RobotPose << 0, -1, 0, 0,
-    //              1, 0, 0, 10,
-    //              0, 0, 1, 0,
+    // RobotPose << 0.9396926, -0.3420202,  0.0000000, 0,
+    //              0.3420202,  0.9396926,  0.0000000, 0,
+    //              0.0000000,  0.0000000,  1.0000000, 0,
     //              0, 0, 0, 1;
 	BboxPlaneEllipsoidFactor<ArmModel> factor2(0, *arm_model,
 						1.0,
@@ -97,9 +98,11 @@ int main(int argc, char** argv){
 						CameraWidth, CameraHeight,
 						Calib);
 
-    // （3）构建视场和gtsam椭球体的因子
+
 	double s = 100;
 	gtsam_quadrics::AlignedBox2 gtsam_bbox(0+s, 0+s, CameraWidth-s, CameraHeight-s);
+
+	// （4）构建视场和gtsam椭球体的官方因子
 	// gtsam::Cal3_S2 gtsam_calib(fx, fy, 0.0, cx, cy);
 	boost::shared_ptr<gtsam::Cal3_S2> gtsam_calib = boost::make_shared<gtsam::Cal3_S2>(fx, fy, 0.0, cx, cy);
 	// 使用数组中的值创建噪声模型
@@ -111,12 +114,27 @@ int main(int argc, char** argv){
     //                 const gtsam::SharedNoiseModel& model,
     //                 const MeasurementModel& errorType = STANDARD)
 	gtsam::Key Key1, Key2;
-	// gtsam_quadrics::BoundingBoxFactor factor3(gtsam_bbox, gtsam_calib, Key1, Key2, bbox_noise);
-	// gtsam_quadrics::BoundingBoxFactor factor3;
+	gtsam_quadrics::BoundingBoxFactor factor3(gtsam_bbox, gtsam_calib, Key1, Key2, bbox_noise);
+	Eigen::Matrix4d matrix_4x4;
+	// matrix_4x4 << 1, 0, 0, x,
+	// 			  0, 1, 0, y,
+	// 			  0, 0, 1, z,
+	// 			  0, 0, 0, 1;
+	matrix_4x4 << 1, 0, 0, x,
+				  0, 1, 0, y,
+				  0, 0, 1, z,
+				  0, 0, 0, 1;
+	gtsam_quadrics::ConstrainedDualQuadric Quadric(gtsam::Pose3(matrix_4x4), gtsam::Vector3(lenth/2.0,width/2.0,height/2.0));
 
+	// （4）构建视场和gtsam椭球体的我的因子
+	BboxEllipsoidFactor<ArmModel> factor4(0, *arm_model,
+						1.0,
+						gtsam_bbox,
+						ob,
+						RobotPose,
+						CameraWidth, CameraHeight,
+						Calib);
 
-
-    
 	Eigen::MatrixXd H1_act;
 	Eigen::Matrix<double, 7, 1> config;
 	// origin zero case
@@ -166,6 +184,7 @@ int main(int argc, char** argv){
         //     std::cout<<joint_angles[i]<<" "<<config[i]<<std::endl;
         // }
 
+    	// （2）
         // g2o::plane* plane_in_baselink = factor.computeplane(config);
 		auto planesWorld= factor2.computeplanes(config);
     	vis_tools->MapPlaneNormals.clear();
@@ -174,9 +193,50 @@ int main(int argc, char** argv){
     	// vis_tools->MapPlaneNormals.push_back(planesWorld[2]->param);
     	// vis_tools->MapPlaneNormals.push_back(planesWorld[3]->param);
 
-        Eigen::VectorXd err_act = factor.evaluateError(config, &H1_act);
-        std::cout<<" [debug] err_act: "<<err_act<<std::endl;
-        std::cout<<"end"<<std::endl;
+        // Eigen::VectorXd err_act = factor.evaluateError(config, &H1_act);
+        // std::cout<<" [debug] err_act: "<<err_act<<std::endl;
+        // std::cout<<"end"<<std::endl;
+
+
+    	// （3）测试factor3
+    	// 获取末端执行器的位姿
+    	geometry_msgs::PoseStamped end_effector_pose = move_group.getCurrentPose();
+    	auto end_effector_pose_eigen = Converter::geometryPosetoMatrix4d(end_effector_pose);
+    	Eigen::Matrix4d T_endlink_to_c;
+    	T_endlink_to_c << 0, 0, 1, 0.02,
+						  -1, 0, 0, -0.013,
+						  0, -1, 0, 0.13,  //实际为0.13(用于ros)，改为0.07(用于gpmp2 forwardKinematics)
+						  0, 0, 0, 1;
+    	Eigen::Matrix4d T_baselink_to_c = end_effector_pose_eigen * T_endlink_to_c;
+    	Eigen::MatrixXd H1_camerapose;
+    	Eigen::Vector4d err_bbox = factor3.evaluateError(gtsam::Pose3(T_baselink_to_c), Quadric, &H1_camerapose, {});
+    	Eigen::Vector4d measure_bbox = factor3.getMeasureBounds (gtsam::Pose3(T_baselink_to_c), Quadric);
+    	Eigen::Vector4d predict_bbox = factor3.getPredictedBounds (gtsam::Pose3(T_baselink_to_c), Quadric);
+
+		// （4）测试factor4
+    	err_bbox = factor4.evaluateError(config, &H1_camerapose);
+    	measure_bbox = gtsam_bbox.vector();
+    	predict_bbox = factor4.getPredictedBounds (config);
+
+        #include <opencv2/opencv.hpp>
+        double board = 200;
+        cv::Mat image = cv::Mat::zeros(CameraHeight+board*2, CameraWidth+board*2, CV_8UC3);
+        cv::Rect FOV_cvmat(board, board, CameraWidth, CameraHeight);
+        cv::Rect measure_bbox_cvmat(measure_bbox[0]+board, measure_bbox[1]+board, measure_bbox[2]-measure_bbox[0], measure_bbox[3]-measure_bbox[1]);
+        cv::Rect predict_bbox_cvmat(predict_bbox[0]+board, predict_bbox[1]+board, predict_bbox[2]-predict_bbox[0], predict_bbox[3]-predict_bbox[1]);
+        cv::rectangle(image, FOV_cvmat, cv::Scalar(255, 255, 255), 2);
+        cv::rectangle(image, measure_bbox_cvmat, cv::Scalar(255, 0, 0), 2);
+        cv::rectangle(image, predict_bbox_cvmat, cv::Scalar(0, 255, 0), 2);
+        cv::imshow("Bounding Boxes", image);
+        cv::waitKey(100);
+
+    	// std::cout<<" [debug] err_bbox:     "<<err_bbox.transpose()<<std::endl;
+        // std::cout<<" [debug] measure_bbox: "<<measure_bbox.transpose()<<std::endl;
+        // std::cout<<" [debug] predict_bbox: "<<predict_bbox.transpose()<<std::endl;
+        // std::cout<<" [debug] H1:     \n"<<H1_camerapose<<std::endl;
+
+    	std::cout<<"end"<<std::endl;
+
 
         // std::cout << "Press [ENTER] to continue ... , [y] to autonomous mode" << std::endl;
         // char key = getchar();

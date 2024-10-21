@@ -51,14 +51,36 @@
 + 修改WAM机械臂的DH参数和去掉了抓持爪子的避障球
 + 构建新类Visualize_Arm_Tools，可视化机械臂的避障球和各关节坐标   
 
-# 自制本体视场和椭球体的gtsam因子, 失败
+# 自制本体视场和椭球体的gtsam因子, 失败  commit c177660de487b4f09f0f226999b70c40c0fb4c1e
 + 生成BboxPlaneEllipsoidFactor因子，
 + 在TestBboxPlaneArmLink.cpp中验证了bbox平面的准确性
 + 构建evaluateError。
 + 在Visualize_Arm_Tools，可视化bbox平面？？ 
 + 待解决 误差和偏导·+问题：引入lzw的椭球。椭球会不会和平面的距离计算函数（拉格朗日）会不会和gtsam冲突？
 
+# 移植改造验证官方椭球体的gtsam因子，构建了BboxEllipsoidFactor
++ 通过cv::imshow验证了ERROR的准确性
++ 验证了偏导(bbox_Error/Pose3)是4x6的矩阵
+ *H1 = db_dC * dC_dx;
+    + db_dC 为4x9, 误差向量 对 圆锥二次曲面参数（dual conic parameters） 的导数：
+    + dC_dx 为9x6,  dual conic 参数 相对于 相机位姿（pose）参数 的导数：
++ 构建了BoundingBoxFactor因子，需要输入“机器人位姿”和“物体位姿”
 
+
+
+# 三维二次曲面 Class ConstrainedDualQuadric
++ 
+
+# 平面二次曲线 Class DualConic
++ gtsam::Matrix33 dC_;  ///< 3x3 matrix of the quadratic equation
++ 
+
+# 二次曲面的投影工具  Class QuadricCamera
++ QuadricCamera::project(quadric, camera_pose, calibration_, &dC_dq, dC_dx);
++ 其中 Eigen::Matrix<double, 9, 6> dC_dx 代表二次曲面对相机位姿的偏导？？？ 
++ 
+
+#
 + 待：验证gpmp能否输入（GenerateCandidates_ellipse_by_circle）的结果，从而使的规划结果更顺滑。
 + 待：暂时，在底盘的结果上加上扰动，代表底盘的运动。验证效果之后，再改回来
 

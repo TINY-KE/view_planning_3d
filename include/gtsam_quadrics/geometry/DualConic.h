@@ -22,6 +22,7 @@
 #include <gtsam/geometry/Cal3_S2.h>
 #include <gtsam/geometry/Pose2.h>
 #include <gtsam_quadrics/geometry/AlignedBox2.h>
+#include <boost/shared_ptr.hpp> 
 
 namespace gtsam_quadrics {
 
@@ -31,6 +32,15 @@ namespace gtsam_quadrics {
  */
 class DualConic {
  protected:
+  // 对偶二次曲线C：  Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
+  //    | A    B/2  D/2 |
+  // C =| B/2A C    E/2 |
+  //    | D/2  E/2  F   |
+  // 当C中心位于原点，且两轴与xy重合时，
+  //    | A 0 0  |
+  // C =| 0 C 0  |
+  //    | 0 0 -1 |
+  // 其中A是长轴平方的倒数，C是。。。
   gtsam::Matrix33 dC_;  ///< 3x3 matrix of the quadratic equation
 
  public:
@@ -61,6 +71,7 @@ class DualConic {
   /**
    * Returns the standard 2D bounds on the image plane
    * with no consideration for image dimensions
+   * 返回标准的 2D 边界框，在图像平面上没有考虑图像维度
    */
   AlignedBox2 bounds(gtsam::OptionalJacobian<4, 9> H = nullptr) const;
 

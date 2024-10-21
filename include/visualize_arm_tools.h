@@ -305,10 +305,10 @@ private:
             auto corner2_3d = transformPointToWorld(T_world_2_c, pixelToCamera(corner2));
             auto corner3_3d = transformPointToWorld(T_world_2_c, pixelToCamera(corner3));
             auto corner4_3d = transformPointToWorld(T_world_2_c, pixelToCamera(corner4));
-            std::cout<<"[debug] corner1_3d: "<<corner1_3d<<std::endl;
-            std::cout<<"[debug] corner2_3d: "<<corner2_3d<<std::endl;
-            std::cout<<"[debug] corner3_3d: "<<corner3_3d<<std::endl;
-            std::cout<<"[debug] corner4_3d: "<<corner4_3d<<std::endl;
+            // std::cout<<"[debug] corner1_3d: "<<corner1_3d<<std::endl;
+            // std::cout<<"[debug] corner2_3d: "<<corner2_3d<<std::endl;
+            // std::cout<<"[debug] corner3_3d: "<<corner3_3d<<std::endl;
+            // std::cout<<"[debug] corner4_3d: "<<corner4_3d<<std::endl;
             std::cout<<std::endl;
 
             std::vector<std::vector<geometry_msgs::Point>>  planes(4, std::vector<geometry_msgs::Point>(3));
