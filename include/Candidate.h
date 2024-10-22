@@ -3,7 +3,7 @@
 
 #include <Eigen/Dense>
 #include <vector>
-#include "Object.h"
+#include "MapObject.h"
 #include "gazebo_rviz_tools.h"
 #include <tf/tf.h>
 #include "tf/transform_datatypes.h"
@@ -113,7 +113,7 @@ class Candidate{
 
 
 
-std::vector<Candidate> GenerateCandidates1( SdfObject& sdf_object, geometry_msgs::Pose& robot_footprint_pose, double radius=3 , double pitch=0.5){
+std::vector<Candidate> GenerateCandidates1( MapObject& sdf_object, geometry_msgs::Pose& robot_footprint_pose, double radius=3 , double pitch=0.5){
 
     // 相机的目标位姿
     double footprint_x = robot_footprint_pose.position.x;
@@ -125,9 +125,9 @@ std::vector<Candidate> GenerateCandidates1( SdfObject& sdf_object, geometry_msgs
     double camera_z = 1.0;
 
     // 物体的位姿
-    double object_x = sdf_object.x;
-    double object_y = sdf_object.y;
-    double object_z = sdf_object.z;
+    double object_x = sdf_object.mCuboid3D.cuboidCenter.x();
+    double object_y = sdf_object.mCuboid3D.cuboidCenter.y();
+    double object_z = sdf_object.mCuboid3D.cuboidCenter.z();
     
     // 计算相机的朝向
     double deltaX = object_x - camera_x;
@@ -174,15 +174,15 @@ std::vector<Candidate> GenerateCandidates1( SdfObject& sdf_object, geometry_msgs
 
 
 
-std::vector<geometry_msgs::Pose> GenerateCandidates_circle( SdfObject& sdf_object, double radius=3 ){
+std::vector<geometry_msgs::Pose> GenerateCandidates_circle( MapObject& sdf_object, double radius=3 ){
 
     std::vector<geometry_msgs::Pose> candidates;
     
     double angle = 0;
     // 物体的位姿
-    double object_x = sdf_object.x;
-    double object_y = sdf_object.y;
-    double object_z = sdf_object.z;
+    double object_x = sdf_object.mCuboid3D.cuboidCenter.x();
+    double object_y = sdf_object.mCuboid3D.cuboidCenter.y();
+    double object_z = sdf_object.mCuboid3D.cuboidCenter.z();
 
     for(int i=0; i<18; i++){
 
@@ -352,21 +352,21 @@ double calculateAngleWithXAxis(const Ellipse& ellipse, const Point& A) {
     return angleInDegrees; // 转换为度数
 }
 
-std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse( SdfObject& sdf_object, double radius=3 /*短轴*/){
+std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse( MapObject& sdf_object, double radius=3 /*短轴*/){
 
     std::vector<geometry_msgs::Pose> candidates;
     // 长轴和短轴
     double a = radius;
-    double b = radius*sdf_object.length/sdf_object.width;
+    double b = radius*sdf_object.mCuboid3D.lenth/sdf_object.mCuboid3D.width;
 
     // 物体的位姿
-    double object_x = sdf_object.x;
-    double object_y = sdf_object.y;
-    double object_z = sdf_object.z;
+    double object_x = sdf_object.mCuboid3D.cuboidCenter.x();
+    double object_y = sdf_object.mCuboid3D.cuboidCenter.y();
+    double object_z = sdf_object.mCuboid3D.cuboidCenter.z();
 
     std::vector<Point> InterS;
     
-    Ellipse ellipse = { a, b, sdf_object.x, sdf_object.y };
+    Ellipse ellipse = { a, b, sdf_object.mCuboid3D.cuboidCenter.x(), sdf_object.mCuboid3D.cuboidCenter.y() };
 
     for(int i=18; i>0; i--){
 
@@ -447,7 +447,7 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse( SdfObject& sdf_obje
 }
 
 
-std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse_by_circle( SdfObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, double radius=3 /*短轴*/  ){
+std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse_by_circle( MapObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, double radius=3 /*短轴*/ , bool forCamera = false ){
 
     std::vector<geometry_msgs::Pose> candidates;
     // 长轴和短轴
@@ -459,13 +459,13 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse_by_circle( SdfObject
     radius += 0.4;
 
     // 物体的位姿
-    double object_x = sdf_object.x;
-    double object_y = sdf_object.y;
+    double object_x = sdf_object.mCuboid3D.cuboidCenter.x();
+    double object_y = sdf_object.mCuboid3D.cuboidCenter.y();
     double object_z = 0;
 
     std::vector<Point> InterS;
     
-    Ellipse ellipse = { a, b, sdf_object.x, sdf_object.y };
+    Ellipse ellipse = { a, b, sdf_object.mCuboid3D.cuboidCenter.x(), sdf_object.mCuboid3D.cuboidCenter.y() };
 
     int divide = 60*4;
     double Max_angle_range = 2*M_PI;
@@ -479,7 +479,7 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse_by_circle( SdfObject
         double footprint_x = radius*cos(angle)+object_x;
         double footprint_y = radius*sin(angle)+object_y;
         double footprint_z = 0.0;   
-        Ellipse circle = { a, a, sdf_object.x, sdf_object.y };
+        Ellipse circle = { a, a, sdf_object.mCuboid3D.cuboidCenter.x(), sdf_object.mCuboid3D.cuboidCenter.y() };
         Point intersection_circle{footprint_x,footprint_y};
         double delta_yaw_footprint = calculateAngleWithXAxis(circle, intersection_circle);  // 圆上切线与x轴的夹角
         tf::Quaternion q_footprint = tf::createQuaternionFromRPY(0, 0, delta_yaw_footprint/180*M_PI);
@@ -542,15 +542,15 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse_by_circle( SdfObject
 }
 
 
-std::vector<geometry_msgs::Pose> GenerateCandidates_future( SdfObject& sdf_object, Eigen::Matrix3f& robot_pose, double radius=3 ){
+std::vector<geometry_msgs::Pose> GenerateCandidates_future( MapObject& sdf_object, Eigen::Matrix3f& robot_pose, double radius=3 ){
 
     std::vector<geometry_msgs::Pose> candidates;
     
     double angle = 0;
     // 物体的位姿
-    double object_x = sdf_object.x;
-    double object_y = sdf_object.y;
-    double object_z = sdf_object.z;
+    double object_x = sdf_object.mCuboid3D.cuboidCenter.x();
+    double object_y = sdf_object.mCuboid3D.cuboidCenter.y();
+    double object_z = sdf_object.mCuboid3D.cuboidCenter.z();
 
     for(int i=0; i<18; i++){
 

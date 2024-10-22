@@ -88,7 +88,7 @@
 #include "Obstacles.h"
 #include "ConverterTools.h"
 
-#include "CalculateTools.h"
+// #include "CalculateTools.h"
 
 using namespace std;
 using namespace gtsam;
@@ -115,17 +115,6 @@ enum opt_type {
     DOGLEG = 3
 };
 
-gtsam::Vector stdVectorToGtsamVector(const std::vector<double>& joint_values) {
-    int num = joint_values.size();
-
-    // 创建 gtsam::Vector (Eigen::VectorXd) 并赋值
-    gtsam::Vector gtsamVector(num);
-    for (size_t i = 0; i < num; ++i) {
-        gtsamVector(i) = joint_values[i];
-    }
-
-    return gtsamVector;
-}
 
 int main(int argc, char** argv){
     ros::init(argc, argv, "gpmp_wam", ros::init_options::AnonymousName);
@@ -161,7 +150,7 @@ int main(int argc, char** argv){
 
     // 二、指定始末状态
     // TODO:  用moveit计算初始位置，当前先使用全0的初始值
-      int type_start = 1;
+      int type_start = 0;
     gtsam::Vector start_conf, end_conf;
     gtsam::Vector start_vel, end_vel;
     Rot3 traj_orien;
@@ -169,9 +158,9 @@ int main(int argc, char** argv){
     if(type_start==0){
         // start_conf = (Vector(7) << -3.084730575741016, -1.763304599691998, 1.8552083929655296, 0.43301604856981246, -2.672461979658843, 0.46925065047728776, 4.000864693936108).finished();
         // end_conf = (Vector(7) << -2.018431036907354, -1.4999897089911451, 1.4046777996889483, -1.3707039693409548, -3.0999924865261397, -0.8560425214202461, 4.8622166345079165).finished();
-        end_conf = (Vector(7) << -0.8,-1.70,1.64,1.29,1.1,-0.106,2.2).finished();
-        start_conf = (Vector(7) << -0.0,0.94,0,1.6,0,-0.919,1.55).finished();
-
+        start_conf = (Vector(7) << -0.8,-1.70,1.64,1.29,1.1,-0.106,2.2).finished();
+        end_conf = (Vector(7) << -0.0,0.94,0,1.6,0,-0.919,1.55).finished();
+        
         start_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();
         end_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();  
         

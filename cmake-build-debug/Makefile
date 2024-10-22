@@ -1849,97 +1849,6 @@ timing/fast:
 .PHONY : timing/fast
 
 #=============================================================================
-# Target rules for targets named sdf_visulization
-
-# Build rule for target.
-sdf_visulization: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 sdf_visulization
-.PHONY : sdf_visulization
-
-# fast build rule for target.
-sdf_visulization/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sdf_visulization.dir/build.make CMakeFiles/sdf_visulization.dir/build
-.PHONY : sdf_visulization/fast
-
-#=============================================================================
-# Target rules for targets named wam_ik_only_endpoint
-
-# Build rule for target.
-wam_ik_only_endpoint: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 wam_ik_only_endpoint
-.PHONY : wam_ik_only_endpoint
-
-# fast build rule for target.
-wam_ik_only_endpoint/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_ik_only_endpoint.dir/build.make CMakeFiles/wam_ik_only_endpoint.dir/build
-.PHONY : wam_ik_only_endpoint/fast
-
-#=============================================================================
-# Target rules for targets named circle_wam
-
-# Build rule for target.
-circle_wam: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 circle_wam
-.PHONY : circle_wam
-
-# fast build rule for target.
-circle_wam/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/circle_wam.dir/build.make CMakeFiles/circle_wam.dir/build
-.PHONY : circle_wam/fast
-
-#=============================================================================
-# Target rules for targets named object_direction
-
-# Build rule for target.
-object_direction: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 object_direction
-.PHONY : object_direction
-
-# fast build rule for target.
-object_direction/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/object_direction.dir/build.make CMakeFiles/object_direction.dir/build
-.PHONY : object_direction/fast
-
-#=============================================================================
-# Target rules for targets named wam_getfromik
-
-# Build rule for target.
-wam_getfromik: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 wam_getfromik
-.PHONY : wam_getfromik
-
-# fast build rule for target.
-wam_getfromik/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_getfromik.dir/build.make CMakeFiles/wam_getfromik.dir/build
-.PHONY : wam_getfromik/fast
-
-#=============================================================================
-# Target rules for targets named gpmp_wam_Reproduce_Matlab
-
-# Build rule for target.
-gpmp_wam_Reproduce_Matlab: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 gpmp_wam_Reproduce_Matlab
-.PHONY : gpmp_wam_Reproduce_Matlab
-
-# fast build rule for target.
-gpmp_wam_Reproduce_Matlab/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/gpmp_wam_Reproduce_Matlab.dir/build.make CMakeFiles/gpmp_wam_Reproduce_Matlab.dir/build
-.PHONY : gpmp_wam_Reproduce_Matlab/fast
-
-#=============================================================================
-# Target rules for targets named ellipse_debug
-
-# Build rule for target.
-ellipse_debug: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ellipse_debug
-.PHONY : ellipse_debug
-
-# fast build rule for target.
-ellipse_debug/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ellipse_debug.dir/build.make CMakeFiles/ellipse_debug.dir/build
-.PHONY : ellipse_debug/fast
-
-#=============================================================================
 # Target rules for targets named utils
 
 # Build rule for target.
@@ -1951,32 +1860,6 @@ utils: cmake_check_build_system
 utils/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/utils.dir/build.make CMakeFiles/utils.dir/build
 .PHONY : utils/fast
-
-#=============================================================================
-# Target rules for targets named error_cube_camera_debug
-
-# Build rule for target.
-error_cube_camera_debug: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 error_cube_camera_debug
-.PHONY : error_cube_camera_debug
-
-# fast build rule for target.
-error_cube_camera_debug/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/build
-.PHONY : error_cube_camera_debug/fast
-
-#=============================================================================
-# Target rules for targets named error_plane_endlink_debug
-
-# Build rule for target.
-error_plane_endlink_debug: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 error_plane_endlink_debug
-.PHONY : error_plane_endlink_debug
-
-# fast build rule for target.
-error_plane_endlink_debug/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/build
-.PHONY : error_plane_endlink_debug/fast
 
 #=============================================================================
 # Target rules for targets named gtsam_quadrics
@@ -2003,6 +1886,32 @@ TestGtasmFactor: cmake_check_build_system
 TestGtasmFactor/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/build
 .PHONY : TestGtasmFactor/fast
+
+#=============================================================================
+# Target rules for targets named gpmp_wam_Reproduce_Matlab
+
+# Build rule for target.
+gpmp_wam_Reproduce_Matlab: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 gpmp_wam_Reproduce_Matlab
+.PHONY : gpmp_wam_Reproduce_Matlab
+
+# fast build rule for target.
+gpmp_wam_Reproduce_Matlab/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/gpmp_wam_Reproduce_Matlab.dir/build.make CMakeFiles/gpmp_wam_Reproduce_Matlab.dir/build
+.PHONY : gpmp_wam_Reproduce_Matlab/fast
+
+#=============================================================================
+# Target rules for targets named wam_gpmp
+
+# Build rule for target.
+wam_gpmp: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 wam_gpmp
+.PHONY : wam_gpmp
+
+# fast build rule for target.
+wam_gpmp/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_gpmp.dir/build.make CMakeFiles/wam_gpmp.dir/build
+.PHONY : wam_gpmp/fast
 
 #=============================================================================
 # Target rules for targets named gmock
@@ -2266,9 +2175,8 @@ src_object/Converter.o: src_object/Converter.cc.o
 
 # target to build an object file
 src_object/Converter.cc.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/Converter.cc.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/Converter.cc.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/Converter.cc.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_gpmp.dir/build.make CMakeFiles/wam_gpmp.dir/src_object/Converter.cc.o
 .PHONY : src_object/Converter.cc.o
 
 src_object/Converter.i: src_object/Converter.cc.i
@@ -2276,9 +2184,8 @@ src_object/Converter.i: src_object/Converter.cc.i
 
 # target to preprocess a source file
 src_object/Converter.cc.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/Converter.cc.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/Converter.cc.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/Converter.cc.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_gpmp.dir/build.make CMakeFiles/wam_gpmp.dir/src_object/Converter.cc.i
 .PHONY : src_object/Converter.cc.i
 
 src_object/Converter.s: src_object/Converter.cc.s
@@ -2286,9 +2193,8 @@ src_object/Converter.s: src_object/Converter.cc.s
 
 # target to generate assembly for a file
 src_object/Converter.cc.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/Converter.cc.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/Converter.cc.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/Converter.cc.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_gpmp.dir/build.make CMakeFiles/wam_gpmp.dir/src_object/Converter.cc.s
 .PHONY : src_object/Converter.cc.s
 
 src_object/MapObject.o: src_object/MapObject.cpp.o
@@ -2296,9 +2202,8 @@ src_object/MapObject.o: src_object/MapObject.cpp.o
 
 # target to build an object file
 src_object/MapObject.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/MapObject.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/MapObject.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/MapObject.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_gpmp.dir/build.make CMakeFiles/wam_gpmp.dir/src_object/MapObject.cpp.o
 .PHONY : src_object/MapObject.cpp.o
 
 src_object/MapObject.i: src_object/MapObject.cpp.i
@@ -2306,9 +2211,8 @@ src_object/MapObject.i: src_object/MapObject.cpp.i
 
 # target to preprocess a source file
 src_object/MapObject.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/MapObject.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/MapObject.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/MapObject.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_gpmp.dir/build.make CMakeFiles/wam_gpmp.dir/src_object/MapObject.cpp.i
 .PHONY : src_object/MapObject.cpp.i
 
 src_object/MapObject.s: src_object/MapObject.cpp.s
@@ -2316,9 +2220,8 @@ src_object/MapObject.s: src_object/MapObject.cpp.s
 
 # target to generate assembly for a file
 src_object/MapObject.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/MapObject.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/MapObject.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/MapObject.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_gpmp.dir/build.make CMakeFiles/wam_gpmp.dir/src_object/MapObject.cpp.s
 .PHONY : src_object/MapObject.cpp.s
 
 src_object/core/ConstrainPlane.o: src_object/core/ConstrainPlane.cpp.o
@@ -2326,8 +2229,6 @@ src_object/core/ConstrainPlane.o: src_object/core/ConstrainPlane.cpp.o
 
 # target to build an object file
 src_object/core/ConstrainPlane.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/ConstrainPlane.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/ConstrainPlane.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/ConstrainPlane.cpp.o
 .PHONY : src_object/core/ConstrainPlane.cpp.o
 
@@ -2336,8 +2237,6 @@ src_object/core/ConstrainPlane.i: src_object/core/ConstrainPlane.cpp.i
 
 # target to preprocess a source file
 src_object/core/ConstrainPlane.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/ConstrainPlane.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/ConstrainPlane.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/ConstrainPlane.cpp.i
 .PHONY : src_object/core/ConstrainPlane.cpp.i
 
@@ -2346,8 +2245,6 @@ src_object/core/ConstrainPlane.s: src_object/core/ConstrainPlane.cpp.s
 
 # target to generate assembly for a file
 src_object/core/ConstrainPlane.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/ConstrainPlane.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/ConstrainPlane.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/ConstrainPlane.cpp.s
 .PHONY : src_object/core/ConstrainPlane.cpp.s
 
@@ -2356,8 +2253,6 @@ src_object/core/Ellipsoid.o: src_object/core/Ellipsoid.cpp.o
 
 # target to build an object file
 src_object/core/Ellipsoid.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Ellipsoid.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Ellipsoid.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/Ellipsoid.cpp.o
 .PHONY : src_object/core/Ellipsoid.cpp.o
 
@@ -2366,8 +2261,6 @@ src_object/core/Ellipsoid.i: src_object/core/Ellipsoid.cpp.i
 
 # target to preprocess a source file
 src_object/core/Ellipsoid.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Ellipsoid.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Ellipsoid.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/Ellipsoid.cpp.i
 .PHONY : src_object/core/Ellipsoid.cpp.i
 
@@ -2376,8 +2269,6 @@ src_object/core/Ellipsoid.s: src_object/core/Ellipsoid.cpp.s
 
 # target to generate assembly for a file
 src_object/core/Ellipsoid.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Ellipsoid.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Ellipsoid.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/Ellipsoid.cpp.s
 .PHONY : src_object/core/Ellipsoid.cpp.s
 
@@ -2386,8 +2277,6 @@ src_object/core/Plane.o: src_object/core/Plane.cpp.o
 
 # target to build an object file
 src_object/core/Plane.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Plane.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Plane.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/Plane.cpp.o
 .PHONY : src_object/core/Plane.cpp.o
 
@@ -2396,8 +2285,6 @@ src_object/core/Plane.i: src_object/core/Plane.cpp.i
 
 # target to preprocess a source file
 src_object/core/Plane.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Plane.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Plane.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/Plane.cpp.i
 .PHONY : src_object/core/Plane.cpp.i
 
@@ -2406,58 +2293,8 @@ src_object/core/Plane.s: src_object/core/Plane.cpp.s
 
 # target to generate assembly for a file
 src_object/core/Plane.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/core/Plane.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/core/Plane.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/TestGtasmFactor.dir/build.make CMakeFiles/TestGtasmFactor.dir/src_object/core/Plane.cpp.s
 .PHONY : src_object/core/Plane.cpp.s
-
-src_object/error_cube_camera_debug.o: src_object/error_cube_camera_debug.cpp.o
-.PHONY : src_object/error_cube_camera_debug.o
-
-# target to build an object file
-src_object/error_cube_camera_debug.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/error_cube_camera_debug.cpp.o
-.PHONY : src_object/error_cube_camera_debug.cpp.o
-
-src_object/error_cube_camera_debug.i: src_object/error_cube_camera_debug.cpp.i
-.PHONY : src_object/error_cube_camera_debug.i
-
-# target to preprocess a source file
-src_object/error_cube_camera_debug.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/error_cube_camera_debug.cpp.i
-.PHONY : src_object/error_cube_camera_debug.cpp.i
-
-src_object/error_cube_camera_debug.s: src_object/error_cube_camera_debug.cpp.s
-.PHONY : src_object/error_cube_camera_debug.s
-
-# target to generate assembly for a file
-src_object/error_cube_camera_debug.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_cube_camera_debug.dir/build.make CMakeFiles/error_cube_camera_debug.dir/src_object/error_cube_camera_debug.cpp.s
-.PHONY : src_object/error_cube_camera_debug.cpp.s
-
-src_object/error_plane_endlink_debug.o: src_object/error_plane_endlink_debug.cpp.o
-.PHONY : src_object/error_plane_endlink_debug.o
-
-# target to build an object file
-src_object/error_plane_endlink_debug.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/error_plane_endlink_debug.cpp.o
-.PHONY : src_object/error_plane_endlink_debug.cpp.o
-
-src_object/error_plane_endlink_debug.i: src_object/error_plane_endlink_debug.cpp.i
-.PHONY : src_object/error_plane_endlink_debug.i
-
-# target to preprocess a source file
-src_object/error_plane_endlink_debug.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/error_plane_endlink_debug.cpp.i
-.PHONY : src_object/error_plane_endlink_debug.cpp.i
-
-src_object/error_plane_endlink_debug.s: src_object/error_plane_endlink_debug.cpp.s
-.PHONY : src_object/error_plane_endlink_debug.s
-
-# target to generate assembly for a file
-src_object/error_plane_endlink_debug.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/error_plane_endlink_debug.dir/build.make CMakeFiles/error_plane_endlink_debug.dir/src_object/error_plane_endlink_debug.cpp.s
-.PHONY : src_object/error_plane_endlink_debug.cpp.s
 
 src_object/utils/dataprocess_utils.o: src_object/utils/dataprocess_utils.cpp.o
 .PHONY : src_object/utils/dataprocess_utils.o
@@ -2531,54 +2368,6 @@ src_object/utils/matrix_utils.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/utils.dir/build.make CMakeFiles/utils.dir/src_object/utils/matrix_utils.cpp.s
 .PHONY : src_object/utils/matrix_utils.cpp.s
 
-src_wam/circle_wam.o: src_wam/circle_wam.cpp.o
-.PHONY : src_wam/circle_wam.o
-
-# target to build an object file
-src_wam/circle_wam.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/circle_wam.dir/build.make CMakeFiles/circle_wam.dir/src_wam/circle_wam.cpp.o
-.PHONY : src_wam/circle_wam.cpp.o
-
-src_wam/circle_wam.i: src_wam/circle_wam.cpp.i
-.PHONY : src_wam/circle_wam.i
-
-# target to preprocess a source file
-src_wam/circle_wam.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/circle_wam.dir/build.make CMakeFiles/circle_wam.dir/src_wam/circle_wam.cpp.i
-.PHONY : src_wam/circle_wam.cpp.i
-
-src_wam/circle_wam.s: src_wam/circle_wam.cpp.s
-.PHONY : src_wam/circle_wam.s
-
-# target to generate assembly for a file
-src_wam/circle_wam.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/circle_wam.dir/build.make CMakeFiles/circle_wam.dir/src_wam/circle_wam.cpp.s
-.PHONY : src_wam/circle_wam.cpp.s
-
-src_wam/ellipse_debug.o: src_wam/ellipse_debug.cpp.o
-.PHONY : src_wam/ellipse_debug.o
-
-# target to build an object file
-src_wam/ellipse_debug.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ellipse_debug.dir/build.make CMakeFiles/ellipse_debug.dir/src_wam/ellipse_debug.cpp.o
-.PHONY : src_wam/ellipse_debug.cpp.o
-
-src_wam/ellipse_debug.i: src_wam/ellipse_debug.cpp.i
-.PHONY : src_wam/ellipse_debug.i
-
-# target to preprocess a source file
-src_wam/ellipse_debug.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ellipse_debug.dir/build.make CMakeFiles/ellipse_debug.dir/src_wam/ellipse_debug.cpp.i
-.PHONY : src_wam/ellipse_debug.cpp.i
-
-src_wam/ellipse_debug.s: src_wam/ellipse_debug.cpp.s
-.PHONY : src_wam/ellipse_debug.s
-
-# target to generate assembly for a file
-src_wam/ellipse_debug.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ellipse_debug.dir/build.make CMakeFiles/ellipse_debug.dir/src_wam/ellipse_debug.cpp.s
-.PHONY : src_wam/ellipse_debug.cpp.s
-
 src_wam/gpmp_wam_Reproduce_Matlab.o: src_wam/gpmp_wam_Reproduce_Matlab.cpp.o
 .PHONY : src_wam/gpmp_wam_Reproduce_Matlab.o
 
@@ -2603,101 +2392,29 @@ src_wam/gpmp_wam_Reproduce_Matlab.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gpmp_wam_Reproduce_Matlab.dir/build.make CMakeFiles/gpmp_wam_Reproduce_Matlab.dir/src_wam/gpmp_wam_Reproduce_Matlab.cpp.s
 .PHONY : src_wam/gpmp_wam_Reproduce_Matlab.cpp.s
 
-src_wam/object_direction.o: src_wam/object_direction.cpp.o
-.PHONY : src_wam/object_direction.o
+src_wam/wam_gpmp.o: src_wam/wam_gpmp.cpp.o
+.PHONY : src_wam/wam_gpmp.o
 
 # target to build an object file
-src_wam/object_direction.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/object_direction.dir/build.make CMakeFiles/object_direction.dir/src_wam/object_direction.cpp.o
-.PHONY : src_wam/object_direction.cpp.o
+src_wam/wam_gpmp.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_gpmp.dir/build.make CMakeFiles/wam_gpmp.dir/src_wam/wam_gpmp.cpp.o
+.PHONY : src_wam/wam_gpmp.cpp.o
 
-src_wam/object_direction.i: src_wam/object_direction.cpp.i
-.PHONY : src_wam/object_direction.i
-
-# target to preprocess a source file
-src_wam/object_direction.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/object_direction.dir/build.make CMakeFiles/object_direction.dir/src_wam/object_direction.cpp.i
-.PHONY : src_wam/object_direction.cpp.i
-
-src_wam/object_direction.s: src_wam/object_direction.cpp.s
-.PHONY : src_wam/object_direction.s
-
-# target to generate assembly for a file
-src_wam/object_direction.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/object_direction.dir/build.make CMakeFiles/object_direction.dir/src_wam/object_direction.cpp.s
-.PHONY : src_wam/object_direction.cpp.s
-
-src_wam/sdf_visulization.o: src_wam/sdf_visulization.cpp.o
-.PHONY : src_wam/sdf_visulization.o
-
-# target to build an object file
-src_wam/sdf_visulization.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sdf_visulization.dir/build.make CMakeFiles/sdf_visulization.dir/src_wam/sdf_visulization.cpp.o
-.PHONY : src_wam/sdf_visulization.cpp.o
-
-src_wam/sdf_visulization.i: src_wam/sdf_visulization.cpp.i
-.PHONY : src_wam/sdf_visulization.i
+src_wam/wam_gpmp.i: src_wam/wam_gpmp.cpp.i
+.PHONY : src_wam/wam_gpmp.i
 
 # target to preprocess a source file
-src_wam/sdf_visulization.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sdf_visulization.dir/build.make CMakeFiles/sdf_visulization.dir/src_wam/sdf_visulization.cpp.i
-.PHONY : src_wam/sdf_visulization.cpp.i
+src_wam/wam_gpmp.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_gpmp.dir/build.make CMakeFiles/wam_gpmp.dir/src_wam/wam_gpmp.cpp.i
+.PHONY : src_wam/wam_gpmp.cpp.i
 
-src_wam/sdf_visulization.s: src_wam/sdf_visulization.cpp.s
-.PHONY : src_wam/sdf_visulization.s
-
-# target to generate assembly for a file
-src_wam/sdf_visulization.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sdf_visulization.dir/build.make CMakeFiles/sdf_visulization.dir/src_wam/sdf_visulization.cpp.s
-.PHONY : src_wam/sdf_visulization.cpp.s
-
-src_wam/wam_getfromik_debug.o: src_wam/wam_getfromik_debug.cpp.o
-.PHONY : src_wam/wam_getfromik_debug.o
-
-# target to build an object file
-src_wam/wam_getfromik_debug.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_getfromik.dir/build.make CMakeFiles/wam_getfromik.dir/src_wam/wam_getfromik_debug.cpp.o
-.PHONY : src_wam/wam_getfromik_debug.cpp.o
-
-src_wam/wam_getfromik_debug.i: src_wam/wam_getfromik_debug.cpp.i
-.PHONY : src_wam/wam_getfromik_debug.i
-
-# target to preprocess a source file
-src_wam/wam_getfromik_debug.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_getfromik.dir/build.make CMakeFiles/wam_getfromik.dir/src_wam/wam_getfromik_debug.cpp.i
-.PHONY : src_wam/wam_getfromik_debug.cpp.i
-
-src_wam/wam_getfromik_debug.s: src_wam/wam_getfromik_debug.cpp.s
-.PHONY : src_wam/wam_getfromik_debug.s
+src_wam/wam_gpmp.s: src_wam/wam_gpmp.cpp.s
+.PHONY : src_wam/wam_gpmp.s
 
 # target to generate assembly for a file
-src_wam/wam_getfromik_debug.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_getfromik.dir/build.make CMakeFiles/wam_getfromik.dir/src_wam/wam_getfromik_debug.cpp.s
-.PHONY : src_wam/wam_getfromik_debug.cpp.s
-
-src_wam/wam_ik_only_endpoint.o: src_wam/wam_ik_only_endpoint.cpp.o
-.PHONY : src_wam/wam_ik_only_endpoint.o
-
-# target to build an object file
-src_wam/wam_ik_only_endpoint.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_ik_only_endpoint.dir/build.make CMakeFiles/wam_ik_only_endpoint.dir/src_wam/wam_ik_only_endpoint.cpp.o
-.PHONY : src_wam/wam_ik_only_endpoint.cpp.o
-
-src_wam/wam_ik_only_endpoint.i: src_wam/wam_ik_only_endpoint.cpp.i
-.PHONY : src_wam/wam_ik_only_endpoint.i
-
-# target to preprocess a source file
-src_wam/wam_ik_only_endpoint.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_ik_only_endpoint.dir/build.make CMakeFiles/wam_ik_only_endpoint.dir/src_wam/wam_ik_only_endpoint.cpp.i
-.PHONY : src_wam/wam_ik_only_endpoint.cpp.i
-
-src_wam/wam_ik_only_endpoint.s: src_wam/wam_ik_only_endpoint.cpp.s
-.PHONY : src_wam/wam_ik_only_endpoint.s
-
-# target to generate assembly for a file
-src_wam/wam_ik_only_endpoint.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_ik_only_endpoint.dir/build.make CMakeFiles/wam_ik_only_endpoint.dir/src_wam/wam_ik_only_endpoint.cpp.s
-.PHONY : src_wam/wam_ik_only_endpoint.cpp.s
+src_wam/wam_gpmp.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wam_gpmp.dir/build.make CMakeFiles/wam_gpmp.dir/src_wam/wam_gpmp.cpp.s
+.PHONY : src_wam/wam_gpmp.cpp.s
 
 # Help Target
 help:
@@ -2843,21 +2560,14 @@ help:
 	@echo "... visualization_msgs_generate_messages_py"
 	@echo "... Polygon"
 	@echo "... TestGtasmFactor"
-	@echo "... circle_wam"
-	@echo "... ellipse_debug"
-	@echo "... error_cube_camera_debug"
-	@echo "... error_plane_endlink_debug"
 	@echo "... gmock"
 	@echo "... gmock_main"
 	@echo "... gpmp_wam_Reproduce_Matlab"
 	@echo "... gtest"
 	@echo "... gtest_main"
 	@echo "... gtsam_quadrics"
-	@echo "... object_direction"
-	@echo "... sdf_visulization"
 	@echo "... utils"
-	@echo "... wam_getfromik"
-	@echo "... wam_ik_only_endpoint"
+	@echo "... wam_gpmp"
 	@echo "... src_example/TestGtasmFactor.o"
 	@echo "... src_example/TestGtasmFactor.i"
 	@echo "... src_example/TestGtasmFactor.s"
@@ -2897,12 +2607,6 @@ help:
 	@echo "... src_object/core/Plane.o"
 	@echo "... src_object/core/Plane.i"
 	@echo "... src_object/core/Plane.s"
-	@echo "... src_object/error_cube_camera_debug.o"
-	@echo "... src_object/error_cube_camera_debug.i"
-	@echo "... src_object/error_cube_camera_debug.s"
-	@echo "... src_object/error_plane_endlink_debug.o"
-	@echo "... src_object/error_plane_endlink_debug.i"
-	@echo "... src_object/error_plane_endlink_debug.s"
 	@echo "... src_object/utils/dataprocess_utils.o"
 	@echo "... src_object/utils/dataprocess_utils.i"
 	@echo "... src_object/utils/dataprocess_utils.s"
@@ -2912,27 +2616,12 @@ help:
 	@echo "... src_object/utils/matrix_utils.o"
 	@echo "... src_object/utils/matrix_utils.i"
 	@echo "... src_object/utils/matrix_utils.s"
-	@echo "... src_wam/circle_wam.o"
-	@echo "... src_wam/circle_wam.i"
-	@echo "... src_wam/circle_wam.s"
-	@echo "... src_wam/ellipse_debug.o"
-	@echo "... src_wam/ellipse_debug.i"
-	@echo "... src_wam/ellipse_debug.s"
 	@echo "... src_wam/gpmp_wam_Reproduce_Matlab.o"
 	@echo "... src_wam/gpmp_wam_Reproduce_Matlab.i"
 	@echo "... src_wam/gpmp_wam_Reproduce_Matlab.s"
-	@echo "... src_wam/object_direction.o"
-	@echo "... src_wam/object_direction.i"
-	@echo "... src_wam/object_direction.s"
-	@echo "... src_wam/sdf_visulization.o"
-	@echo "... src_wam/sdf_visulization.i"
-	@echo "... src_wam/sdf_visulization.s"
-	@echo "... src_wam/wam_getfromik_debug.o"
-	@echo "... src_wam/wam_getfromik_debug.i"
-	@echo "... src_wam/wam_getfromik_debug.s"
-	@echo "... src_wam/wam_ik_only_endpoint.o"
-	@echo "... src_wam/wam_ik_only_endpoint.i"
-	@echo "... src_wam/wam_ik_only_endpoint.s"
+	@echo "... src_wam/wam_gpmp.o"
+	@echo "... src_wam/wam_gpmp.i"
+	@echo "... src_wam/wam_gpmp.s"
 .PHONY : help
 
 

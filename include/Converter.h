@@ -84,7 +84,8 @@ public:
     static Eigen::Isometry3d Matrix4dtoIsometry3d(const Eigen::Matrix4d &matrix );
     static Eigen::Matrix4d Isometry3dtoMatrix4d(const Eigen::Isometry3d &Iso );
     static Eigen::Matrix4d cvMattoMatrix4d(const cv::Mat &cvMat4);
-    static Eigen::Matrix4d geometryPosetoMatrix4d(const geometry_msgs::PoseStamped &pose);
+    static Eigen::Matrix4d geometryPoseStampedtoMatrix4d(const geometry_msgs::PoseStamped &pose);
+    static Eigen::Matrix4d geometryPosetoMatrix4d(const geometry_msgs::Pose &pose);
     static Eigen::Isometry3d cvMattoIsometry3d(const cv::Mat &cvMat4);
     // [zhjd g2o和gtsam冲突]
     // static g2o::SE3Quat cvMattoG2oSE3Quat(const cv::Mat &cvMat4);

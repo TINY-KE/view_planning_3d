@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "devel/lib/view_planning/gpmp_wam_Reproduce_Matlab"
+			"path" : "devel/lib/view_planning/wam_gpmp"
 		}
 	],
 	"backtrace" : 1,
@@ -57,13 +57,13 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 210,
+				"line" : 261,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 211,
+				"line" : 262,
 				"parent" : 0
 			},
 			{
@@ -669,11 +669,13 @@
 			},
 			"sourceIndexes" : 
 			[
-				0
+				0,
+				1,
+				2
 			]
 		}
 	],
-	"id" : "gpmp_wam_Reproduce_Matlab::@6890427a1f51a3e7e1df",
+	"id" : "wam_gpmp::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -1418,8 +1420,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "gpmp_wam_Reproduce_Matlab",
-	"nameOnDisk" : "gpmp_wam_Reproduce_Matlab",
+	"name" : "wam_gpmp",
+	"nameOnDisk" : "wam_gpmp",
 	"paths" : 
 	{
 		"build" : ".",
@@ -1431,7 +1433,9 @@
 			"name" : "Source Files",
 			"sourceIndexes" : 
 			[
-				0
+				0,
+				1,
+				2
 			]
 		}
 	],
@@ -1440,7 +1444,19 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src_wam/gpmp_wam_Reproduce_Matlab.cpp",
+			"path" : "src_wam/wam_gpmp.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src_object/MapObject.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src_object/Converter.cc",
 			"sourceGroupIndex" : 0
 		}
 	],

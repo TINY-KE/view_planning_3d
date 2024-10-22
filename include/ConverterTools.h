@@ -27,6 +27,8 @@
 #include<opencv2/features2d/features2d.hpp>
 #include<opencv2/core/eigen.hpp>
 
+#include <gtsam/base/Matrix.h>
+
 //eigen cv的convert
 
 // 用于计算Y轴水平、x轴指向目标点的坐标系(在我的工作中是相机Candidate坐标系)，在world中的位姿
@@ -224,6 +226,21 @@ geometry_msgs::PoseStamped eigenToPoseStamped(const Eigen::Isometry3d& eigen_pos
     
     return pose_stamped;
 }
+
+
+// 函数：将 std::vector<double> 转换为 gtsam::Vector
+gtsam::Vector stdVectorToGtsamVector(const std::vector<double>& joint_values) {
+    int num = joint_values.size();
+
+    // 创建 gtsam::Vector (Eigen::VectorXd) 并赋值
+    gtsam::Vector gtsamVector(num);
+    for (size_t i = 0; i < num; ++i) {
+        gtsamVector(i) = joint_values[i];
+    }
+
+    return gtsamVector;
+}
+
 
 // g2o::SE3Quat toSE3Quat(const cv::Mat &cvT)
 // {

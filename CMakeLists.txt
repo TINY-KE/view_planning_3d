@@ -180,50 +180,8 @@ include_directories(
 )
 
 
-
-add_executable(sdf_visulization src_wam/sdf_visulization.cpp)
-target_link_libraries(sdf_visulization   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2  ${OpenCV_LIBS})  #${Boost_LIBRARIES}
-
-
-add_executable(wam_ik_only_endpoint src_wam/wam_ik_only_endpoint.cpp)
-target_link_libraries(wam_ik_only_endpoint   ${catkin_LIBRARIES} ${EIGEN3_LIBS}   ${OpenCV_LIBS})
-
-
-add_executable(circle_wam src_wam/circle_wam.cpp)
-target_link_libraries(circle_wam   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GAZEBO_LIBRARIES}  ${OpenCV_LIBS})
-
-
-add_executable(object_direction src_wam/object_direction.cpp)
-target_link_libraries(object_direction   ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS})
-
-
-
-message(STATUS "gpmp_wam_getfromik")
-add_executable(wam_getfromik src_wam/wam_getfromik_debug.cpp )
-target_link_libraries(wam_getfromik   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
-
-# add_executable(gpmp_wam src_wam/gpmp_wam.cpp )
-# target_link_libraries(gpmp_wam   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
-
-
-message(STATUS "gpmp_wam_Reproduce_Matlab")
-add_executable(gpmp_wam_Reproduce_Matlab src_wam/gpmp_wam_Reproduce_Matlab.cpp )
-target_link_libraries(gpmp_wam_Reproduce_Matlab   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
-
-# add_executable(wam_fk_from_gpmp src_wam/wam_fk_from_gpmp.cpp)
-# target_link_libraries(wam_fk_from_gpmp   ${catkin_LIBRARIES} ${EIGEN3_LIBS} )
-
-
-add_executable(ellipse_debug src_wam/ellipse_debug.cpp)
-target_link_libraries(ellipse_debug   ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} )
-
-
-# add_subdirectory(src_object/symmetry)
-# add_subdirectory(src_object/config)
-# add_subdirectory(src_object/pca)
-# add_subdirectory(src_object/plane)
+# 一、LZW模块相关
 add_subdirectory(src_object/Polygon)
-# add_subdirectory(src_object/Relationship)
 
 add_library(utils SHARED
     src_object/utils/matrix_utils.cpp
@@ -237,46 +195,17 @@ target_link_libraries(utils
 
 find_package(Boost REQUIRED COMPONENTS filesystem system)
 
-add_executable(error_cube_camera_debug 
-              src_object/error_cube_camera_debug.cpp 
-              src_object/MapObject.cpp
-              src_object/Converter.cc
-              src_object/core/Plane.cpp
-              src_object/core/ConstrainPlane.cpp
-              src_object/core/Ellipsoid.cpp
-              # src_object/
-              )
-target_link_libraries(error_cube_camera_debug   
-              ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} 
-              utils
-              Polygon
-              # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
-              Boost::filesystem
-              Boost::system
-              ${GTSAM_LIBRARIES} gpmp2
-              )
 
-add_executable(error_plane_endlink_debug 
-            src_object/error_plane_endlink_debug.cpp 
-            src_object/MapObject.cpp
-            src_object/Converter.cc
-            src_object/core/Plane.cpp
-            src_object/core/ConstrainPlane.cpp
-            src_object/core/Ellipsoid.cpp
-            # src_object/
-            )
-
-target_link_libraries(error_plane_endlink_debug   
-              ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} 
-              utils
-              Polygon
-              # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
-              Boost::filesystem
-              Boost::system
-              ${GTSAM_LIBRARIES} gpmp2
-              )
+set(SOURCE_LZW_QUADRIC_FILES
+      src_object/MapObject.cpp
+      src_object/Converter.cc
+      src_object/core/Plane.cpp
+      src_object/core/ConstrainPlane.cpp
+      src_object/core/Ellipsoid.cpp
+  )
 
 
+# 二、GTSAM-QUADRIC 相关  
 set(SOURCE_GTSAM_QUADRIC_FILES
         ./src_gtsam_quadrics/Utilities.cpp
         ./src_gtsam_quadrics/ConstrainedDualQuadric.cpp
@@ -293,6 +222,8 @@ add_library(${CONVENIENCE_LIB_NAME} ${SOURCE_GTSAM_QUADRIC_FILES})
 # set_target_properties(${CONVENIENCE_LIB_NAME} PROPERTIES PREFIX "")
 target_link_libraries(${CONVENIENCE_LIB_NAME} gtsam)
 
+
+# 三、测试各个GTSAM模块
 add_executable(TestGtasmFactor
         src_example/TestGtasmFactor.cpp
               src_object/MapObject.cpp
@@ -312,3 +243,20 @@ target_link_libraries(TestGtasmFactor
               ${GTSAM_LIBRARIES} gpmp2
                 ${CONVENIENCE_LIB_NAME}
               )
+
+
+
+# 四、GTSAM与WAM结合
+
+message(STATUS "gpmp_wam_Reproduce_Matlab")
+add_executable(gpmp_wam_Reproduce_Matlab src_wam/gpmp_wam_Reproduce_Matlab.cpp )
+target_link_libraries(gpmp_wam_Reproduce_Matlab   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
+
+
+# message(STATUS "gpmp_wam_getfromik")
+# add_executable(wam_getfromik src_wam/wam_getfromik_debug.cpp )
+# target_link_libraries(wam_getfromik   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
+
+message(STATUS "my_wam_gpmp")
+add_executable(wam_gpmp src_wam/wam_gpmp.cpp src_object/MapObject.cpp src_object/Converter.cc)
+target_link_libraries(wam_gpmp   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}

@@ -152,9 +152,9 @@ This warning is for project developers.  Use -Wno-dev to suppress it.
 -- GTSAM include directory:  /usr/local/lib/cmake/GTSAM/../../../include
 -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.71.0/BoostConfig.cmake (found version "1.71.0")
 -- gpmp2 include directory:  /usr/local/lib/cmake/gpmp2/../../../include
--- gpmp_wam_getfromik
--- gpmp_wam_Reproduce_Matlab
 -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.71.0/BoostConfig.cmake (found version "1.71.0") found components: filesystem system
--- Configuring done (2.2s)
--- Generating done (0.3s)
+-- gpmp_wam_Reproduce_Matlab
+-- my_wam_gpmp
+-- Configuring done (2.9s)
+-- Generating done (0.2s)
 -- Build files have been written to: /home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug

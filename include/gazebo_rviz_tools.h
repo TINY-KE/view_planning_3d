@@ -15,7 +15,6 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 #include "std_msgs/Float64MultiArray.h"
-#include "Object.h"
 #include "MapObject.h"
 #include "ConverterTools.h"
 
@@ -164,7 +163,6 @@ class Visualize_Tools{
         }
 
         void visualize_geometry_pose(geometry_msgs::Pose pose, std::string frame_id = "world",  double id_num = 1,  std::string name = "no-name", bool output = false);
-        void visualize_object(SdfObject& ob, std::string frame_id);
         // void visualize_MapObject(SdfObject& ob, std::string frame_id);
         void visualize_ellipsoid(MapObject* ob, std::string frame_id, double id);
         void visualize_ellipsoid(double x, double y, double z, double a, double b, double c, double roll, double pitch, double yaw, std::string frame_id, double id);
@@ -259,73 +257,6 @@ void Visualize_Tools::visualize_point(Eigen::Vector3d& p , std::string frame_id,
 }
 
 
-void Visualize_Tools::visualize_object(SdfObject& ob, std::string frame_id){
-    //publish rviz 
-        visualization_msgs::Marker marker;
-        marker.id = 0;//++object_id_init;//object_id_init + i;
-        float mObject_Duration=1;
-        // marker.lifetime = ros::Duration(mObject_Duration);
-        marker.header.frame_id= frame_id;
-        marker.header.stamp=ros::Time::now();
-        marker.type = visualization_msgs::Marker::LINE_LIST; //LINE_STRIP;
-        marker.action = visualization_msgs::Marker::ADD;
-        marker.color.r = 255.0; marker.color.g = 0.0; marker.color.b = 0.0; marker.color.a = 1.0;
-        marker.scale.x = 0.01;
-        //     8------7
-        //    /|     /|
-        //   / |    / |
-        //  5------6  |
-        //  |  4---|--3
-        //  | /    | /        12为x轴，，14为y轴，15为z轴
-        //  1------2
-        // 12 lenth ：corner_2[0] - corner_1[0]
-        // 14 width ：corner_2[1] - corner_3[1]
-        // 15 height：corner_2[2] - corner_6[2]
-        double length_half = ob.length/2.0;
-        double width_half = ob.width/2.0;
-        double height_half = ob.height/2.0;
-
-        geometry_msgs::Point p1;   p1.x = -1*length_half;   p1.y = -1*width_half;      p1.z = 0; //-1*depth_half; 
-        geometry_msgs::Point p2;   p2.x = length_half;   p2.y = -1*width_half;   p2.z = 0; //-1*depth_half; 
-        geometry_msgs::Point p3;   p3.x = length_half;      p3.y = width_half;   p3.z = 0; //-1*depth_half; 
-        geometry_msgs::Point p4;   p4.x = -1*length_half;      p4.y = width_half;      p4.z = 0; //-1*depth_half; 
-        geometry_msgs::Point p5;   p5.x = -1*length_half;   p5.y = -1*width_half;      p5.z = 2*height_half; 
-        geometry_msgs::Point p6;   p6.x = length_half;   p6.y = -1*width_half;   p6.z = 2*height_half; 
-        geometry_msgs::Point p7;   p7.x = length_half;      p7.y = width_half;   p7.z = 2*height_half; 
-        geometry_msgs::Point p8;   p8.x = -1*length_half;      p8.y = width_half;      p8.z = 2*height_half; 
-        
-        
-        
-        marker.points.push_back(corner_to_marker(p1));
-        marker.points.push_back(corner_to_marker(p2));
-        marker.points.push_back(corner_to_marker(p2));
-        marker.points.push_back(corner_to_marker(p3));
-        marker.points.push_back(corner_to_marker(p3));
-        marker.points.push_back(corner_to_marker(p4));
-        marker.points.push_back(corner_to_marker(p4));
-        marker.points.push_back(corner_to_marker(p1));
-
-        marker.points.push_back(corner_to_marker(p5));
-        marker.points.push_back(corner_to_marker(p1));
-        marker.points.push_back(corner_to_marker(p6));
-        marker.points.push_back(corner_to_marker(p2));
-        marker.points.push_back(corner_to_marker(p7));
-        marker.points.push_back(corner_to_marker(p3));
-        marker.points.push_back(corner_to_marker(p8));
-        marker.points.push_back(corner_to_marker(p4));
-
-        marker.points.push_back(corner_to_marker(p5));
-        marker.points.push_back(corner_to_marker(p6));
-        marker.points.push_back(corner_to_marker(p6));
-        marker.points.push_back(corner_to_marker(p7));
-        marker.points.push_back(corner_to_marker(p7));
-        marker.points.push_back(corner_to_marker(p8));
-        marker.points.push_back(corner_to_marker(p8));
-        marker.points.push_back(corner_to_marker(p5));
-
-        publisher_object.publish(marker);
-        std::cout << "publish Object rviz"<< std::endl;
-}
 
 // void Visualize_Tools::visualize_geometry_pose(geometry_msgs::Pose pose, std::string frame_id = "world",  double id_num = 1,  std::string name = "no-name", bool output = false){
 void Visualize_Tools::visualize_geometry_pose(geometry_msgs::Pose pose, std::string frame_id,  double id_num,  std::string name, bool output){

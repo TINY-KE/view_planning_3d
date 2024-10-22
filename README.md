@@ -58,13 +58,16 @@
 + 在Visualize_Arm_Tools，可视化bbox平面？？ 
 + 待解决 误差和偏导·+问题：引入lzw的椭球。椭球会不会和平面的距离计算函数（拉格朗日）会不会和gtsam冲突？
 
-# 移植改造验证官方椭球体的gtsam因子，构建了BboxEllipsoidFactor
+# 移植改造验证官方椭球体的gtsam因子，构建了BboxEllipsoidFactor commit 5aceced2d56ed9d8d39bb1e829a769bd30a4908c
 + 通过cv::imshow验证了ERROR的准确性
 + 验证了偏导(bbox_Error/Pose3)是4x6的矩阵
  *H1 = db_dC * dC_dx;
     + db_dC 为4x9, 误差向量 对 圆锥二次曲面参数（dual conic parameters） 的导数：
     + dC_dx 为9x6,  dual conic 参数 相对于 相机位姿（pose）参数 的导数：
 + 构建了BoundingBoxFactor因子，需要输入“机器人位姿”和“物体位姿”
+
+# 对椭球轨迹进行优化
++ 
 
 
 
@@ -88,3 +91,4 @@
 sudo apt-get install ros-noetic-rviz-visual-tools  ros-noetic-moveit-visual-tools
 
 
+# 待：删掉plane.h中对g2o库的调用

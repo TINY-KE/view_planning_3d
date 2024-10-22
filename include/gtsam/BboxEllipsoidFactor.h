@@ -96,8 +96,7 @@ namespace gpmp2 {
                             MapObject *ob_,
                             Eigen::Matrix4f mRobotPose_,
                             int width, int height, Matrix3d calib)
-            : Base(gtsam::noiseModel::Isotropic::Sigma(robot.nr_body_spheres(),
-                                                       cost_sigma),
+            : Base(gtsam::noiseModel::Isotropic::Sigma(4,cost_sigma),
                    poseKey),
               robot_(robot),
               miImageCols(width),

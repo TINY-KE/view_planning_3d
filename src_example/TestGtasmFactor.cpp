@@ -12,10 +12,8 @@
 #include "Converter.h"
 #include <thread>
 
-// #include "gtsam/BboxPlaneEllipsoidFactor.h"
 // #include "gtsam/JointLimitFactorVector.h"
 #include "gtsam/BboxPlaneArmLinkFactor.h"
-#include "gtsam/BboxPlaneEllipsoidFactor.h"
 #include "GenerateArm.h"
 
 #include "visualize_arm_tools.h"
@@ -87,27 +85,23 @@ int main(int argc, char** argv){
                                );
 	//(2) 构建视场和lzw椭球体的因子
 	Eigen::Matrix4f RobotPose = Eigen::Matrix4f::Identity();
-    // RobotPose << 0.9396926, -0.3420202,  0.0000000, 0,
-    //              0.3420202,  0.9396926,  0.0000000, 0,
-    //              0.0000000,  0.0000000,  1.0000000, 0,
-    //              0, 0, 0, 1;
-	BboxPlaneEllipsoidFactor<ArmModel> factor2(0, *arm_model,
-						1.0,
-						ob,
-						RobotPose,
-						CameraWidth, CameraHeight,
-						Calib);
+
 
 
 	double s = 100;
 	gtsam_quadrics::AlignedBox2 gtsam_bbox(0+s, 0+s, CameraWidth-s, CameraHeight-s);
 
-	// （4）构建视场和gtsam椭球体的官方因子
+	// （3）构建视场和gtsam椭球体的官方因子
 	// gtsam::Cal3_S2 gtsam_calib(fx, fy, 0.0, cx, cy);
 	boost::shared_ptr<gtsam::Cal3_S2> gtsam_calib = boost::make_shared<gtsam::Cal3_S2>(fx, fy, 0.0, cx, cy);
 	// 使用数组中的值创建噪声模型
 	double sigmasArray[4] = {10.0, 10.0, 10.0, 10.0};
 	gtsam::SharedNoiseModel bbox_noise = gtsam::noiseModel::Diagonal::Sigmas(gtsam::Vector4(sigmasArray));
+	gtsam::SharedNoiseModel bbox_noise_2 = gtsam::noiseModel::Isotropic::Sigma(4,10);
+	std::cout<<"bbox_noise:"<<std::endl;
+	bbox_noise->print();
+	std::cout<<"bbox_noise_2:"<<std::endl;
+	bbox_noise_2->print();
     // BoundingBoxFactor(const AlignedBox2& measured,
     //                 const boost::shared_ptr<gtsam::Cal3_S2>& calibration,
     //                 const gtsam::Key& poseKey, const gtsam::Key& quadricKey,
@@ -185,23 +179,12 @@ int main(int argc, char** argv){
         // }
 
     	// （2）
-        // g2o::plane* plane_in_baselink = factor.computeplane(config);
-		auto planesWorld= factor2.computeplanes(config);
-    	vis_tools->MapPlaneNormals.clear();
-    	// vis_tools->MapPlaneNormals.push_back(planesWorld[0]->param);
-    	// vis_tools->MapPlaneNormals.push_back(planesWorld[1]->param);
-    	// vis_tools->MapPlaneNormals.push_back(planesWorld[2]->param);
-    	// vis_tools->MapPlaneNormals.push_back(planesWorld[3]->param);
-
-        // Eigen::VectorXd err_act = factor.evaluateError(config, &H1_act);
-        // std::cout<<" [debug] err_act: "<<err_act<<std::endl;
-        // std::cout<<"end"<<std::endl;
 
 
     	// （3）测试factor3
     	// 获取末端执行器的位姿
     	geometry_msgs::PoseStamped end_effector_pose = move_group.getCurrentPose();
-    	auto end_effector_pose_eigen = Converter::geometryPosetoMatrix4d(end_effector_pose);
+    	auto end_effector_pose_eigen = Converter::geometryPoseStampedtoMatrix4d(end_effector_pose);
     	Eigen::Matrix4d T_endlink_to_c;
     	T_endlink_to_c << 0, 0, 1, 0.02,
 						  -1, 0, 0, -0.013,
