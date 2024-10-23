@@ -70,6 +70,8 @@ if(NOT OpenCV_FOUND)
     endif()
 endif()
 
+# 包含 OpenCV 头文件路径
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -216,12 +218,20 @@ set(SOURCE_GTSAM_QUADRIC_FILES
         ./src_gtsam_quadrics/QuadricCamera.cpp
         ./src_gtsam_quadrics/DualConic.cpp
         ./src_gtsam_quadrics/BboxCameraFactor.cpp
+        ./src_gtsam_quadrics/HeightCameraFactor.cpp
 )
 
-set(CONVENIENCE_LIB_NAME "gtsam_quadrics")
-add_library(${CONVENIENCE_LIB_NAME} ${SOURCE_GTSAM_QUADRIC_FILES})
-# set_target_properties(${CONVENIENCE_LIB_NAME} PROPERTIES PREFIX "")
-target_link_libraries(${CONVENIENCE_LIB_NAME} gtsam)
+
+
+add_library(CONVENIENCE_LIB_NAME SHARED
+        ${SOURCE_LZW_QUADRIC_FILES}
+        ${SOURCE_GTSAM_QUADRIC_FILES}
+)
+
+target_link_libraries(CONVENIENCE_LIB_NAME
+        ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}
+)
+
 
 
 # 三、测试各个GTSAM模块
@@ -255,21 +265,21 @@ target_link_libraries(${CONVENIENCE_LIB_NAME} gtsam)
 #        ${GTSAM_LIBRARIES} gpmp2
 #        ${CONVENIENCE_LIB_NAME}
 #)
-add_executable(TestBboxCameraFactor
-        src_example/TestBboxCameraFactor.cpp
-        ${SOURCE_LZW_QUADRIC_FILES}
-        ${SOURCE_GTSAM_QUADRIC_FILES}
-)
-target_link_libraries(TestBboxCameraFactor
-        ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS}
-        utils
-        Polygon
-        # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
-        Boost::filesystem
-        Boost::system
-        ${GTSAM_LIBRARIES} gpmp2
-        ${CONVENIENCE_LIB_NAME}
-)
+#add_executable(TestBboxCameraFactor
+#        src_example/TestBboxCameraFactor.cpp
+#
+#)
+#target_link_libraries(TestBboxCameraFactor
+#        ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS}
+#        utils
+#        Polygon
+#        # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
+#        Boost::filesystem
+#        Boost::system
+#        ${GTSAM_LIBRARIES} gpmp2
+#        ${CONVENIENCE_LIB_NAME}
+#        ${OpenCV_LIBS}
+#)
 
 
 # 四、GTSAM与WAM结合
@@ -284,8 +294,11 @@ target_link_libraries(TestBboxCameraFactor
 # target_link_libraries(wam_getfromik   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
 
 # message(STATUS "my_wam_gpmp")
-# add_executable(wam_gpmp src_wam/wam_gpmp.cpp
-#               ${SOURCE_LZW_QUADRIC_FILES}
-#               ${SOURCE_GTSAM_QUADRIC_FILES}
-#             )
-# target_link_libraries(wam_gpmp   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
+# add_executable(wam_gpmp src_wam/wam_gpmp.cpp   )
+# target_link_libraries(wam_gpmp   ${CONVENIENCE_LIB_NAME})  #${Boost_LIBRARIES}
+
+ add_executable(wam_bboxcamera src_wam/wam_bboxcamera.cpp
+         ${SOURCE_LZW_QUADRIC_FILES}
+         ${SOURCE_GTSAM_QUADRIC_FILES})
+ target_link_libraries(wam_bboxcamera
+         ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  )

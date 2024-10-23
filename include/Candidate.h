@@ -1,6 +1,7 @@
 #ifndef VIEW_PLANNING_CANDIDATE_H
 #define VIEW_PLANNING_CANDIDATE_H
 
+#include <Converter.h>
 #include <Eigen/Dense>
 #include <vector>
 #include "MapObject.h"
@@ -511,29 +512,36 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse_by_circle( MapObject
 
         // 计算candidate在foot_print中的位姿
         tf::Quaternion q_c = tf::createQuaternionFromRPY(0, -1*delta_pitch, -1* delta_yaw);
-        geometry_msgs::Pose T_footprint_camera;
-        T_footprint_camera.position.x = 0;
-        T_footprint_camera.position.y = std::sqrt(deltaX*deltaX + deltaY*deltaY) - std::sqrt((object_x-footprint_x)*(object_x-footprint_x) + (object_y-footprint_y)*(object_y-footprint_y));
-        T_footprint_camera.position.z = camera_z - footprint_z;
-        T_footprint_camera.orientation.x = q_c.x();
-        T_footprint_camera.orientation.y = q_c.y(); 
-        T_footprint_camera.orientation.z = q_c.z();
-        T_footprint_camera.orientation.w = q_c.w(); 
+        geometry_msgs::Pose T_footprint_cameralink;
+        T_footprint_cameralink.position.x = 0;
+        T_footprint_cameralink.position.y = std::sqrt(deltaX*deltaX + deltaY*deltaY) - std::sqrt((object_x-footprint_x)*(object_x-footprint_x) + (object_y-footprint_y)*(object_y-footprint_y));
+        T_footprint_cameralink.position.z = camera_z - footprint_z;
+        T_footprint_cameralink.orientation.x = q_c.x();
+        T_footprint_cameralink.orientation.y = q_c.y();
+        T_footprint_cameralink.orientation.z = q_c.z();
+        T_footprint_cameralink.orientation.w = q_c.w();
 
         std::cout<<"calculateRelativePose"
             <<", delta_roll: 0"
             <<", delta_yaw:"<< delta_yaw
             <<", delta_pitch:"<< delta_pitch
-            <<", qx"<< T_footprint_camera.orientation.x
-            <<", qy"<< T_footprint_camera.orientation.y
-            <<", qz"<< T_footprint_camera.orientation.z
-            <<", qw"<< T_footprint_camera.orientation.w
-            <<", y"<<T_footprint_camera.position.y 
+            <<", qx"<< T_footprint_cameralink.orientation.x
+            <<", qy"<< T_footprint_cameralink.orientation.y
+            <<", qz"<< T_footprint_cameralink.orientation.z
+            <<", qw"<< T_footprint_cameralink.orientation.w
+            <<", y"<<T_footprint_cameralink.position.y
 
             <<std::endl;
-        
 
-        candidates.push_back(T_footprint_camera);
+        Eigen::Matrix4d T_footprint_cameralink_matrix = Converter::geometryPosetoMatrix4d(T_footprint_cameralink);
+        Eigen::Matrix4d T_cameralink_to_camera_matrix;
+        T_cameralink_to_camera_matrix << 0, 0, 1, 0.02,
+                                        -1, 0, 0, -0.013,
+                                        0, -1, 0, 0.0,  //实际为0.13，改为0.07
+                                        0, 0, 0, 1;
+
+        geometry_msgs::Pose T_footprint_camera = Converter::Matrix4dtoGeometryPose(T_footprint_cameralink_matrix*T_cameralink_to_camera_matrix);
+        candidates.push_back(T_footprint_camera );
 
     }
     

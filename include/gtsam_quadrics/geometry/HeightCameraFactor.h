@@ -42,7 +42,7 @@ namespace gtsam_quadrics {
      * Calculates the bounds of the dual conic,
      * and compares this to the measured bounding box.
      */
-    class BboxCameraFactor
+    class HeightCameraFactor
             : public gtsam::NoiseModelFactorN<gtsam::Pose3> {
     public:
         enum MeasurementModel {
@@ -69,19 +69,19 @@ namespace gtsam_quadrics {
         /// @{
 
         /** Default constructor */
-        BboxCameraFactor()
+        HeightCameraFactor()
             : measured_(0., 0., 0., 0.), measurementModel_(STANDARD) {
         };
 
         /** Constructor from measured box, calbration, dimensions and posekey,
          * quadrickey, noisemodel */
-        BboxCameraFactor(gtsam::Key poseKey,
+        HeightCameraFactor(gtsam::Key poseKey,
                          double cost_sigma,
                          const AlignedBox2 &measured,
                          MapObject *ob_,
                          Eigen::Matrix4f mRobotPose_,
                          int width, int height, Eigen::Matrix3d calib)
-            : Base(gtsam::noiseModel::Isotropic::Sigma(4, cost_sigma), poseKey),
+            : Base(gtsam::noiseModel::Isotropic::Sigma(1, cost_sigma), poseKey),
               measured_(measured),
               miImageCols(width),
               miImageRows(height)
@@ -122,14 +122,6 @@ namespace gtsam_quadrics {
             const gtsam::Pose3 &pose,
             gtsam::OptionalMatrixType H1 = nullptr) const;
 
-        gtsam::Vector getPredictedBounds(
-            const gtsam::Pose3 &pose,
-            gtsam::OptionalMatrixType H1 = nullptr) const;
-
-        gtsam::Vector getMeasureBounds(
-            const gtsam::Pose3 &pose,
-            gtsam::OptionalMatrixType H1 = nullptr) const;
-
 
         /// @}
         /// @name Testable group traits
@@ -141,7 +133,7 @@ namespace gtsam_quadrics {
                            gtsam::DefaultKeyFormatter) const override;
 
         /** Returns true if equal keys, measurement, noisemodel and calibration */
-        bool equals(const BboxCameraFactor &other, double tol = 1e-9) const;
+        bool equals(const HeightCameraFactor &other, double tol = 1e-9) const;
 
     private:
         void GenerateConstrainedDualQuadric(MapObject *object, Eigen::Matrix4f& T_world_baselink) {
@@ -203,25 +195,8 @@ namespace gtsam_quadrics {
             }
 
         }
-    public:
-        void visulize(const  gtsam::Pose3 &conf) const {
-            double board = 200;
-            cv::Mat image = cv::Mat::zeros(miImageRows+board*2, miImageCols+board*2, CV_8UC3);
-            cv::Rect FOV_cvmat(board, board, miImageCols, miImageRows);
-            Eigen::Vector4d measure_bbox = getMeasureBounds ( conf );
-            std::cout<<"[debug] measure_bbox: "<<measure_bbox.transpose()<<std::endl;
-            cv::Rect measure_bbox_cvmat(measure_bbox[0]+board, measure_bbox[1]+board, measure_bbox[2]-measure_bbox[0], measure_bbox[3]-measure_bbox[1]);
-            Eigen::Vector4d predict_bbox = getPredictedBounds ( conf );
-            std::cout<<"[debug] predict_bbox: "<<predict_bbox.transpose()<<std::endl;
-            cv::Rect predict_bbox_cvmat(predict_bbox[0]+board, predict_bbox[1]+board, predict_bbox[2]-predict_bbox[0], predict_bbox[3]-predict_bbox[1]);
-            cv::rectangle(image, FOV_cvmat, cv::Scalar(255, 255, 255), 2);
-            cv::rectangle(image, measure_bbox_cvmat, cv::Scalar(255, 0, 0), 2);
-            cv::rectangle(image, predict_bbox_cvmat, cv::Scalar(0, 255, 0), 2);
-            auto error = evaluateError(conf);
-            std::cout<<"[debug] error: "<<error.transpose()<<std::endl;
-            cv::imshow("Bounding Boxes", image);
-            cv::waitKey(100);
-        }
+
+
 
 
     };
@@ -230,6 +205,6 @@ namespace gtsam_quadrics {
 /** \cond PRIVATE */
 // Add to testable group
 // template <>
-// struct gtsam::traits<gtsam_quadrics::BboxCameraFactor>
-//     : public gtsam::Testable<gtsam_quadrics::BboxCameraFactor> {};
+// struct gtsam::traits<gtsam_quadrics::HeightCameraFactor>
+//     : public gtsam::Testable<gtsam_quadrics::HeightCameraFactor> {};
 /** \endcond */

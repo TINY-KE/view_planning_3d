@@ -86,9 +86,14 @@ public:
     static Eigen::Matrix4d cvMattoMatrix4d(const cv::Mat &cvMat4);
     static Eigen::Matrix4d geometryPoseStampedtoMatrix4d(const geometry_msgs::PoseStamped &pose);
     static Eigen::Matrix4d geometryPosetoMatrix4d(const geometry_msgs::Pose &pose);
+    static geometry_msgs::Pose Matrix4dtoGeometryPose(const Eigen::Matrix4d &eigen_matrix);
+
+
     static Eigen::Isometry3d cvMattoIsometry3d(const cv::Mat &cvMat4);
-    // [zhjd g2o和gtsam冲突]
-    // static g2o::SE3Quat cvMattoG2oSE3Quat(const cv::Mat &cvMat4);
+
+    static Eigen::Vector3d toRPY(const double qx, const double qy, const double qz, const double qw );
+    static Eigen::Quaterniond rpyToQuaternion(const Eigen::Vector3d& rpy) ;
+    static Eigen::Quaterniond rpyToQuaternion(const double roll, const double pitch, const double yaw);
 
 };
 

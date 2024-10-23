@@ -192,6 +192,29 @@ Eigen::Matrix4d Converter::geometryPosetoMatrix4d(const geometry_msgs::Pose &pos
                         );
 }
 
+geometry_msgs::Pose Converter::Matrix4dtoGeometryPose(const Eigen::Matrix4d &eigen_matrix) {
+    geometry_msgs::Pose pose_msg;
+
+    // 1. Extract translation vector
+    pose_msg.position.x = eigen_matrix(0, 3);
+    pose_msg.position.y = eigen_matrix(1, 3);
+    pose_msg.position.z = eigen_matrix(2, 3);
+
+    // 2. Extract rotation matrix (top-left 3x3)
+    Eigen::Matrix3d rotation_matrix = eigen_matrix.block<3, 3>(0, 0);
+
+    // 3. Convert rotation matrix to quaternion
+    Eigen::Quaterniond quat(rotation_matrix);
+
+    // 4. Set quaternion to pose message
+    pose_msg.orientation.x = quat.x();
+    pose_msg.orientation.y = quat.y();
+    pose_msg.orientation.z = quat.z();
+    pose_msg.orientation.w = quat.w();
+
+    return pose_msg;
+}
+
 Eigen::Matrix4d Converter::Quation2Eigen(const double qx, const double qy, const double qz, const double qw, const double tx,
                                  const double ty, const double tz) {
 
@@ -254,6 +277,56 @@ Eigen::Quaterniond Converter::ExtractQuaterniond(const cv::Mat &mat ){
     return ExtractQuaterniond(
             cvMattoIsometry3d(mat)
     );
+}
+
+
+
+Eigen::Vector3d Converter::toRPY(const double qx, const double qy, const double qz, const double qw ) {
+    // 定义一个四元数，假设它表示绕 Y 轴旋转 90 度
+    Eigen::Quaterniond q(qw,qx,qy,qz);
+
+    // 将四元数转换为 3x3 旋转矩阵
+    Eigen::Matrix3d rotationMatrix = q.toRotationMatrix();
+
+    // 使用 eulerAngles() 提取 Roll, Pitch, Yaw (ZYX 顺序)
+    Eigen::Vector3d rpy = rotationMatrix.eulerAngles(2, 1, 0);  // ZYX顺序
+
+    return rpy;
+}
+
+
+
+Eigen::Quaterniond Converter::rpyToQuaternion(const Eigen::Vector3d& rpy) {
+    // 提取 roll, pitch, yaw
+    double roll = rpy(0);
+    double pitch = rpy(1);
+    double yaw = rpy(2);
+
+    // 使用 ZYX 欧拉角顺序构造旋转矩阵
+    Eigen::Matrix3d rotationMatrix;
+    rotationMatrix = Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()) *
+                     Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
+                     Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ());
+
+    // 将旋转矩阵转换为四元数
+    Eigen::Quaterniond quaternion(rotationMatrix);
+
+    return quaternion;
+}
+
+
+Eigen::Quaterniond Converter::rpyToQuaternion(const double roll, const double pitch, const double yaw) {
+
+    // 使用 ZYX 欧拉角顺序构造旋转矩阵
+    Eigen::Matrix3d rotationMatrix;
+    rotationMatrix = Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()) *
+                     Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
+                     Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ());
+
+    // 将旋转矩阵转换为四元数
+    Eigen::Quaterniond quaternion(rotationMatrix);
+
+    return quaternion;
 }
 
 

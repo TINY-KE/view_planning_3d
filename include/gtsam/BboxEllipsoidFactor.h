@@ -248,10 +248,10 @@ namespace gpmp2 {
     gtsam::Vector BboxEllipsoidFactor<ROBOT>::evaluateError(
         const typename Robot::Pose &conf, gtsam::OptionalMatrixType H1) const {
 
-        // 一, 获取相机位姿（相对于baselink），获取dx_djoint偏导
+        // 一, 获取机械臂末端位姿（相对于baselink），获取dex_djoint偏导
         std::vector<Pose3> joint_pos;
-        std::vector<gtsam::Matrix> dx_djoint;
-        robot_.fk_model().forwardKinematics(conf, {}, joint_pos, {}, &dx_djoint);
+        std::vector<gtsam::Matrix> dex_djoint;
+        robot_.fk_model().forwardKinematics(conf, {}, joint_pos, {}, &dex_djoint);
         gtsam::Pose3 T_baselink_to_endlink = joint_pos[joint_pos.size()-1];
         Eigen::Matrix4d T_endlink_to_c;
         T_endlink_to_c <<   0, 0, 1, 0.02,
@@ -259,9 +259,14 @@ namespace gpmp2 {
                             0, -1, 0, 0.07, //实际为0.13(用于ros)，改为0.07(用于gpmp2 forwardKinematics)
                             0, 0, 0, 1;
         Eigen::Matrix4d T_baselink_to_camera = T_baselink_to_endlink.matrix() * T_endlink_to_c;
+        gtsam::Pose3 T_endlink_to_camera(T_endlink_to_c);
         gtsam::Pose3 camera_pose(T_baselink_to_camera);
 
-        // 二、 通过bbox计算Error，并获得 db_dC 和 dC_dx 偏导
+        // 二、获取相机位姿相对于机械臂末端位姿的偏导
+        Eigen::Matrix<double, 6, 6>  dx_dex;
+        T_baselink_to_endlink.transformPoseFrom(T_endlink_to_camera, dx_dex, {});
+
+        // 三、 通过bbox计算Error，并获得 db_dC 和 dC_dx 偏导
         try {
             // 2.投影和几何检查：
             // 在投影操作之前，首先检查 quadric 是否在相机的后面（isBehind）或者相机是否在 quadric 内部（contains）。如果满足这些条件，投影操作无效，会抛出 QuadricProjectionException 异常。
@@ -322,10 +327,10 @@ namespace gpmp2 {
             // calculate derivative of error wrt joints
             if (H1) {
                 // combine partial derivatives
-                *H1 = db_dC * dC_dx * dx_djoint[dx_djoint.size()-1];
+                *H1 = db_dC * dC_dx * dx_dex * dex_djoint[dex_djoint.size()-1];
                 std::cout << " [debug0] db_dC = " << std::endl << db_dC << std::endl;
                 std::cout << " [debug0] dC_dx = " << std::endl << dC_dx << std::endl;
-                std::cout << " [debug0] dx_djoint = " << std::endl << dx_djoint[dx_djoint.size()-1] << std::endl;
+                std::cout << " [debug0] dx_djoint = " << std::endl << dex_djoint[dex_djoint.size()-1] << std::endl;
             }
 
             // calculate derivative of error wrt quadric

@@ -278,9 +278,9 @@ int main(int argc, char **argv) {
         // else
         {
             // 下视场和机械臂本体
-            BboxPlaneArmLinkFactor<ArmModel> lowplane_factor_debug(key_pos, *arm_model,obs_sigma, epsilon_dist,  CameraWidth, CameraHeight, Calib);
-            graph.add(lowplane_factor_debug);
-            lowplane_factors.push_back(lowplane_factor_debug);
+//            BboxPlaneArmLinkFactor<ArmModel> lowplane_factor_debug(key_pos, *arm_model,obs_sigma, epsilon_dist,  CameraWidth, CameraHeight, Calib);
+//            graph.add(lowplane_factor_debug);
+//            lowplane_factors.push_back(lowplane_factor_debug);
 
             // BBOX和二次曲线
             Eigen::Matrix4f RobotPose = Eigen::Matrix4f::Identity();
@@ -396,14 +396,14 @@ int main(int argc, char **argv) {
 
         target_joint_group_positions_eigen = results.at<Vector>(symbol('x', i));
 
-        gtsam::Matrix J;
-        auto lowplane_errors = lowplane_factors[i].evaluateError(target_joint_group_positions_eigen, &J);
-        std::cout<<"lowplane errors: "<<lowplane_errors.transpose()<<std::endl;
-        std::cout<<"J: "<<J<<std::endl;
-        auto lowplane = lowplane_factors[i].computeplane(target_joint_group_positions_eigen);
-        // lowplane->transform(Converter::geometryPosetoMatrix4d(FootPrints[i]));
-        vis_tools->clearMapPlaneNormals();
-        vis_tools->addMapPlaneNormals(lowplane->param);
+        // gtsam::Matrix J;
+        // auto lowplane_errors = lowplane_factors[i].evaluateError(target_joint_group_positions_eigen, &J);
+        // std::cout<<"lowplane errors: "<<lowplane_errors.transpose()<<std::endl;
+        // std::cout<<"J: "<<J<<std::endl;
+        // auto lowplane = lowplane_factors[i].computeplane(target_joint_group_positions_eigen);
+        // // lowplane->transform(Converter::geometryPosetoMatrix4d(FootPrints[i]));
+        // vis_tools->clearMapPlaneNormals();
+        // vis_tools->addMapPlaneNormals(lowplane->param);
 
         gtsam::Matrix J_bbox;
         bbox_factors[i].visulize(target_joint_group_positions_eigen);

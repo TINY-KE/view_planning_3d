@@ -15,189 +15,119 @@
 // #include "gtsam/JointLimitFactorVector.h"
 #include "gtsam/BboxPlaneArmLinkFactor.h"
 #include "GenerateArm.h"
-
 #include "visualize_arm_tools.h"
-
 #include "gtsam_quadrics/geometry/BoundingBoxFactor.h"
 #include "gtsam/BboxEllipsoidFactor.h"
-
-// #include "gtsam_quadrics/geometry/BboxCameraFactor.h"
+#include "gtsam_quadrics/geometry/BboxCameraFactor.h"
+#include <opencv2/opencv.hpp>
 
 using namespace Eigen;
 using namespace gtsam;
 using namespace gpmp2;
+using namespace gtsam_quadrics;
 
 typedef BboxPlaneArmLinkFactor<ArmModel> BboxPlaneArmLinkArm;
 
 int main(int argc, char** argv){
-    ros::init(argc, argv, "triangle_marker_node");
-    ros::NodeHandle nh;
-    Visualize_Tools* vis_tools = new Visualize_Tools(nh, "wam/base_link");
-    std::thread* mptVisualizeTools;
-    mptVisualizeTools = new std::thread(&Visualize_Tools::Run, vis_tools);
-
-    // 一、生成物体
-    double x=3, y=0, z=0.5;
-    double lenth=2.5, width=2, height=1;
-    double yaw = 0;
-    MapObject* ob = new MapObject();
-    ob->Update_Twobj(x,y,z,yaw);
-    ob->Update_object_size(lenth,width,height);
-    ob->Update_corner();
-    // int pub_num = 6;
-    // while(pub_num--){
-    //     vis_tools.visualize_ellipsoid(3, 0, 0.5, 
-    //             2.5, 2, 1, 
-    //             0, 0, 0, "world", 0);
-    // }
-    vis_tools->MapObjects.push_back(ob);
-
-
-    // 二、构建因子
-    ArmModel* arm_model = generateArm("WAMArm");
-    int CameraWidth = 640;
-    int CameraHeight = 480;
-    float fx = 554.254691191187;
-    float fy = 554.254691191187;
-    float cx = 320.5;
-    float cy = 240.5;
-    Eigen::Matrix3d Calib;
-    Calib << fx,  0,  cx,
-              0,  fy,  cy,
-              0,   0,   1;
-//    ObstacleSDFFactor(gtsam::Key poseKey, const Robot& robot,
-//                    const SignedDistanceField& sdf, double cost_sigma,
-//                    double epsilon)
-    //    ObstacleSDFFactorArm factor(0, arm,    //gtsam::Key poseKey, const Robot& robot,
-                        //    sdf,       //const SignedDistanceField& sdf,
-                        //    1.0,      //double cost_sigma,
-                        //    obs_eps);    //double epsilonEigen::VectorXd
-//    BboxPlaneArmLink(gtsam::Key poseKey, const Robot& robot,
-//                    double cost_sigma,
-//                    double epsilon,
-//                    int width, int height, Matrix3d calib)
-
-	// (1) 构建视场和机器人本体的因子
-	double epsilon_dist = 0.05;  // 避障球与平面的最小距离
-	BboxPlaneArmLinkFactor<ArmModel> factor(0, *arm_model,
-                               1.0,
-                               epsilon_dist,
-                               CameraWidth, CameraHeight,
-                               Calib
-                               );
-	//(2) 构建视场和lzw椭球体的因子
-	Eigen::Matrix4f RobotPose = Eigen::Matrix4f::Identity();
-
-
-
-	double s = 100;
-	gtsam_quadrics::AlignedBox2 gtsam_bbox(0+s, 0+s, CameraWidth-s, CameraHeight-s);
-
-	// （3）构建视场和gtsam椭球体的官方因子
-	// gtsam::Cal3_S2 gtsam_calib(fx, fy, 0.0, cx, cy);
-	boost::shared_ptr<gtsam::Cal3_S2> gtsam_calib = boost::make_shared<gtsam::Cal3_S2>(fx, fy, 0.0, cx, cy);
-	// 使用数组中的值创建噪声模型
-	double sigmasArray[4] = {10.0, 10.0, 10.0, 10.0};
-	gtsam::SharedNoiseModel bbox_noise = gtsam::noiseModel::Diagonal::Sigmas(gtsam::Vector4(sigmasArray));
-	gtsam::SharedNoiseModel bbox_noise_2 = gtsam::noiseModel::Isotropic::Sigma(4,10);
-	std::cout<<"bbox_noise:"<<std::endl;
-	bbox_noise->print();
-	std::cout<<"bbox_noise_2:"<<std::endl;
-	bbox_noise_2->print();
-    // BoundingBoxFactor(const AlignedBox2& measured,
-    //                 const boost::shared_ptr<gtsam::Cal3_S2>& calibration,
-    //                 const gtsam::Key& poseKey, const gtsam::Key& quadricKey,
-    //                 const gtsam::SharedNoiseModel& model,
-    //                 const MeasurementModel& errorType = STANDARD)
-	gtsam::Key Key1, Key2;
-	gtsam_quadrics::BoundingBoxFactor factor3(gtsam_bbox, gtsam_calib, Key1, Key2, bbox_noise);
-	Eigen::Matrix4d matrix_4x4;
-	// matrix_4x4 << 1, 0, 0, x,
-	// 			  0, 1, 0, y,
-	// 			  0, 0, 1, z,
-	// 			  0, 0, 0, 1;
-	matrix_4x4 << 1, 0, 0, x,
-				  0, 1, 0, y,
-				  0, 0, 1, z,
-				  0, 0, 0, 1;
-	gtsam_quadrics::ConstrainedDualQuadric Quadric(gtsam::Pose3(matrix_4x4), gtsam::Vector3(lenth/2.0,width/2.0,height/2.0));
-
-	// （4）构建视场和gtsam椭球体的我的因子
-	BboxEllipsoidFactor<ArmModel> factor4(0, *arm_model,
-						1.0,
-						gtsam_bbox,
-						ob,
-						RobotPose,
-						CameraWidth, CameraHeight,
-						Calib);
-
-	Eigen::MatrixXd H1_act;
-	Eigen::Matrix<double, 7, 1> config;
-	// origin zero case
-	config << 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0;
-
-	Eigen::VectorXd err_act = factor.evaluateError(config, &H1_act);
-	std::cout<<" [debug] err_act: "<<err_act<<std::endl;
-    std:;cout<<"end"<<std::endl;
-    
-    // 三、启动movegroup
-    // 创建一个异步的自旋线程（spinning thread）
+	//  一、创建ROS和movegroup
+	ros::init(argc, argv, "gpmp_wam", ros::init_options::AnonymousName);
+	ros::NodeHandle nh;
+	ros::Rate loop_rate(2); // 设置发布频率
+	// 启动movegroup
+	// 创建一个异步的自旋线程（spinning thread）
 	ros::AsyncSpinner spinner(1);
 	spinner.start();
-    moveit::planning_interface::MoveGroupInterface move_group("arm");
-	Visualize_Arm_Tools vis_arm_tools(nh, *arm_model, move_group, CameraWidth, CameraHeight, Calib, "wam/base_link" );
-	std::thread* mptVisualizeArmTools;
-	mptVisualizeArmTools = new std::thread(&Visualize_Arm_Tools::Run, vis_arm_tools);
-
-    std::string end_effector_link=move_group.getEndEffectorLink();
+	moveit::planning_interface::MoveGroupInterface move_group("arm");
+	std::string end_effector_link = move_group.getEndEffectorLink();
 	ROS_INFO_NAMED("WAM_arm", "End effector link: %s", end_effector_link.c_str());
 
-    ROS_INFO_NAMED("WAM_arm", "Planning frame: %s", move_group.getPlanningFrame().c_str());
-    std::string pose_reference_frame="/wam/base_link";
-    // std::string pose_reference_frame="world";
-    move_group.setPoseReferenceFrame(pose_reference_frame);
+	ROS_INFO_NAMED("WAM_arm", "Planning frame: %s", move_group.getPlanningFrame().c_str());
+	std::string pose_reference_frame = "/wam/base_link";
+	// std::string pose_reference_frame="world";
+	move_group.setPoseReferenceFrame(pose_reference_frame);
 	ROS_INFO_NAMED("WAM_arm", "New Pose Reference frame: %s", move_group.getPoseReferenceFrame().c_str());
 
-    // geometry_msgs::PoseStamped end_pose = move_group.getCurrentPose();
-    const robot_state::JointModelGroup* joint_model_group = move_group.getCurrentState()->getJointModelGroup("arm");
+	// 二、生成物体、机械臂、
+	//（1）生成物体
+	double x = 3, y = 0, z = 0.5;
+	double lenth = 2.5, width = 2, height = 1;
+	double yaw = 0;
+	MapObject *ob = new MapObject();
+	ob->Update_Twobj(x, y, z, yaw);
+	ob->Update_object_size(lenth, width, height);
+	ob->Update_corner();
+	//（2）生成机械臂
+	ArmModel *arm_model = generateArm("WAMArm");
+	//（3）生成相机参数
+	int CameraWidth = 640;
+	int CameraHeight = 480;
+	float fx = 554.254691191187;
+	float fy = 554.254691191187;
+	float cx = 320.5;
+	float cy = 240.5;
+	Eigen::Matrix3d Calib;
+	Calib << fx, 0, cx,
+			0, fy, cy,
+			0, 0, 1;
 
 
-    // 创建 TF2 监听器
-    tf2_ros::Buffer tf_buffer;
-    tf2_ros::TransformListener tf_listener(tf_buffer);
-    ros::Rate r(20);
-    double scale = 0.1;
+	// 三、可视化线程
+	string default_frame = "wam/base_link";
+
+	Visualize_Tools *vis_tools = new Visualize_Tools(nh, default_frame);
+	std::thread *mptVisualizeTools;
+	mptVisualizeTools = new std::thread(&Visualize_Tools::Run, vis_tools);
+	vis_tools->addMapObject(ob);
+
+	Visualize_Arm_Tools vis_arm_tools(nh, *arm_model, move_group, CameraWidth, CameraHeight, Calib, default_frame);
+	std::thread *mptVisualizeArmTools;
+	mptVisualizeArmTools = new std::thread(&Visualize_Arm_Tools::Run, vis_arm_tools);
+
+
+
+	// 四、BboxCameraFactor.cpp 所需的参数
+	double s = 100;
+	gtsam_quadrics::AlignedBox2 gtsam_bbox(0+s, 0+s, CameraWidth-s, CameraHeight-s);   //预期的物体检测框
+	double bbox_sigma = 0.001;   // bbox的权重
+	Eigen::Matrix4f RobotPose = Eigen::Matrix4f::Identity();
+	BboxCameraFactor factor(0,
+                           bbox_sigma,
+                           gtsam_bbox,
+                           ob,
+                           RobotPose,
+                           CameraWidth, CameraHeight, Calib );
+
+	// 五、
+	ros::Rate r(0.2);
 
     while (ros::ok())
     {
-    	// 获取当前关节角度
-  		std::vector<double> joint_angles = move_group.getCurrentJointValues();
-  		config << joint_angles[0], joint_angles[1], joint_angles[2], joint_angles[3], joint_angles[4], joint_angles[5], joint_angles[6];
+		std::cout<<"新一轮的伺服控制："<<std::endl;
 
-
-    	// （3）测试factor3
     	// 获取末端执行器的位姿
     	geometry_msgs::PoseStamped end_effector_pose = move_group.getCurrentPose();
+    	std::cout<<"end_effector_pose: "<<std::endl<<end_effector_pose<<std::endl;
+
     	auto end_effector_pose_eigen = Converter::geometryPoseStampedtoMatrix4d(end_effector_pose);
     	Eigen::Matrix4d T_endlink_to_c;
+    	std::cout<<"1"<<std::endl;
     	T_endlink_to_c << 0, 0, 1, 0.02,
 						  -1, 0, 0, -0.013,
 						  0, -1, 0, 0.13,  //实际为0.13(用于ros)，改为0.07(用于gpmp2 forwardKinematics)
 						  0, 0, 0, 1;
     	Eigen::Matrix4d T_baselink_to_c = end_effector_pose_eigen * T_endlink_to_c;
-    	Eigen::MatrixXd H1_camerapose;
-    	Eigen::Vector4d err_bbox;
-    	Eigen::Vector4d measure_bbox;
-    	Eigen::Vector4d predict_bbox;
+    	std::cout<<"T_baselink_to_c: "<<std::endl<<T_baselink_to_c<<std::endl;
 
-		// （4）测试factor4
-    	err_bbox = factor4.evaluateError(config, &H1_camerapose);
-        std::cout<<" [debug] err_bbox: "<<err_bbox.transpose()<<std::endl;
-        std::cout<<" [debug] H1_camerapose: "<<std::endl<<H1_camerapose<<std::endl;
-    	measure_bbox = factor4.getNewMeasureBounds (config);
-    	predict_bbox = factor4.getPredictedBounds (config);
-        
-        #include <opencv2/opencv.hpp>
+    	Eigen::MatrixXd H1_camerapose;
+    	Eigen::Vector4d err_bbox, measure_bbox, predict_bbox;
+
+    	// 计算error
+    	err_bbox = factor.evaluateError(gtsam::Pose3(T_baselink_to_c), &H1_camerapose);
+    	std::cout<<"2"<<std::endl;
+
+    	// 可视化bbox
+    	measure_bbox = factor.getMeasureBounds (gtsam::Pose3(T_baselink_to_c));
+    	predict_bbox = factor.getPredictedBounds (gtsam::Pose3(T_baselink_to_c));
         double board = 200;
         cv::Mat image = cv::Mat::zeros(CameraHeight+board*2, CameraWidth+board*2, CV_8UC3);
         cv::Rect FOV_cvmat(board, board, CameraWidth, CameraHeight);
@@ -209,45 +139,72 @@ int main(int argc, char** argv){
         cv::imshow("Bounding Boxes", image);
         cv::waitKey(100);
 
-    	// std::cout<<" [debug] err_bbox:     "<<err_bbox.transpose()<<std::endl;
-        // std::cout<<" [debug] measure_bbox: "<<measure_bbox.transpose()<<std::endl;
-        // std::cout<<" [debug] predict_bbox: "<<predict_bbox.transpose()<<std::endl;
-        // std::cout<<" [debug] H1:     \n"<<H1_camerapose<<std::endl;
 
-    	std::cout<<"end"<<std::endl;
+    	// 视觉伺服
+		double K = 0.1;
+    	if(argc==2) {
+    		K = std::stof(argv[1]);
+    	}
+    	geometry_msgs::Pose new_pose;
+    	std::cout<<"err_bbox: "<<std::endl<<err_bbox.transpose()<<std::endl;
+    	std::cout<<"H1_camerapose: "<<std::endl<<H1_camerapose<<std::endl;
 
-        // 设置目标关节量
-        std::vector<double > target_joint_group_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-        
-        target_joint_group_positions[0] = joint_angles[0] - H1_camerapose(1,0)*err_bbox(1)/scale;
-        target_joint_group_positions[1] = joint_angles[1] - H1_camerapose(1,1)*err_bbox(1)/scale;
-        target_joint_group_positions[2] = joint_angles[2] - H1_camerapose(1,2)*err_bbox(1)/scale;
-        target_joint_group_positions[3] = joint_angles[3] - H1_camerapose(1,3)*err_bbox(1)/scale;
-        target_joint_group_positions[4] = joint_angles[4] - H1_camerapose(1,4)*err_bbox(1)/scale;
-        target_joint_group_positions[5] = joint_angles[5] - H1_camerapose(1,5)*err_bbox(1)/scale;
-        target_joint_group_positions[6] = joint_angles[6] - H1_camerapose(1,6)*err_bbox(1)/scale;
+    	Eigen::Matrix<double, 1, 6>  delta =  err_bbox.transpose() * H1_camerapose;
+		std::cout<<"delta: "<<std::endl<<-1*delta.transpose()*K<<std::endl;
 
-        move_group.setJointValueTarget(target_joint_group_positions);
+    	new_pose.position.x = end_effector_pose.pose.position.x - K*delta(0,3);
+    	new_pose.position.y = end_effector_pose.pose.position.y - K*delta(0,4);
+    	new_pose.position.z = end_effector_pose.pose.position.z - K*delta(0,5);
 
-        // plan 和 move
-        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-        bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-        if(success){
-            std::cout<<"规划成功"<<std::endl;
-            move_group.execute(my_plan);
-            std::cout << "按任意键继续..." << std::endl;
+    	new_pose.orientation.w = 1;
+    	new_pose.orientation.x = 0;
+    	new_pose.orientation.y = 0;
+    	new_pose.orientation.z = 0;
+  //   	auto rpy_old = Converter::toRPY(end_effector_pose.pose.orientation.x, end_effector_pose.pose.orientation.y, end_effector_pose.pose.orientation.z, end_effector_pose.pose.orientation.w);
+  //   	double r_new = rpy_old[0] - K*delta(0,0);
+  //   	double p_new = rpy_old[1] - K*delta(0,1);
+  //   	double y_new = rpy_old[2] - K*delta(0,2);
+  //   	// new_pose.orientation. = end_effector_pose.pose.position.z + K*delta(0,2);
+		// auto new_orientation = Converter::rpyToQuaternion(r_new, p_new, y_new);
+  //   	new_pose.orientation.w = new_orientation.w();
+  //   	new_pose.orientation.x = new_orientation.x();
+  //   	new_pose.orientation.y = new_orientation.y();
+  //   	new_pose.orientation.z = new_orientation.z();
 
-        // 等待用户按下任意键（实际上是等待按下回车键）
-        std::cin.get();  // 读取一个字符（包括换行符）
 
-        }
-        else{
-            std::cout<<"规划失败"<<std::endl;
-            scale = scale/3;
-        }
+    	// plan 和 move
+    	move_group.setPoseTarget(new_pose);
+    	std::cout<<"new_pose: "<<std::endl<<new_pose<<std::endl;
 
-        // std::cout << "Press [ENTER] to continue ... , [y] to autonomous mode" << std::endl;
-        // char key = getchar();
+    	moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+    	bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+    	if(success){
+
+    		std::vector<double> joint_angles = my_plan.trajectory_.joint_trajectory.points.back().positions;
+    		for (size_t i = 0; i < joint_angles.size(); ++i) {
+    			ROS_INFO("Joint %lu: %f", i, joint_angles[i]);
+    		}
+    		std::cout<<"<<<<<<<<<<<<<< 规划成功 \n"<<std::endl;
+    		move_group.execute(my_plan);
+    		// loop_rate.sleep();
+    		std::cout << "Press [ENTER] to continue ... , [y] to autonomous mode" << std::endl;
+    		std::cout << "*****************************" << std::endl;
+    		char key = getchar();
+    	}
+    	else{
+    		// Candidates[i].position.y += 0.3;
+    		// Candidates[i].position.z -= 0.1;
+    		// move_group.setPoseTarget(Candidates[i]);
+    		// success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+    		// if(success){
+    		//     std::cout<<"<<<<<<<<<<<<<< 重新规划成功 \n"<<std::endl;
+    		//     move_group.execute(my_plan);
+    		// }
+    		// else
+    		std::cout<<"<<<<<<<<<<<<<< 规划失败\n"<<std::endl;
+    	}
 
         r.sleep();
     }

@@ -213,8 +213,10 @@ gtsam::Vector9 ConstrainedDualQuadric::localCoordinates(
 
 /* ************************************************************************* */
 void ConstrainedDualQuadric::print(const std::string& s) const {
-  cout << s;
-  cout << this->matrix() << endl;
+  cout << s<< endl;
+  // cout << this->matrix() << endl;
+  cout<<"pose:"<<endl<<pose_.matrix()<<endl;
+  cout<<"radii:"<<endl<<radii_<<endl;
 }
 
 /* ************************************************************************* */

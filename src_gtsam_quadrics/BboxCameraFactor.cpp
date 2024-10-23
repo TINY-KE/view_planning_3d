@@ -32,7 +32,7 @@ namespace gtsam_quadrics {
 
 /* ************************************************************************* */
 gtsam::Vector BboxCameraFactor::getMeasureBounds(
-    const gtsam::Pose3& pose, const ConstrainedDualQuadric& quadric,
+    const gtsam::Pose3& pose,
     gtsam::OptionalMatrixType H1) const {
 
   // 1.输入参数：
@@ -45,10 +45,10 @@ gtsam::Vector BboxCameraFactor::getMeasureBounds(
   // 在投影操作之前，首先检查 quadric 是否在相机的后面（isBehind）或者相机是否在 quadric 内部（contains）。如果满足这些条件，投影操作无效，会抛出 QuadricProjectionException 异常。
   try {
     // check pose-quadric pair
-    if (quadric.isBehind(pose)) {
+    if (Quadric_.isBehind(pose)) {
       throw QuadricProjectionException("Quadric is behind camera");
     }
-    if (quadric.contains(pose)) {
+    if (Quadric_.contains(pose)) {
       throw QuadricProjectionException("Camera is inside quadric");
     }
 
@@ -61,10 +61,10 @@ gtsam::Vector BboxCameraFactor::getMeasureBounds(
     // 将 quadric 投影到 pose 所在的相机坐标系中，生成 DualConic。
     DualConic dualConic;
     if (!NUMERICAL_DERIVATIVE) {
-      dualConic = QuadricCamera::project(quadric, pose, calibration_,
+      dualConic = QuadricCamera::project(Quadric_, pose, gtsam_calibration_,
                                           {}, H1 ? &dC_dx : 0);
     } else {
-      dualConic = QuadricCamera::project(quadric, pose, calibration_);
+      dualConic = QuadricCamera::project(Quadric_, pose, gtsam_calibration_);
     }
 
     // check dual conic is valid for error function
@@ -84,7 +84,7 @@ gtsam::Vector BboxCameraFactor::getMeasureBounds(
     } else if (measurementModel_ == TRUNCATED) {
       try {
         predictedBounds =
-            dualConic.smartBounds(calibration_, computeJacobians ? &db_dC : 0);
+            dualConic.smartBounds(gtsam_calibration_, computeJacobians ? &db_dC : 0);
       } catch (std::runtime_error& e) {
         throw QuadricProjectionException("smartbounds failed");
       }
@@ -101,19 +101,18 @@ gtsam::Vector BboxCameraFactor::getMeasureBounds(
 
     // 5. 计算雅可比矩阵：
     if (NUMERICAL_DERIVATIVE) {
-      std::function<gtsam::Vector(const gtsam::Pose3&,
-                                  const ConstrainedDualQuadric&)>
-          funPtr(boost::bind(&BboxCameraFactor::evaluateError, this,
-                             boost::placeholders::_1, boost::placeholders::_2,
-                             nullptr, nullptr));
-      if (H1) {
-        Eigen::Matrix<double, 4, 6> db_dx_ =
-            gtsam::numericalDerivative21(funPtr, pose, quadric, 1e-6);
-        *H1 = db_dx_;
-        std::cout<<" [debug0] H1 = "<<std::endl<<H1<<std::endl;
-
-      }
-
+      // std::function<gtsam::Vector(const gtsam::Pose3&,
+      //                             const ConstrainedDualQuadric&)>
+      //     funPtr(boost::bind(&BboxCameraFactor::evaluateError, this,
+      //                        boost::placeholders::_1, boost::placeholders::_2,
+      //                        nullptr, nullptr));
+      // if (H1) {
+      //   Eigen::Matrix<double, 4, 6> db_dx_ =
+      //       gtsam::numericalDerivative21(funPtr, pose, Quadric_, 1e-6);
+      //   *H1 = db_dx_;
+      // }
+      std::cerr << "错误采用NUMERICAL_DERIVATIVE. Exiting the program." << std::endl;
+      std::exit(EXIT_FAILURE);  // 退出并返回状态码 1
     } else {
       // calculate derivative of error wrt pose
       if (H1) {
@@ -155,7 +154,7 @@ gtsam::Vector BboxCameraFactor::getMeasureBounds(
 
 /* ************************************************************************* */
 gtsam::Vector BboxCameraFactor::getPredictedBounds(
-    const gtsam::Pose3& pose, const ConstrainedDualQuadric& quadric,
+    const gtsam::Pose3& pose,
     gtsam::OptionalMatrixType H1) const {
 
   // 1.输入参数：
@@ -168,10 +167,10 @@ gtsam::Vector BboxCameraFactor::getPredictedBounds(
   // 在投影操作之前，首先检查 quadric 是否在相机的后面（isBehind）或者相机是否在 quadric 内部（contains）。如果满足这些条件，投影操作无效，会抛出 QuadricProjectionException 异常。
   try {
     // check pose-quadric pair
-    if (quadric.isBehind(pose)) {
+    if (Quadric_.isBehind(pose)) {
       throw QuadricProjectionException("Quadric is behind camera");
     }
-    if (quadric.contains(pose)) {
+    if (Quadric_.contains(pose)) {
       throw QuadricProjectionException("Camera is inside quadric");
     }
 
@@ -184,10 +183,10 @@ gtsam::Vector BboxCameraFactor::getPredictedBounds(
     // 将 quadric 投影到 pose 所在的相机坐标系中，生成 DualConic。
     DualConic dualConic;
     if (!NUMERICAL_DERIVATIVE) {
-      dualConic = QuadricCamera::project(quadric, pose, calibration_,
+      dualConic = QuadricCamera::project(Quadric_, pose, gtsam_calibration_,
                                          {}, H1 ? &dC_dx : 0);
     } else {
-      dualConic = QuadricCamera::project(quadric, pose, calibration_);
+      dualConic = QuadricCamera::project(Quadric_, pose, gtsam_calibration_);
     }
 
     // check dual conic is valid for error function
@@ -207,7 +206,7 @@ gtsam::Vector BboxCameraFactor::getPredictedBounds(
     } else if (measurementModel_ == TRUNCATED) {
       try {
         predictedBounds =
-            dualConic.smartBounds(calibration_, computeJacobians ? &db_dC : 0);
+            dualConic.smartBounds(gtsam_calibration_, computeJacobians ? &db_dC : 0);
       } catch (std::runtime_error& e) {
         throw QuadricProjectionException("smartbounds failed");
       }
@@ -224,17 +223,18 @@ gtsam::Vector BboxCameraFactor::getPredictedBounds(
 
     // 5. 计算雅可比矩阵：
     if (NUMERICAL_DERIVATIVE) {
-      std::function<gtsam::Vector(const gtsam::Pose3&,
-                                  const ConstrainedDualQuadric&)>
-          funPtr(boost::bind(&BboxCameraFactor::evaluateError, this,
-                             boost::placeholders::_1, boost::placeholders::_2,
-                             nullptr, nullptr));
-      if (H1) {
-        Eigen::Matrix<double, 4, 6> db_dx_ =
-            gtsam::numericalDerivative21(funPtr, pose, quadric, 1e-6);
-        *H1 = db_dx_;
-      }
-
+      // std::function<gtsam::Vector(const gtsam::Pose3&,
+      //                             const ConstrainedDualQuadric&)>
+      //     funPtr(boost::bind(&BboxCameraFactor::evaluateError, this,
+      //                        boost::placeholders::_1, boost::placeholders::_2,
+      //                        nullptr, nullptr));
+      // if (H1) {
+      //   Eigen::Matrix<double, 4, 6> db_dx_ =
+      //       gtsam::numericalDerivative21(funPtr, pose, Quadric_, 1e-6);
+      //   *H1 = db_dx_;
+      // }
+      std::cerr << "错误采用NUMERICAL_DERIVATIVE. Exiting the program." << std::endl;
+      std::exit(EXIT_FAILURE);  // 退出并返回状态码 1
     } else {
       // calculate derivative of error wrt pose
       if (H1) {
@@ -275,7 +275,7 @@ gtsam::Vector BboxCameraFactor::getPredictedBounds(
 
 /* ************************************************************************* */
 gtsam::Vector BboxCameraFactor::evaluateError(
-    const gtsam::Pose3& pose, const ConstrainedDualQuadric& quadric,
+    const gtsam::Pose3& pose,
     gtsam::OptionalMatrixType H1) const {
 
   // 1.输入参数：
@@ -284,14 +284,16 @@ gtsam::Vector BboxCameraFactor::evaluateError(
   // H1：一个可选的输出参数，用于存储误差相对于 pose 的雅可比矩阵（4x6 矩阵）。
   // H2：一个可选的输出参数，用于存储误差相对于 quadric 的雅可比矩阵（4x9 矩阵）。
 
+  // Quadric_.print("[BboxCameraFactor::evaluateError]: 椭球体信息：");
+
   // 2.投影和几何检查：
   // 在投影操作之前，首先检查 quadric 是否在相机的后面（isBehind）或者相机是否在 quadric 内部（contains）。如果满足这些条件，投影操作无效，会抛出 QuadricProjectionException 异常。
   try {
     // check pose-quadric pair
-    if (quadric.isBehind(pose)) {
+    if (Quadric_.isBehind(pose)) {
       throw QuadricProjectionException("Quadric is behind camera");
     }
-    if (quadric.contains(pose)) {
+    if (Quadric_.contains(pose)) {
       throw QuadricProjectionException("Camera is inside quadric");
     }
 
@@ -303,10 +305,10 @@ gtsam::Vector BboxCameraFactor::evaluateError(
     // 将 quadric 投影到 pose 所在的相机坐标系中，生成 DualConic。
     DualConic dualConic;
     if (!NUMERICAL_DERIVATIVE) {
-      dualConic = QuadricCamera::project(quadric, pose, calibration_,
+      dualConic = QuadricCamera::project(Quadric_, pose, gtsam_calibration_,
                                          {}, H1 ? &dC_dx : 0);
     } else {
-      dualConic = QuadricCamera::project(quadric, pose, calibration_);
+      dualConic = QuadricCamera::project(Quadric_, pose, gtsam_calibration_);
     }
 
     // check dual conic is valid for error function
@@ -327,7 +329,7 @@ gtsam::Vector BboxCameraFactor::evaluateError(
     } else if (measurementModel_ == TRUNCATED) {
       try {
         predictedBounds =
-            dualConic.smartBounds(calibration_, computeJacobians ? &db_dC : 0);
+            dualConic.smartBounds(gtsam_calibration_, computeJacobians ? &db_dC : 0);
       } catch (std::runtime_error& e) {
         throw QuadricProjectionException("smartbounds failed");
       }
@@ -344,17 +346,18 @@ gtsam::Vector BboxCameraFactor::evaluateError(
 
     // 5. 计算雅可比矩阵：
     if (NUMERICAL_DERIVATIVE) {
-      std::function<gtsam::Vector(const gtsam::Pose3&,
-                                  const ConstrainedDualQuadric&)>
-          funPtr(boost::bind(&BboxCameraFactor::evaluateError, this,
-                             boost::placeholders::_1, boost::placeholders::_2,
-                             nullptr, nullptr));
-      if (H1) {
-        Eigen::Matrix<double, 4, 6> db_dx_ =
-            gtsam::numericalDerivative21(funPtr, pose, quadric, 1e-6);
-        *H1 = db_dx_;
-      }
-
+      // std::function<gtsam::Vector(const gtsam::Pose3&,
+      //                             const ConstrainedDualQuadric&)>
+      //     funPtr(boost::bind(&BboxCameraFactor::evaluateError, this,
+      //                        boost::placeholders::_1, boost::placeholders::_2,
+      //                        nullptr, nullptr));
+      // if (H1) {
+      //   Eigen::Matrix<double, 4, 6> db_dx_ =
+      //       gtsam::numericalDerivative21(funPtr, pose, Quadric_, 1e-6);
+      //   *H1 = db_dx_;
+      // }
+      std::cerr << "错误采用NUMERICAL_DERIVATIVE. Exiting the program." << std::endl;
+      std::exit(EXIT_FAILURE);  // 退出并返回状态码 1
     } else {
       // calculate derivative of error wrt pose
       if (H1) {
@@ -409,7 +412,7 @@ void BboxCameraFactor::print(const std::string& s,
 bool BboxCameraFactor::equals(const BboxCameraFactor& other,
                                double tol) const {
   bool equal = measured_.equals(other.measured_, tol) &&
-               calibration_->equals(*other.calibration_, tol) &&
+               gtsam_calibration_->equals(*other.gtsam_calibration_, tol) &&
                noiseModel()->equals(*other.noiseModel(), tol) ;
   return equal;
 }

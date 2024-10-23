@@ -66,12 +66,18 @@
     + dC_dx 为9x6,  dual conic 参数 相对于 相机位姿（pose）参数 的导数：
 + 构建了BoundingBoxFactor因子，需要输入“机器人位姿”和“物体位姿”
 
-# 对椭球轨迹进行优化
+# 联合优化失败 commit 0738b0e6f479bd8a0ce210bd615b428435f32a15
 + 编写wam_gpmp将我的三个创新点因子，联合优化，但有问题。
 + 问题分析：
     + BboxEllipsoidFactor： 雅可比链式法则太长
     + BboxPlaneArmLinkFactor： 雅可比推导失败
 
+# 单独对相机轨迹进行优化
++ 构建BboxCameraFactor
++ 构建HeightCameraFactor，限制相机高度
+
+# 
++ 待：修改bbox的error，改为让椭球投影到目标bbox内部
 
 
 # 三维二次曲面 Class ConstrainedDualQuadric
