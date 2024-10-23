@@ -6,7 +6,29 @@
 
 #include "include/utils/matrix_utils.h"
 
-#include "Ellipsoid.h"
+// #include "Ellipsoid.h"
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <Eigen/Dense>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
+
+#include "include/utils/matrix_utils.h"
+
+typedef Eigen::Matrix<double, 9, 1> Vector9d;
+typedef Eigen::Matrix<double, 9, 9> Matrix9d;
+typedef Eigen::Matrix<double, 5, 5> Matrix5d;
+typedef Eigen::Matrix<double, 3, 8> Matrix38d;
+typedef Eigen::Matrix<double, 10, 1> Vector10d;
+typedef Eigen::Matrix<double, 6, 1> Vector6d;
+typedef Eigen::Matrix<double, 5, 1> Vector5d;
+typedef Eigen::Matrix<double, 2, 1> Vector2d;
+typedef Eigen::Matrix<double, 4, 1> Vector4d;
+typedef Eigen::Matrix<double, 6, 6> Matrix6d;
+
+using namespace Eigen;
 
 namespace g2o
 {
@@ -32,12 +54,17 @@ public:
     // update plane parameters in 3 degrees
     plane exp_update(const Vector3d& update);
     
+
     // update plane parameters in 2 degrees
+
     plane exp_update2DOF(const Vector2d& update);
 
     // distance from a point to plane
     double distanceToPoint(const Vector3d& point, bool keep_flag = false) const;
-    void transform(const g2o::SE3Quat& Twc);
+    // void transform(const g2o::SE3Quat& Twc);
+    void transform(const Matrix4d& matTwc);
+    void transform(const Matrix4f& matTwc_float);
+
     double distanceToPlane(const g2o::plane& pl);
     double angleToPlane(const g2o::plane& pl);  // rad from acos
 
@@ -131,7 +158,7 @@ public:
       return -param(3);
     }
 
-    friend plane operator*(const g2o::SE3Quat& t, const plane& plane);
+    friend plane operator*(const Matrix4d& t, const plane& plane);
     
     Eigen::Vector4d GeneratePlaneVec();
     Eigen::Vector4d GenerateAnotherPlaneVec();
@@ -158,7 +185,7 @@ private:
 
 };
 
-inline plane operator*(const g2o::SE3Quat& t, const plane& plane){
+inline plane operator*(const Matrix4d& t, const plane& plane){
         g2o::plane pl = plane;
         pl.transform(t);
         return pl;

@@ -67,7 +67,10 @@
 + 构建了BoundingBoxFactor因子，需要输入“机器人位姿”和“物体位姿”
 
 # 对椭球轨迹进行优化
-+ 
++ 编写wam_gpmp将我的三个创新点因子，联合优化，但有问题。
++ 问题分析：
+    + BboxEllipsoidFactor： 雅可比链式法则太长
+    + BboxPlaneArmLinkFactor： 雅可比推导失败
 
 
 

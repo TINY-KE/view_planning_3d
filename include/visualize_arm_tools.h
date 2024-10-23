@@ -102,7 +102,7 @@ public:
 
          // run forward kinematics of this configuration
          std::vector<Point3> sph_centers;
-         std::vector<Matrix> J_px_jp;
+         std::vector<gtsam::Matrix> J_px_jp;
          robot_.sphereCenters(conf, sph_centers);
 
          // for each point on arm stick, get error
@@ -156,7 +156,7 @@ public:
          // run forward kinematics of this configuration
          // 机械臂endlink的位姿
          std::vector<Pose3> joint_pos;   //  link poses in 3D work space
-         std::vector<Matrix> J_jpx_jp;   //  et al. optional Jacobians
+         std::vector<gtsam::Matrix> J_jpx_jp;   //  et al. optional Jacobians
          robot_.fk_model().forwardKinematics(conf, {}, joint_pos);
 
          // for each point on arm stick, get error
@@ -264,7 +264,7 @@ private:
                               0, 0, 0, 1;
             // 机械臂endlink的位姿
             std::vector<Pose3> joint_pos;   //  link poses in 3D work space
-            std::vector<Matrix> J_jpx_jp;   //  et al. optional Jacobians
+            std::vector<gtsam::Matrix> J_jpx_jp;   //  et al. optional Jacobians
             robot_.fk_model().forwardKinematics(conf, {}, joint_pos);
             Pose3 pose_end_link = joint_pos[joint_pos.size()-1];
             // 将 gtsam::Pose3 转换为 Eigen::Matrix4f

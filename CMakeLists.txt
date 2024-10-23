@@ -15,27 +15,27 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  actionlib
-  control_msgs
-  diagnostic_msgs
-  geometry_msgs
-  # manipulation_msgs   #used for ubuntu18
-  moveit_msgs
-  moveit_ros_perception
-  moveit_ros_planning_interface
-  roscpp
-  rospy
-  sensor_msgs
-  shape_msgs
-  std_msgs
-  std_srvs
-  tf
-  trajectory_msgs
-  visualization_msgs
-  rviz_visual_tools
-  moveit_visual_tools
-  gazebo_msgs
-  tf2_geometry_msgs
+        actionlib
+        control_msgs
+        diagnostic_msgs
+        geometry_msgs
+        # manipulation_msgs   #used for ubuntu18
+        moveit_msgs
+        moveit_ros_perception
+        moveit_ros_planning_interface
+        roscpp
+        rospy
+        sensor_msgs
+        shape_msgs
+        std_msgs
+        std_srvs
+        tf
+        trajectory_msgs
+        visualization_msgs
+        rviz_visual_tools
+        moveit_visual_tools
+        gazebo_msgs
+        tf2_geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -58,16 +58,16 @@ find_package(gpmp2 REQUIRED)
 include_directories(${gpmp2_INCLUDE_DIR})
 
 include_directories(
-   ${GAZEBO_INCLUDE_DIRS}
-   ${EIGEN3_INCLUDE_DIR}
-   )
+        ${GAZEBO_INCLUDE_DIRS}
+        ${EIGEN3_INCLUDE_DIR}
+)
 
 find_package(OpenCV 3.0 QUIET)
 if(NOT OpenCV_FOUND)
-   find_package(OpenCV 2.4.3 QUIET)
-   if(NOT OpenCV_FOUND)
-      message(FATAL_ERROR "OpenCV > 2.4.3 not found.")
-   endif()
+    find_package(OpenCV 2.4.3 QUIET)
+    if(NOT OpenCV_FOUND)
+        message(FATAL_ERROR "OpenCV > 2.4.3 not found.")
+    endif()
 endif()
 
 
@@ -157,10 +157,10 @@ endif()
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  # INCLUDE_DIRS include
-  # LIBRARIES connect_gazebo
-  # CATKIN_DEPENDS roscpp std_msgs  gazebo_msgs
-  # DEPENDS system_lib
+        # INCLUDE_DIRS include
+        # LIBRARIES connect_gazebo
+        # CATKIN_DEPENDS roscpp std_msgs  gazebo_msgs
+        # DEPENDS system_lib
 )
 
 ###########
@@ -171,12 +171,12 @@ catkin_package(
 ## Your package locations should be listed before other locations
 
 include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
-  ${PROJECT_SOURCE_DIR}/include
-  ${PROJECT_SOURCE_DIR}
-  /home/robotlab/QSP-SLAM-ellipsoid-associdate
-  # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o
+        # include
+        ${catkin_INCLUDE_DIRS}
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}
+        #  /home/robotlab/QSP-SLAM-ellipsoid-associdate
+        # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o
 )
 
 
@@ -184,25 +184,25 @@ include_directories(
 add_subdirectory(src_object/Polygon)
 
 add_library(utils SHARED
-    src_object/utils/matrix_utils.cpp
-    src_object/utils/dataprocess_utils.cpp
-    src_object/utils/file_operate.cpp
+        src_object/utils/matrix_utils.cpp
+        src_object/utils/dataprocess_utils.cpp
+        src_object/utils/file_operate.cpp
 )
 
 target_link_libraries(utils
-    ${OpenCV_LIBS}
+        ${OpenCV_LIBS}
 )
 
 find_package(Boost REQUIRED COMPONENTS filesystem system)
 
 
 set(SOURCE_LZW_QUADRIC_FILES
-      src_object/MapObject.cpp
-      src_object/Converter.cc
-      src_object/core/Plane.cpp
-      src_object/core/ConstrainPlane.cpp
-      src_object/core/Ellipsoid.cpp
-  )
+        src_object/MapObject.cpp
+        src_object/Converter.cc
+        src_object/core/Plane.cpp
+        #      src_object/core/ConstrainPlane.cpp
+        #      src_object/core/Ellipsoid.cpp
+)
 
 
 # 二、GTSAM-QUADRIC 相关  
@@ -215,6 +215,7 @@ set(SOURCE_GTSAM_QUADRIC_FILES
         # ./src_gtsam_quadrics/QuadricAngleFactor.cpp
         ./src_gtsam_quadrics/QuadricCamera.cpp
         ./src_gtsam_quadrics/DualConic.cpp
+        ./src_gtsam_quadrics/BboxCameraFactor.cpp
 )
 
 set(CONVENIENCE_LIB_NAME "gtsam_quadrics")
@@ -224,39 +225,67 @@ target_link_libraries(${CONVENIENCE_LIB_NAME} gtsam)
 
 
 # 三、测试各个GTSAM模块
-add_executable(TestGtasmFactor
-        src_example/TestGtasmFactor.cpp
-              src_object/MapObject.cpp
-              src_object/Converter.cc
-              src_object/core/Plane.cpp
-              src_object/core/ConstrainPlane.cpp
-              src_object/core/Ellipsoid.cpp
-              # src_object/
-              )
-target_link_libraries(TestGtasmFactor   
-              ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS} 
-              utils
-              Polygon
-              # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
-              Boost::filesystem
-              Boost::system
-              ${GTSAM_LIBRARIES} gpmp2
-                ${CONVENIENCE_LIB_NAME}
-              )
-
+# add_executable(TestGtasmFactor
+#         src_example/TestGtasmFactor.cpp
+#         ${SOURCE_LZW_QUADRIC_FILES}
+#         # src_object/
+# )
+# target_link_libraries(TestGtasmFactor
+#         ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS}
+#         utils
+#         Polygon
+#         # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
+#         Boost::filesystem
+#         Boost::system
+#         ${GTSAM_LIBRARIES} gpmp2
+#         ${CONVENIENCE_LIB_NAME}
+# )
+#add_executable(TestBboxEllipsoidFactor
+#        src_example/TestBboxEllipsoidFactor.cpp
+#        ${SOURCE_LZW_QUADRIC_FILES}
+#        ${SOURCE_GTSAM_QUADRIC_FILES}
+#)
+#target_link_libraries(TestBboxEllipsoidFactor
+#        ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS}
+#        utils
+#        Polygon
+#        # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
+#        Boost::filesystem
+#        Boost::system
+#        ${GTSAM_LIBRARIES} gpmp2
+#        ${CONVENIENCE_LIB_NAME}
+#)
+add_executable(TestBboxCameraFactor
+        src_example/TestBboxCameraFactor.cpp
+        ${SOURCE_LZW_QUADRIC_FILES}
+        ${SOURCE_GTSAM_QUADRIC_FILES}
+)
+target_link_libraries(TestBboxCameraFactor
+        ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS}
+        utils
+        Polygon
+        # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
+        Boost::filesystem
+        Boost::system
+        ${GTSAM_LIBRARIES} gpmp2
+        ${CONVENIENCE_LIB_NAME}
+)
 
 
 # 四、GTSAM与WAM结合
 
-message(STATUS "gpmp_wam_Reproduce_Matlab")
-add_executable(gpmp_wam_Reproduce_Matlab src_wam/gpmp_wam_Reproduce_Matlab.cpp )
-target_link_libraries(gpmp_wam_Reproduce_Matlab   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
+# message(STATUS "gpmp_wam_Reproduce_Matlab")
+# add_executable(gpmp_wam_Reproduce_Matlab src_wam/gpmp_wam_Reproduce_Matlab.cpp )
+# target_link_libraries(gpmp_wam_Reproduce_Matlab   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
 
 
 # message(STATUS "gpmp_wam_getfromik")
 # add_executable(wam_getfromik src_wam/wam_getfromik_debug.cpp )
 # target_link_libraries(wam_getfromik   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
 
-message(STATUS "my_wam_gpmp")
-add_executable(wam_gpmp src_wam/wam_gpmp.cpp src_object/MapObject.cpp src_object/Converter.cc)
-target_link_libraries(wam_gpmp   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
+# message(STATUS "my_wam_gpmp")
+# add_executable(wam_gpmp src_wam/wam_gpmp.cpp
+#               ${SOURCE_LZW_QUADRIC_FILES}
+#               ${SOURCE_GTSAM_QUADRIC_FILES}
+#             )
+# target_link_libraries(wam_gpmp   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}

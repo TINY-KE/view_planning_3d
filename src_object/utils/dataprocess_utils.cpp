@@ -12,10 +12,10 @@
 #include <dirent.h>
 
 #include <string>
-
+#include <iostream>
 #include <iomanip> // for setprecision
 
-#include "Thirdparty/g2o/g2o/types/types_six_dof_expmap.h"
+// #include "Thirdparty/g2o/g2o/types/types_six_dof_expmap.h"
 
 using namespace std;
 using namespace Eigen;

@@ -21,6 +21,8 @@
 #include "gtsam_quadrics/geometry/BoundingBoxFactor.h"
 #include "gtsam/BboxEllipsoidFactor.h"
 
+// #include "gtsam_quadrics/geometry/BboxCameraFactor.h"
+
 using namespace Eigen;
 using namespace gtsam;
 using namespace gpmp2;
@@ -164,21 +166,13 @@ int main(int argc, char** argv){
     tf2_ros::Buffer tf_buffer;
     tf2_ros::TransformListener tf_listener(tf_buffer);
     ros::Rate r(20);
+    double scale = 0.1;
+
     while (ros::ok())
     {
     	// 获取当前关节角度
   		std::vector<double> joint_angles = move_group.getCurrentJointValues();
   		config << joint_angles[0], joint_angles[1], joint_angles[2], joint_angles[3], joint_angles[4], joint_angles[5], joint_angles[6];
-
-  //   	vis_arm_tools.publish_collision_spheres(config) ;
-		// vis_arm_tools.publish_arm_link_spheres(config) ;
-
-        // std::cout<<"[debug] joint_angles: ";
-        // for(int i=0; i<joint_angles.size(); i++){
-        //     std::cout<<joint_angles[i]<<" "<<config[i]<<std::endl;
-        // }
-
-    	// （2）
 
 
     	// （3）测试factor3
@@ -192,13 +186,15 @@ int main(int argc, char** argv){
 						  0, 0, 0, 1;
     	Eigen::Matrix4d T_baselink_to_c = end_effector_pose_eigen * T_endlink_to_c;
     	Eigen::MatrixXd H1_camerapose;
-    	Eigen::Vector4d err_bbox = factor3.evaluateError(gtsam::Pose3(T_baselink_to_c), Quadric, &H1_camerapose, {});
-    	Eigen::Vector4d measure_bbox = factor3.getMeasureBounds (gtsam::Pose3(T_baselink_to_c), Quadric);
-    	Eigen::Vector4d predict_bbox = factor3.getPredictedBounds (gtsam::Pose3(T_baselink_to_c), Quadric);
+    	Eigen::Vector4d err_bbox;
+    	Eigen::Vector4d measure_bbox;
+    	Eigen::Vector4d predict_bbox;
 
 		// （4）测试factor4
     	err_bbox = factor4.evaluateError(config, &H1_camerapose);
-    	measure_bbox = gtsam_bbox.vector();
+        std::cout<<" [debug] err_bbox: "<<err_bbox.transpose()<<std::endl;
+        std::cout<<" [debug] H1_camerapose: "<<std::endl<<H1_camerapose<<std::endl;
+    	measure_bbox = factor4.getNewMeasureBounds (config);
     	predict_bbox = factor4.getPredictedBounds (config);
         
         #include <opencv2/opencv.hpp>
@@ -220,6 +216,35 @@ int main(int argc, char** argv){
 
     	std::cout<<"end"<<std::endl;
 
+        // 设置目标关节量
+        std::vector<double > target_joint_group_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        
+        target_joint_group_positions[0] = joint_angles[0] - H1_camerapose(1,0)*err_bbox(1)/scale;
+        target_joint_group_positions[1] = joint_angles[1] - H1_camerapose(1,1)*err_bbox(1)/scale;
+        target_joint_group_positions[2] = joint_angles[2] - H1_camerapose(1,2)*err_bbox(1)/scale;
+        target_joint_group_positions[3] = joint_angles[3] - H1_camerapose(1,3)*err_bbox(1)/scale;
+        target_joint_group_positions[4] = joint_angles[4] - H1_camerapose(1,4)*err_bbox(1)/scale;
+        target_joint_group_positions[5] = joint_angles[5] - H1_camerapose(1,5)*err_bbox(1)/scale;
+        target_joint_group_positions[6] = joint_angles[6] - H1_camerapose(1,6)*err_bbox(1)/scale;
+
+        move_group.setJointValueTarget(target_joint_group_positions);
+
+        // plan 和 move
+        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+        bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+        if(success){
+            std::cout<<"规划成功"<<std::endl;
+            move_group.execute(my_plan);
+            std::cout << "按任意键继续..." << std::endl;
+
+        // 等待用户按下任意键（实际上是等待按下回车键）
+        std::cin.get();  // 读取一个字符（包括换行符）
+
+        }
+        else{
+            std::cout<<"规划失败"<<std::endl;
+            scale = scale/3;
+        }
 
         // std::cout << "Press [ENTER] to continue ... , [y] to autonomous mode" << std::endl;
         // char key = getchar();

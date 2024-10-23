@@ -192,21 +192,30 @@ class Visualize_Tools{
         std::vector<std::vector<geometry_msgs::Point>> BboxPlanesTrianglePointsInWorld;
 
         std::vector<MapObject*> MapObjects;
+        void addMapObject(MapObject* ob) {
+            MapObjects.push_back(ob);
+        }
         // std::vector<g2o::plane*> MapPlanes;
         std::vector<Eigen::Vector4d> MapPlaneNormals;
+        void addMapPlaneNormals(Eigen::Vector4d plane) {
+            MapPlaneNormals.push_back(plane);
+        }
+        void clearMapPlaneNormals(){
+            MapPlaneNormals.clear();
+        }
 
 };
 
 
 void Visualize_Tools::Run()
 {   
-    ros::Rate r(50);
+    ros::Rate r(500);
 
 
     while(1){
 
         for(int i=0; i<MapObjects.size(); i++ ){
-            visualize_ellipsoid( MapObjects[i], default_frame_, i);
+            visualize_ellipsoid( MapObjects[i], "world", i);
         }
 
         for(int i=0; i<BboxPlanesTrianglePointsInWorld.size(); i++ ){

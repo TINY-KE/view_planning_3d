@@ -447,7 +447,7 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse( MapObject& sdf_obje
 }
 
 
-std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse_by_circle( MapObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, double radius=3 /*短轴*/ , bool forCamera = false ){
+std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse_by_circle( MapObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, double radius=3 /*短轴*/ , bool forCamera = false , int divide_ = 240){
 
     std::vector<geometry_msgs::Pose> candidates;
     // 长轴和短轴
@@ -467,7 +467,7 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse_by_circle( MapObject
     
     Ellipse ellipse = { a, b, sdf_object.mCuboid3D.cuboidCenter.x(), sdf_object.mCuboid3D.cuboidCenter.y() };
 
-    int divide = 60*4;
+    int divide = divide_;
     double Max_angle_range = 2*M_PI;
     double miniA = Max_angle_range/divide;
     for(int i=divide; i>0; i--){

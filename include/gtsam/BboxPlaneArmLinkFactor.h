@@ -34,21 +34,8 @@ typedef Eigen::Matrix<double, 4, 1> Vector4d;
 typedef Eigen::Matrix<double, 6, 6> Matrix6d;
 typedef Eigen::Matrix<double, 3, 3> Matrix3d;
 
-namespace g2o {
-  g2o::SE3Quat toSE3Quat(const Eigen::Matrix4f &T)
-  {
-      Eigen::Matrix<double, 3, 3> R = T.topLeftCorner<3, 3>().cast<double>();
-      Eigen::Matrix<double, 3, 1> t = T.topRightCorner<3, 1>().cast<double>();
-      return g2o::SE3Quat(R, t);
-  }
 
-  Eigen::Matrix4f toMatrix4f(const g2o::SE3Quat &SE3)
-  {
-      Eigen::Matrix4f eigMat = SE3.to_homogeneous_matrix().cast<float>();
-      return eigMat;
-  }
-
-}
+using namespace gtsam;
 
 namespace gpmp2 {
 
@@ -122,6 +109,7 @@ class BboxPlaneArmLinkFactor
 
    g2o::plane*  computeplane(
           const typename Robot::Pose& conf, bool output = false);
+
   /// @return a deep copy of this factor
   virtual gtsam::NonlinearFactor::shared_ptr clone() const {
     return std::static_pointer_cast<gtsam::NonlinearFactor>(
@@ -195,11 +183,6 @@ double hingeLossFovCost(
 
 
 
-
-
-
-#include <gpmp2/obstacle/ObstacleCost.h>
-
 using namespace std;
 using namespace gtsam;
 
@@ -221,7 +204,7 @@ namespace gpmp2 {
                         0, 0, 0, 1;
       // 机械臂endlink的位姿
       std::vector<Pose3> joint_pos;   //  link poses in 3D work space
-      std::vector<Matrix> J_jpx_jp;   //  et al. optional Jacobians
+      std::vector<gtsam::Matrix> J_jpx_jp;   //  et al. optional Jacobians
       robot_.fk_model().forwardKinematics(conf, {}, joint_pos);
       Pose3 pose_end_link = joint_pos[joint_pos.size()-1];
       if(output)
@@ -236,13 +219,12 @@ namespace gpmp2 {
           std::cout<<"[zhjd-debug] T_baselink_endlink: "<<std::endl<<T_baselink_endlink<<std::endl;
 
       Eigen::Matrix4f T_baselink_2_c = T_baselink_endlink * T_endlink_to_c;
-      g2o::SE3Quat T_baselink_2_c_g2o = g2o::toSE3Quat(T_baselink_2_c);
-      if(output)
-          std::cout<<"[zhjd-debug] T_baselink_2_c_g2o: "<<std::endl<<T_baselink_2_c_g2o.to_homogeneous_matrix()<<std::endl;
+      
 
       // 将平面变到baselink坐标系
       g2o::plane* pl_in_baselink = new g2o::plane(*mPlaneLow);
-      pl_in_baselink->transform(T_baselink_2_c_g2o);
+
+      pl_in_baselink->transform(T_baselink_2_c);
 
       return pl_in_baselink;
  }
@@ -264,7 +246,7 @@ namespace gpmp2 {
                         0, 0, 0, 1;
       // 机械臂endlink的位姿
       std::vector<Pose3> joint_pos;   //  link poses in 3D work space
-      std::vector<Matrix> J_jpx_jp;   //  et al. optional Jacobians
+      std::vector<gtsam::Matrix> J_jpx_jp;   //  et al. optional Jacobians
       robot_.fk_model().forwardKinematics(conf, {}, joint_pos);
       Pose3 pose_end_link = joint_pos[joint_pos.size()-1];
       // 将 gtsam::Pose3 转换为 Eigen::Matrix4f
@@ -275,19 +257,18 @@ namespace gpmp2 {
       T_baselink_endlink.block<3, 1>(0, 3) << pose_end_link.x(), pose_end_link.y(), pose_end_link.z();
 
       Eigen::Matrix4f T_baselink_2_c = T_baselink_endlink * T_endlink_to_c;
-      g2o::SE3Quat T_baselink_2_c_g2o = g2o::toSE3Quat(T_baselink_2_c);
 
       // 将平面变到baselink坐标系
       g2o::plane* pl_in_baselink = new g2o::plane(*mPlaneLow);
-      pl_in_baselink->transform(T_baselink_2_c_g2o);
+      pl_in_baselink->transform(T_baselink_2_c);
 
       // if Jacobians used, initialize as zeros
       // size: arm_nr_points_ * DOF
-      if (H1) *H1 = Matrix::Zero(robot_.nr_body_spheres(), robot_.dof());
+      if (H1) *H1 = gtsam::Matrix::Zero(robot_.nr_body_spheres(), robot_.dof());
 
       // run forward kinematics of this configuration
       vector<Point3> sph_centers;
-      vector<Matrix> J_px_jp;
+      vector<gtsam::Matrix> J_px_jp;
       if (H1)
        robot_.sphereCenters(conf, sph_centers, &J_px_jp);
       else
@@ -326,11 +307,13 @@ Eigen::Matrix3Xd BboxPlaneArmLinkFactor<ROBOT>::generateProjectionMatrix() {
     identity_lefttop.col(3) = Vector3d(0, 0, 0);
     identity_lefttop.topLeftCorner<3, 3>() = Matrix3d::Identity(3, 3);
 
-    Eigen::Matrix3Xd proj_mat = mCalib * identity_lefttop;
+    Eigen::Matrix3Xd proj_mat = mCalib * identity_lefttop;   //维度是 3x4
 
-    g2o::SE3Quat campose_wc = g2o::SE3Quat();
-    g2o::SE3Quat campose_cw = campose_wc.inverse();
-    proj_mat = proj_mat * campose_cw.to_homogeneous_matrix();
+    // g2o::SE3Quat campose_wc = g2o::SE3Quat();
+    // g2o::SE3Quat campose_cw = campose_wc.inverse();
+    Eigen::Matrix4d campose_wc = Eigen::Matrix4d::Identity();
+    // proj_mat = proj_mat * campose_cw.to_homogeneous_matrix();
+    proj_mat = proj_mat * campose_wc.inverse();
 
     return proj_mat;
 }

@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC -g -shared -Wl,-soname,libgmockd.so -o ../lib/libgmockd.so "CMakeFiles/gmock.dir/src/gmock-all.cc.o"  -Wl,-rpath,/home/robotlab/ws_3d_vp/src/view_planning_3d/cmake-build-debug/gtest/lib ../lib/libgtestd.so -lpthread

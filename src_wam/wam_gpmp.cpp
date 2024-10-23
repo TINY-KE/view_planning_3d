@@ -115,6 +115,35 @@ enum opt_type {
     DOGLEG = 3
 };
 
+gtsam::Values initArmTrajStraightLine_my(const Vector& init_conf,
+                                      const Vector& end_conf,
+                                      size_t total_step) {
+    Values init_values;
+
+    // init pose
+    for (size_t i = 0; i <= total_step; i++) {
+        Vector conf;
+        if (i == 0)
+            conf = init_conf;
+        else if (i == total_step)
+            conf = end_conf;
+        else
+            conf =
+                static_cast<double>(i) / static_cast<double>(total_step) * end_conf +
+                (1.0 - static_cast<double>(i) / static_cast<double>(total_step)) *
+                    init_conf;
+
+        init_values.insert(Symbol('x', i), conf);
+    }
+
+    // init vel as avg vel
+    // Vector avg_vel = (end_conf - init_conf) / static_cast<double>(total_step);
+    // for (size_t i = 0; i <= total_step; i++)
+    //     init_values.insert(Symbol('v', i), avg_vel);
+
+    return init_values;
+}
+
 int main(int argc, char **argv) {
     //  一、创建ROS和movegroup
     ros::init(argc, argv, "gpmp_wam", ros::init_options::AnonymousName);
@@ -159,11 +188,12 @@ int main(int argc, char **argv) {
 
 
     // 三、可视化线程
-    string default_frame = "world";
+    string default_frame = "wam/base_link";
 
     Visualize_Tools *vis_tools = new Visualize_Tools(nh, default_frame);
     std::thread *mptVisualizeTools;
     mptVisualizeTools = new std::thread(&Visualize_Tools::Run, vis_tools);
+    vis_tools->addMapObject(ob);
 
     Visualize_Arm_Tools vis_arm_tools(nh, *arm_model, move_group, CameraWidth, CameraHeight, Calib, default_frame);
     std::thread *mptVisualizeArmTools;
@@ -172,7 +202,8 @@ int main(int argc, char **argv) {
 
     //四、生成FootPrints候选点
     std::vector<geometry_msgs::Pose> FootPrints; //FootPrints候选位姿
-    std::vector<geometry_msgs::Pose> Candidates = GenerateCandidates_ellipse_by_circle(*ob, FootPrints, 3.5);
+    std::vector<geometry_msgs::Pose> Candidates = GenerateCandidates_ellipse_by_circle(*ob, FootPrints, 2.5, 10);
+
 
 
     //五、确定起始位姿和中间差值
@@ -182,68 +213,82 @@ int main(int argc, char **argv) {
     std::vector<double> current_joint_values = move_group.getCurrentJointValues();
     // start_conf = stdVectorToGtsamVector(current_joint_values);
     start_conf = (Vector(7) << 2.43078, -0.627707 ,  0.13426,   1.70191,  -0.10452,  -1.27042,   2.40398).finished();
-    end_conf = (Vector(7) << 2.43078, -0.627707 ,  0.13426,   1.70191,  -0.10452,  -1.27042,   2.40398).finished();
+    // start_conf = (Vector(7) << 0,0,0,0,0,0,0).finished();
+    // end_conf = (Vector(7) << 2.43078, -0.627707 ,  0.13426,   1.70191,  -0.10452,  -1.27042,   2.40398).finished();
+    end_conf = (Vector(7) << 0,0,0,0,0,0,0).finished();
 
     start_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();
     end_vel = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();
 
-    double total_time_sec = 2;
-    double total_time_step = FootPrints.size();
+
+    double total_time_step = FootPrints.size()-1;   // TODO: 这里一定要注意
+    double total_time_sec = 2 * (FootPrints.size()-1);
     double check_inter = 5;
     double delta_t = total_time_sec / total_time_step;
     double total_check_step = (check_inter + 1.0)*total_time_step;
     // version1： 直接使用直线插值
-    gtsam::Values init_values = gpmp2::initArmTrajStraightLine(start_conf, end_conf, total_time_step);
-
+    gtsam::Values init_values = initArmTrajStraightLine_my(start_conf, end_conf, total_time_step);
+    std::cout<<"FootPrints size:"<< FootPrints.size() <<std::endl;
+    std::cout<<"init_values size:"<< init_values.size() <<std::endl;
+    // init_values.print("init_values \n");
 
     // 六、各因子的启动参数
     // 视场和机械臂本体
     double obs_sigma = 0.005;   // 障碍物因子的权重
-    double epsilon_dist = 0.1;
+    double epsilon_dist = 0.15;
     // bbox和二次曲线
     double s = 100;
     gtsam_quadrics::AlignedBox2 gtsam_bbox(0+s, 0+s, CameraWidth-s, CameraHeight-s);   //预期的物体检测框
-    double bbox_sigma = 0.1;   // bbox的权重
+    double bbox_sigma = 0.001;   // bbox的权重
     //初始位姿
     double fix_sigma = 1e-4; //固定的位姿，包括初始的位姿
     double orien_sigma = 1e-2;  //过程中的方向。 TODO: 为什么是其他噪声模型的100倍？？？
     // 机械臂之间的关节尽可能的小
-    Eigen::MatrixXd Qc = 0.1 * Eigen::MatrixXd::Identity(arm_model->dof(), arm_model->dof());
+    Eigen::MatrixXd Qc = 1 * Eigen::MatrixXd::Identity(arm_model->dof(), arm_model->dof());
     noiseModel::Gaussian::shared_ptr Qc_model = noiseModel::Gaussian::Covariance(Qc);// noiseModel是命名空间，Gaussian是类，Covariance是类的成员函数
 
 
     // 六. 构建图
     // % algo settings
+    std::vector<BboxEllipsoidFactor<ArmModel>>  bbox_factors;
+    std::vector<BboxPlaneArmLinkFactor<ArmModel>>  lowplane_factors;
+
 
     NonlinearFactorGraph graph;
     for(int i=0; i<FootPrints.size(); i++){
         Key key_pos = symbol('x', i);
         Key key_vel = symbol('v', i);
 
-        if(i==0){
-            // 起始位置约束
-            graph.add(PriorFactor<Vector>(key_pos, start_conf,  noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
-
-            // 初始位置的速度
-            graph.add(PriorFactor<Vector>(key_vel, start_vel,   noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
-        }
-        else if(i==FootPrints.size()-1){
-            // 2.2 终止位置约束
-            // goal pose for end effector in workspace
-            // graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, end_pose, noiseModel::Isotropic::Sigma(6, end_pose_sigma)));
-            graph.add(PriorFactor<Vector>(key_pos, end_conf,  noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
-
-            // fix goal velocity
-            graph.add(PriorFactor<Vector>(key_vel, end_vel, noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
-        }
-        else{
+        // if(i==0){
+        //     // 起始位置约束
+        //     graph.add(PriorFactor<Vector>(key_pos, start_conf,  noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
+        //
+        //     // 初始位置的速度
+        //     graph.add(PriorFactor<Vector>(key_vel, start_vel,   noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
+        // }
+        // else if(i==FootPrints.size()-1){
+        //     // 2.2 终止位置约束
+        //     // goal pose for end effector in workspace
+        //     // graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, end_pose, noiseModel::Isotropic::Sigma(6, end_pose_sigma)));
+        //     graph.add(PriorFactor<Vector>(key_pos, end_conf,  noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
+        //
+        //     // fix goal velocity
+        //     graph.add(PriorFactor<Vector>(key_vel, end_vel, noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
+        // }
+        // else
+        {
             // 下视场和机械臂本体
-            BboxPlaneArmLinkFactor<ArmModel>(key_pos, *arm_model,obs_sigma, epsilon_dist,  CameraWidth, CameraHeight, Calib);
+            BboxPlaneArmLinkFactor<ArmModel> lowplane_factor_debug(key_pos, *arm_model,obs_sigma, epsilon_dist,  CameraWidth, CameraHeight, Calib);
+            graph.add(lowplane_factor_debug);
+            lowplane_factors.push_back(lowplane_factor_debug);
 
             // BBOX和二次曲线
             Eigen::Matrix4f RobotPose = Eigen::Matrix4f::Identity();
-            // RobotPose = Converter::geometryPosetoMatrix4d(FootPrints[i]);
-            BboxEllipsoidFactor<ArmModel>(key_pos, *arm_model, bbox_sigma, gtsam_bbox, ob, RobotPose, CameraWidth, CameraHeight,Calib);
+            RobotPose = Converter::geometryPosetoMatrix4d(FootPrints[i]).cast<float>();;
+            BboxEllipsoidFactor<ArmModel> factor_debug(key_pos, *arm_model, bbox_sigma, gtsam_bbox, ob, RobotPose, CameraWidth, CameraHeight,Calib);
+            graph.add(factor_debug);
+            bbox_factors.push_back(factor_debug);
+            // factor_debug.visulize(start_conf);
         }
 
         if(i>0){
@@ -255,7 +300,7 @@ int main(int argc, char **argv) {
 
             // % GP prior
             // 学习/home/zhjd/work/gpmp2/gpmp2/gp/tests/testGaussianProcessPriorLinear.cpp
-            graph.add(GaussianProcessPriorLinear(key_pos1, key_vel1, key_pos2, key_vel2, delta_t, Qc_model));
+            // graph.add(GaussianProcessPriorLinear(key_pos1, key_vel1, key_pos2, key_vel2, delta_t, Qc_model));
 
             // // % unary obstacle factor
             // graph.add(ObstacleSDFFactorArm(key_pos, *arm_model, sdf, obs_sigma, epsilon_dist));
@@ -272,37 +317,38 @@ int main(int argc, char **argv) {
     }
 
 
-    // int opt_type = LM;
-    // Values results;
-    // if(opt_type == LM){
-    //     LevenbergMarquardtParams parameters;
-    //     parameters.setVerbosity("ERROR"); // SILENT, TERMINATION, ERROR, VALUES, DELTA, LINEAR
-    //     parameters.setAbsoluteErrorTol(1e-12);
-    //     parameters.setlambdaInitial(1000.0);
-    //     LevenbergMarquardtOptimizer optimizer(graph, init_values, parameters);
-    //     // LevenbergMarquardtOptimizer类的定义
-    //     // #include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
-    //     // virtual class LevenbergMarquardtOptimizer : gtsam::NonlinearOptimizer {
-    //     //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues);
-    //     //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues, const gtsam::LevenbergMarquardtParams& params);
-    //     //     double lambda() const;
-    //     //     void print(string str) const;
-    //     results = optimizer.optimize();
-    // }
-    // else if(opt_type == GN){
-    //     GaussNewtonParams parameters;
-    //     parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR"); SILENT, TERMINATION, ERROR, VALUES, DELTA, LINEAR
-    //     GaussNewtonOptimizer optimizer(graph, init_values, parameters);
-    //     results = optimizer.optimize();
-    // }
-    // else if(opt_type == DOGLEG){
-    //     DoglegParams parameters;
-    //     parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
-    //     DoglegOptimizer optimizer(graph, init_values, parameters);
-    //     results = optimizer.optimize();
-    //     // cout_results = optimizer.values();
-    // }
-    //
+    int opt_type = LM;
+    Values results;
+    if(opt_type == LM){
+        LevenbergMarquardtParams parameters;
+        parameters.setVerbosity("ERROR"); // SILENT, TERMINATION, ERROR, VALUES, DELTA, LINEAR
+        // parameters.setAbsoluteErrorTol(1e-12);
+        parameters.setlambdaInitial(1000.0);
+        LevenbergMarquardtOptimizer optimizer(graph, init_values, parameters);
+        // LevenbergMarquardtOptimizer类的定义
+        // #include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
+        // virtual class LevenbergMarquardtOptimizer : gtsam::NonlinearOptimizer {
+        //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues);
+        //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues, const gtsam::LevenbergMarquardtParams& params);
+        //     double lambda() const;
+        //     void print(string str) const;
+        results = optimizer.optimize();
+    }
+    else if(opt_type == GN){
+        GaussNewtonParams parameters;
+        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR"); SILENT, TERMINATION, ERROR, VALUES, DELTA, LINEAR
+        GaussNewtonOptimizer optimizer(graph, init_values, parameters);
+        results = optimizer.optimize();
+    }
+    else if(opt_type == DOGLEG){
+        DoglegParams parameters;
+        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
+        DoglegOptimizer optimizer(graph, init_values, parameters);
+        results = optimizer.optimize();
+        // cout_results = optimizer.values();
+    }
+
+
     // std::cout << "Optimization complete" << std::endl;
     // // std::cout << "results="<<std::endl << results << std::endl;
     // std::cout << "initial error=" << graph.error(init_values) << std::endl;
@@ -332,58 +378,90 @@ int main(int argc, char **argv) {
     //     std::cout<<"Trajectory is collision free."<<std::endl;
 
 
-    //  六、moveit控制及rviz可视化
 
 
-    // move_group.setGoalJointTolerance(0.01);
-    // move_group.setPlannerId("RRTstar");
 
-    //
-    // // 关节量
-    // bool pub_form = true;
-    // bool not_init_succuss = true;
-    // for (int i = 0; i < Candidates.size(); i++) {
-    //     move_group.setPoseTarget(Candidates[i]);
-    //
-    //     //print pose target
-    //     std::cout << ">>>>>>> target pose " << i << ", x:" << Candidates[i].position.x << ", y:" << Candidates[i].
-    //             position.y << ", z:" << Candidates[i].position.z
-    //             << ", qx:" << Candidates[i].orientation.x << ", qy:" << Candidates[i].orientation.y << ", qz:" <<
-    //             Candidates[i].orientation.z << ", qw:" << Candidates[i].orientation.w
-    //             << std::endl;
-    //
-    //     // plan 和 move
-    //     moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-    //     setPose(nh, "mrobot", FootPrints[i].position.x, FootPrints[i].position.y, FootPrints[i].position.z,
-    //             FootPrints[i].orientation.w, FootPrints[i].orientation.x, FootPrints[i].orientation.y,
-    //             FootPrints[i].orientation.z);
-    //     bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-    //     if (success) {
-    //         std::vector<double> joint_angles = my_plan.trajectory_.joint_trajectory.points.back().positions;
-    //         for (size_t i = 0; i < joint_angles.size(); ++i) {
-    //             ROS_INFO("Joint %lu: %f", i, joint_angles[i]);
-    //         }
-    //         std::cout << "<<<<<<<<<<<<<< 规划成功 \n" << std::endl;
-    //         move_group.execute(my_plan);
-    //         // loop_rate.sleep();
-    //     } else {
-    //         // Candidates[i].position.y += 0.3;
-    //         // Candidates[i].position.z -= 0.1;
-    //         // move_group.setPoseTarget(Candidates[i]);
-    //         // success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-    //
-    //         // if(success){
-    //         //     std::cout<<"<<<<<<<<<<<<<< 重新规划成功 \n"<<std::endl;
-    //         //     move_group.execute(my_plan);
-    //         // }
-    //         // else
-    //         std::cout << "<<<<<<<<<<<<<< 规划失败\n" << std::endl;
-    //     }
-    //     if (not_init_succuss) {
-    //         std::cin.get();
-    //         // not_init_succuss = false;
-    //     }
-    // }
+     // //  六、moveit控制及rviz可视化
+
+    // 关节量
+    bool pub_form = true;
+    std::vector<double > target_joint_group_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
+    Vector target_joint_group_positions_eigen;
+    for(int i=0; i<FootPrints.size(); i++){
+
+        setPose(nh, "mrobot", FootPrints[i].position.x, FootPrints[i].position.y, FootPrints[i].position.z, FootPrints[i].orientation.w, FootPrints[i].orientation.x, FootPrints[i].orientation.y, FootPrints[i].orientation.z);
+
+        // target_joint_group_positions.clear();
+        // std::cout<<"开始规划,"<<i<<std::endl;
+
+        target_joint_group_positions_eigen = results.at<Vector>(symbol('x', i));
+
+        gtsam::Matrix J;
+        auto lowplane_errors = lowplane_factors[i].evaluateError(target_joint_group_positions_eigen, &J);
+        std::cout<<"lowplane errors: "<<lowplane_errors.transpose()<<std::endl;
+        std::cout<<"J: "<<J<<std::endl;
+        auto lowplane = lowplane_factors[i].computeplane(target_joint_group_positions_eigen);
+        // lowplane->transform(Converter::geometryPosetoMatrix4d(FootPrints[i]));
+        vis_tools->clearMapPlaneNormals();
+        vis_tools->addMapPlaneNormals(lowplane->param);
+
+        gtsam::Matrix J_bbox;
+        bbox_factors[i].visulize(target_joint_group_positions_eigen);
+        auto bbox_errors = bbox_factors[i].evaluateError(target_joint_group_positions_eigen, &J_bbox);
+        std::cout<<"bbox errors: "<<bbox_errors.transpose()<<std::endl;
+        std::cout<<"J_bbox: "<<std::endl<<J_bbox<<std::endl;
+
+
+        target_joint_group_positions[0] = (double(target_joint_group_positions_eigen[0]));
+        target_joint_group_positions[1] = (double(target_joint_group_positions_eigen[1]));
+        target_joint_group_positions[2] = (double(target_joint_group_positions_eigen[2]));
+        target_joint_group_positions[3] = (double(target_joint_group_positions_eigen[3]));
+        target_joint_group_positions[4] = (double(target_joint_group_positions_eigen[4]));
+        target_joint_group_positions[5] = (double(target_joint_group_positions_eigen[5]));
+        target_joint_group_positions[6] = (double(target_joint_group_positions_eigen[6]));
+        // std::cout<<" #gpmp规划结果 "<<i <<", size:"<< target_joint_group_positions.size()
+        //                                 <<", values: "<<std::endl<<"["
+        //                                 << target_joint_group_positions[0]
+        //                                 <<", "<< target_joint_group_positions[1]
+        //                                 <<", "<< target_joint_group_positions[2]
+        //                                 <<", "<< target_joint_group_positions[3]
+        //                                 <<", "<< target_joint_group_positions[4]
+        //                                 <<", "<< target_joint_group_positions[5]
+        //                                 <<", "<< target_joint_group_positions[6]  <<"];"<<std::endl;
+
+
+
+        // 发送给moveit
+        // 规划限制
+        // move_group.setMaxVelocityScalingFactor(0.05);
+        // move_group.setMaxAccelerationScalingFactor(0.05);
+        // arm.set_goal_joint_tolerance(0.001)
+        // # arm.set_planner_id("RRTConnectkConfigDefault")
+        // arm.set_planner_id("RRTstar")
+
+        std::cout<<"设置joint values, "<<i<<std::endl;
+        for (int i = 0; i < target_joint_group_positions.size(); i++){
+            ROS_INFO("   Joint %d: %f", i, target_joint_group_positions[i]);
+        }
+        // 设置目标关节量
+        move_group.setJointValueTarget(target_joint_group_positions);
+
+
+        // plan 和 move
+        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+        bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+        if(success){
+            std::cout<<"规划成功"<<std::endl;
+            move_group.execute(my_plan);
+            std::cout << "按任意键继续..." << std::endl;
+
+        // 等待用户按下任意键（实际上是等待按下回车键）
+        std::cin.get();  // 读取一个字符（包括换行符）
+
+        }
+        else
+            std::cout<<"规划失败"<<std::endl;
+    }
 
 
     return 0;
