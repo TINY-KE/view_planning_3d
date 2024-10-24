@@ -111,14 +111,11 @@ gtsam::Vector BoundingBoxFactor::getMeasureBounds(
         Eigen::Matrix<double, 4, 6> db_dx_ =
             gtsam::numericalDerivative21(funPtr, pose, quadric, 1e-6);
         *H1 = db_dx_;
-        std::cout<<" [debug0] H1 = "<<std::endl<<H1<<std::endl;
-
       }
       if (H2) {
         Eigen::Matrix<double, 4, 9> db_dq_ =
             gtsam::numericalDerivative22(funPtr, pose, quadric, 1e-6);
         *H2 = db_dq_;
-        std::cout<<" [debug0] H2 = "<<std::endl<<H2<<std::endl;
       }
     } else {
       // calculate derivative of error wrt pose

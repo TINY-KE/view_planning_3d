@@ -298,7 +298,8 @@ target_link_libraries(CONVENIENCE_LIB_NAME
 # target_link_libraries(wam_gpmp   ${CONVENIENCE_LIB_NAME})  #${Boost_LIBRARIES}
 
  add_executable(wam_bboxcamera src_wam/wam_bboxcamera.cpp
-         ${SOURCE_LZW_QUADRIC_FILES}
-         ${SOURCE_GTSAM_QUADRIC_FILES})
+#         ${SOURCE_LZW_QUADRIC_FILES}
+#         ${SOURCE_GTSAM_QUADRIC_FILES}
+ )
  target_link_libraries(wam_bboxcamera
-         ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  )
+         ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )

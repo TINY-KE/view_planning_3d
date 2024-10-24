@@ -136,9 +136,9 @@ gtsam::Values initCameraPose_my(std::vector<geometry_msgs::Pose> Candidates) {
 }
 
 
-gtsam::Values initArmTrajStraightLine_my(const Vector& init_conf,
-                                      const Vector& end_conf,
-                                      size_t total_step) {
+gtsam::Values initArmTrajStraightLine_my(const Vector &init_conf,
+                                         const Vector &end_conf,
+                                         size_t total_step) {
     Values init_values;
 
     // init pose
@@ -150,8 +150,8 @@ gtsam::Values initArmTrajStraightLine_my(const Vector& init_conf,
             conf = end_conf;
         else
             conf =
-                static_cast<double>(i) / static_cast<double>(total_step) * end_conf +
-                (1.0 - static_cast<double>(i) / static_cast<double>(total_step)) *
+                    static_cast<double>(i) / static_cast<double>(total_step) * end_conf +
+                    (1.0 - static_cast<double>(i) / static_cast<double>(total_step)) *
                     init_conf;
 
         init_values.insert(Symbol('x', i), conf);
@@ -187,7 +187,7 @@ int main(int argc, char **argv) {
     //二、生成物体、机械臂、
     // （1）生成物体
     double x = 3, y = 0, z = 0.5;
-    double lenth = 2.5, width = 2, height = 1;
+    double lenth = 2.5, width = 2, height = 1.3;
     double yaw = 0;
     MapObject *ob = new MapObject();
     ob->Update_Twobj(x, y, z, yaw);
@@ -226,30 +226,35 @@ int main(int argc, char **argv) {
     std::vector<geometry_msgs::Pose> Candidates = GenerateCandidates_ellipse_by_circle(*ob, FootPrints, 3.0, 10, 30);
 
 
-
     //五、确定起始位姿和中间差值
     gtsam::Values init_values = initCameraPose_my(Candidates);
-    std::cout<<"FootPrints size:"<< FootPrints.size() <<std::endl;
-    std::cout<<"init_values size:"<< init_values.size() <<std::endl;
+    std::cout << "FootPrints size:" << FootPrints.size() << std::endl;
+    std::cout << "init_values size:" << init_values.size() << std::endl;
     // init_values.print("init_values \n");
 
     // 六、各因子的启动参数
 
     // bbox和二次曲线
     double s = 100;
-    gtsam_quadrics::AlignedBox2 gtsam_bbox(0+s, 0+s, CameraWidth-s, CameraHeight-s);   //预期的物体检测框
-    double bbox_sigma = 0.1;   // bbox的权重
-    double height_sigma = 0.001;   // bbox的权重
-
+    gtsam_quadrics::AlignedBox2 gtsam_bbox(0 + s, 0 + s, CameraWidth - s, CameraHeight - s); //预期的物体检测框
+    double bbox_sigma = 0.1; // bbox的权重
+    double height_sigma = 0.1; // bbox的权重
+    //高度
+    double height_limit = 1.0;
+    double height_error_scale = 10;
+    if (argc == 3) {
+        height_error_scale = std::stof(argv[2]);
+    }
 
     // 六. 构建图
     // % algo settings
-    std::vector<BboxCameraFactor>  bbox_factors;
-    std::vector<BboxPlaneArmLinkFactor<ArmModel>>  lowplane_factors;
+    std::vector<BboxCameraFactor> bbox_factors;
+    std::vector<HeightCameraFactor> height_factors;
+    std::vector<BboxPlaneArmLinkFactor<ArmModel> > lowplane_factors;
 
 
     NonlinearFactorGraph graph;
-    for(int i=0; i<FootPrints.size(); i++){
+    for (int i = 0; i < FootPrints.size(); i++) {
         Key key_pos = symbol('x', i);
         Key key_vel = symbol('v', i);
 
@@ -271,47 +276,41 @@ int main(int argc, char **argv) {
         // }
         // else
         {
-
-
             // BBOX和二次曲线
             Eigen::Matrix4f RobotPose = Eigen::Matrix4f::Identity();
             RobotPose = Converter::geometryPosetoMatrix4d(FootPrints[i]).cast<float>();;
             BboxCameraFactor factor(key_pos,
-                           bbox_sigma,
-                           gtsam_bbox,
-                           ob,
-                           RobotPose,
-                           CameraWidth, CameraHeight, Calib );
+                                    bbox_sigma,
+                                    gtsam_bbox,
+                                    ob,
+                                    RobotPose,
+                                    CameraWidth, CameraHeight, Calib);
             graph.add(factor);
             bbox_factors.push_back(factor);
             // factor_debug.visulize(start_conf);
 
             HeightCameraFactor factor2(key_pos,
-                           height_sigma,
-                           gtsam_bbox,
-                           ob,
-                           RobotPose,
-                           CameraWidth, CameraHeight, Calib );
+                                       height_sigma,
+                                       RobotPose,
+                                       height_limit,
+                                       height_error_scale);
             graph.add(factor2);
-
-
+            height_factors.push_back(factor2);
         }
-
-
     }
 
     int opt_type = LM;
-    if(argc==2) {
+    if (argc == 2) {
         double k = std::stof(argv[1]);
-        if(k==1)
+        if (k == 1)
             opt_type = LM;
-        else if(k==2)
+        else if (k == 2)
             opt_type = GN;
-        else if(k==3)
+        else if (k == 3)
             opt_type = DOGLEG;
     }
     Values results;
-    if(opt_type == LM){
+    if (opt_type == LM) {
         LevenbergMarquardtParams parameters;
         parameters.setVerbosity("ERROR"); // SILENT, TERMINATION, ERROR, VALUES, DELTA, LINEAR
         // parameters.setAbsoluteErrorTol(1e-12);
@@ -325,234 +324,239 @@ int main(int argc, char **argv) {
         //     double lambda() const;
         //     void print(string str) const;
         results = optimizer.optimize();
-    }
-    else if(opt_type == GN){
+    } else if (opt_type == GN) {
         GaussNewtonParams parameters;
-        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR"); SILENT, TERMINATION, ERROR, VALUES, DELTA, LINEAR
+        parameters.setVerbosity("ERROR");
+        //setVerbosity("TERMINATION"); //.setVerbosity("ERROR"); SILENT, TERMINATION, ERROR, VALUES, DELTA, LINEAR
         GaussNewtonOptimizer optimizer(graph, init_values, parameters);
         results = optimizer.optimize();
-    }
-    else if(opt_type == DOGLEG){
+    } else if (opt_type == DOGLEG) {
         DoglegParams parameters;
-        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
+        parameters.setVerbosity("ERROR"); //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
         DoglegOptimizer optimizer(graph, init_values, parameters);
         results = optimizer.optimize();
         // cout_results = optimizer.values();
     }
 
 
+    bool twice_op = false;
+    if (!twice_op) {
+        // 关节量
+        std::vector<double> target_joint_group_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
+        Vector target_joint_group_positions_eigen;
+        for (int i = 0; i < FootPrints.size(); i++) {
+            setPose(nh, "mrobot", FootPrints[i].position.x, FootPrints[i].position.y, FootPrints[i].position.z,
+                    FootPrints[i].orientation.w, FootPrints[i].orientation.x, FootPrints[i].orientation.y,
+                    FootPrints[i].orientation.z);
 
-//    // 七、第二步优化
-//    int type_start = 0;
-//    gtsam::Vector start_conf, end_conf;
-//    std::vector<double> current_joint_values = move_group.getCurrentJointValues();
-//    // start_conf = stdVectorToGtsamVector(current_joint_values);
-//    start_conf = (Vector(7) << 2.43078, -0.627707 ,  0.13426,   1.70191,  -0.10452,  -1.27042,   2.40398).finished();
-//    // start_conf = (Vector(7) << 0,0,0,0,0,0,0).finished();
-//    end_conf = (Vector(7) << 2.43078, -0.627707 ,  0.13426,   1.70191,  -0.10452,  -1.27042,   2.40398).finished();
-//    // end_conf = (Vector(7) << 0,0,0,0,0,0,0).finished();
-//
-//    double total_time_step = FootPrints.size()-1;
-//    double total_time_sec = 2 * (FootPrints.size()-1);
-//    double check_inter = 5;
-//    // 使用直线插值
-//    gtsam::Values second_values = initArmTrajStraightLine_my(start_conf, end_conf, total_time_step);
-//
-//
-//    // 八、设置第二步优化的参数
-//    // 视场和机械臂本体
-//    double obs_sigma = 0.005;   // 障碍物因子的权重
-//    double epsilon_dist = 0.15;
-//    //初始位姿
-//    double pose_sigma = 1e-2; //固定的位姿，包括初始的位姿
-//    double orien_sigma = 1e-2;  //过程中的方向。 TODO: 为什么是其他噪声模型的100倍？？？
-//    // 机械臂之间的关节尽可能的小
-//    Eigen::MatrixXd Qc = 1 * Eigen::MatrixXd::Identity(arm_model->dof(), arm_model->dof());
-//    noiseModel::Gaussian::shared_ptr Qc_model = noiseModel::Gaussian::Covariance(Qc);// noiseModel是命名空间，Gaussian是类，Covariance是类的成员函数
-//
-//
-//
-//    //
-//    NonlinearFactorGraph graph2;
-//    for(int i=0; i<FootPrints.size(); i++){
-//        Key key_pos = symbol('x', i);
-//        Key key_vel = symbol('v', i);
-//
-//        // if(i==0){
-//        //     // 起始位置约束
-//        //     graph.add(PriorFactor<Vector>(key_pos, start_conf,  noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
-//        //
-//        //     // 初始位置的速度
-//        //     graph.add(PriorFactor<Vector>(key_vel, start_vel,   noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
-//        // }
-//        // else if(i==FootPrints.size()-1){
-//        //     // 2.2 终止位置约束
-//        //     // goal pose for end effector in workspace
-//        //     // graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, end_pose, noiseModel::Isotropic::Sigma(6, end_pose_sigma)));
-//        //     graph.add(PriorFactor<Vector>(key_pos, end_conf,  noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
-//        //
-//        //     // fix goal velocity
-//        //     graph.add(PriorFactor<Vector>(key_vel, end_vel, noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
-//        // }
-//        // else
-//        {
-//
-//            auto target_camera_pose = results.at<Pose3>(symbol('x', i));
-//            Eigen::Matrix4d T_cameralink_to_camera_matrix;
-//            T_cameralink_to_camera_matrix << 0, 0, 1, 0.02,
-//                                            -1, 0, 0, -0.013,
-//                                            0, -1, 0, 0.0,  //实际为0.13，改为0.07
-//                                            0, 0, 0, 1;
-//            bbox_factors[i].visulize(target_camera_pose);
-//            Eigen::Matrix4d target_cameralink_pose_matrix = target_camera_pose.matrix().cast<double>()      *    T_cameralink_to_camera_matrix.inverse();
-//
-//            Pose3 traj_pose = Pose3(target_cameralink_pose_matrix);
-//            Rot3  traj_orien = traj_pose.rotation();
-//
-//            // GaussianPriorWorkspacePoseArm factor_pose(key_pos, *arm_model, arm_model->dof()-1, traj_pose, noiseModel::Isotropic::Sigma(6, pose_sigma));
-//            // graph2.add(factor_pose);
-//
-//            GaussianPriorWorkspaceOrientationArm factor_ori(key_pos, *arm_model, arm_model->dof()-1, traj_orien, noiseModel::Isotropic::Sigma(3, orien_sigma));
-//            graph2.add(factor_ori);
-//        }
-//
-//
-//    }
-//
-//
-//    Values results2;
-//    if(opt_type == LM){
-//        LevenbergMarquardtParams parameters;
-//        parameters.setVerbosity("ERROR"); // SILENT, TERMINATION, ERROR, VALUES, DELTA, LINEAR
-//        // parameters.setAbsoluteErrorTol(1e-12);
-//        parameters.setlambdaInitial(1000.0);
-//        LevenbergMarquardtOptimizer optimizer(graph2, second_values, parameters);
-//        // LevenbergMarquardtOptimizer类的定义
-//        // #include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
-//        // virtual class LevenbergMarquardtOptimizer : gtsam::NonlinearOptimizer {
-//        //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues);
-//        //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues, const gtsam::LevenbergMarquardtParams& params);
-//        //     double lambda() const;
-//        //     void print(string str) const;
-//        results2 = optimizer.optimize();
-//    }
-//    else if(opt_type == GN){
-//        GaussNewtonParams parameters;
-//        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR"); SILENT, TERMINATION, ERROR, VALUES, DELTA, LINEAR
-//        GaussNewtonOptimizer optimizer(graph2, second_values, parameters);
-//        results2 = optimizer.optimize();
-//    }
-//    else if(opt_type == DOGLEG){
-//        DoglegParams parameters;
-//        parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
-//        DoglegOptimizer optimizer(graph2, second_values, parameters);
-//        results2 = optimizer.optimize();
-//        // cout_results = optimizer.values();
-//    }
+            // target_joint_group_positions.clear();
+            // std::cout<<"开始规划,"<<i<<std::endl;
+
+            auto target_camera_pose = results.at<Pose3>(symbol('x', i));
+            Eigen::Matrix4d T_cameralink_to_camera_matrix;
+            T_cameralink_to_camera_matrix << 0, 0, 1, 0.02,
+                    -1, 0, 0, -0.013,
+                    0, -1, 0, 0.0, //实际为0.13，改为0.07
+                    0, 0, 0, 1;
+            bbox_factors[i].visulize(target_camera_pose);
+            auto height_error_vec = height_factors[i].evaluateError(target_camera_pose);
+            double height_error = height_error_vec[0];
+            std::cout << "height_error: " << height_error << std::endl;
+
+            auto target_camera_pose_ros = Converter::Matrix4dtoGeometryPose(target_camera_pose.matrix().cast<double>()
+                                                                            * T_cameralink_to_camera_matrix.inverse());
+            // plan 和 move
+            move_group.setPoseTarget(target_camera_pose_ros);
+            std::cout << "相机高度：" << target_camera_pose_ros.position.z << std::endl;
+            moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+            bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+            if (success) {
+                // std::vector<double> joint_angles = my_plan.trajectory_.joint_trajectory.points.back().positions;
+                // for (size_t i = 0; i < joint_angles.size(); ++i) {
+                //     ROS_INFO("Joint %lu: %f", i, joint_angles[i]);
+                // }
+                std::cout << "<<<<<<<<<<<<<< 规划成功 \n" << std::endl;
+                move_group.execute(my_plan);
+                // loop_rate.sleep();
+            } else {
+                // Candidates[i].position.y += 0.3;
+                // Candidates[i].position.z -= 0.1;
+                // move_group.setPoseTarget(Candidates[i]);
+                // success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+                // if(success){
+                //     std::cout<<"<<<<<<<<<<<<<< 重新规划成功 \n"<<std::endl;
+                //     move_group.execute(my_plan);
+                // }
+                // else
+                std::cout << "<<<<<<<<<<<<<< 规划失败\n" << std::endl;
+            }
+
+            std::cout << "Press [ENTER] to continue ... , [y] to autonomous mode" << std::endl;
+            std::cout << "*****************************" << std::endl;
+            char key = getchar();
+        }
+    }
+    else {
 
 
-//      九、moveit控制及rviz可视化
+        // 七、第二步优化
+        int type_start = 0;
+        gtsam::Vector start_conf, end_conf;
+        std::vector<double> current_joint_values = move_group.getCurrentJointValues();
+        // start_conf = stdVectorToGtsamVector(current_joint_values);
+        start_conf = (Vector(7) << 2.43078, -0.627707 ,  0.13426,   1.70191,  -0.10452,  -1.27042,   2.40398).finished();
+        // start_conf = (Vector(7) << 0,0,0,0,0,0,0).finished();
+        end_conf = (Vector(7) << 2.43078, -0.627707 ,  0.13426,   1.70191,  -0.10452,  -1.27042,   2.40398).finished();
+        // end_conf = (Vector(7) << 0,0,0,0,0,0,0).finished();
 
-     // 关节量
-     bool pub_form = true;
-     std::vector<double > target_joint_group_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
-     Vector target_joint_group_positions_eigen;
-     for(int i=0; i<FootPrints.size(); i++){
+        double total_time_step = FootPrints.size()-1;
+        double total_time_sec = 2 * (FootPrints.size()-1);
+        double check_inter = 5;
+        // 使用直线插值
+        gtsam::Values second_values = initArmTrajStraightLine_my(start_conf, end_conf, total_time_step);
 
-         setPose(nh, "mrobot", FootPrints[i].position.x, FootPrints[i].position.y, FootPrints[i].position.z, FootPrints[i].orientation.w, FootPrints[i].orientation.x, FootPrints[i].orientation.y, FootPrints[i].orientation.z);
 
-         // target_joint_group_positions.clear();
-         // std::cout<<"开始规划,"<<i<<std::endl;
+        // 八、设置第二步优化的参数
+        // 视场和机械臂本体
+        double obs_sigma = 0.005;   // 障碍物因子的权重
+        double epsilon_dist = 0.15;
+        //初始位姿
+        double pose_sigma = 1e-2; //固定的位姿，包括初始的位姿
+        double orien_sigma = 1e-2;  //过程中的方向。 TODO: 为什么是其他噪声模型的100倍？？？
+        // 机械臂之间的关节尽可能的小
+        Eigen::MatrixXd Qc = 1 * Eigen::MatrixXd::Identity(arm_model->dof(), arm_model->dof());
+        noiseModel::Gaussian::shared_ptr Qc_model = noiseModel::Gaussian::Covariance(Qc);// noiseModel是命名空间，Gaussian是类，Covariance是类的成员函数
 
-         auto target_camera_pose = results.at<Pose3>(symbol('x', i));
-         Eigen::Matrix4d T_cameralink_to_camera_matrix;
-         T_cameralink_to_camera_matrix << 0, 0, 1, 0.02,
-                                         -1, 0, 0, -0.013,
-                                         0, -1, 0, 0.0,  //实际为0.13，改为0.07
-                                         0, 0, 0, 1;
-         bbox_factors[i].visulize(target_camera_pose);
-         auto target_camera_pose_ros = Converter::Matrix4dtoGeometryPose(target_camera_pose.matrix().cast<double>()
-                                                                         *T_cameralink_to_camera_matrix.inverse());
 
-         // plan 和 move
-         move_group.setPoseTarget(target_camera_pose_ros);
-         std::cout<<"相机高度："<< target_camera_pose_ros.position.z<<std::endl;
-         moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-         bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-         if(success){
 
-             std::vector<double> joint_angles = my_plan.trajectory_.joint_trajectory.points.back().positions;
-             for (size_t i = 0; i < joint_angles.size(); ++i) {
-                 ROS_INFO("Joint %lu: %f", i, joint_angles[i]);
-             }
-             std::cout<<"<<<<<<<<<<<<<< 规划成功 \n"<<std::endl;
-             move_group.execute(my_plan);
-             // loop_rate.sleep();
-         }
-         else{
-             // Candidates[i].position.y += 0.3;
-             // Candidates[i].position.z -= 0.1;
-             // move_group.setPoseTarget(Candidates[i]);
-             // success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+        //
+        NonlinearFactorGraph graph2;
+        for(int i=0; i<FootPrints.size(); i++){
+            Key key_pos = symbol('x', i);
+            Key key_vel = symbol('v', i);
 
-             // if(success){
-             //     std::cout<<"<<<<<<<<<<<<<< 重新规划成功 \n"<<std::endl;
-             //     move_group.execute(my_plan);
-             // }
-             // else
-             std::cout<<"<<<<<<<<<<<<<< 规划失败\n"<<std::endl;
-         }
+            // if(i==0){
+            //     // 起始位置约束
+            //     graph.add(PriorFactor<Vector>(key_pos, start_conf,  noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
+            //
+            //     // 初始位置的速度
+            //     graph.add(PriorFactor<Vector>(key_vel, start_vel,   noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
+            // }
+            // else if(i==FootPrints.size()-1){
+            //     // 2.2 终止位置约束
+            //     // goal pose for end effector in workspace
+            //     // graph.add(GaussianPriorWorkspacePoseArm(key_pos, *arm_model, arm_model->dof()-1, end_pose, noiseModel::Isotropic::Sigma(6, end_pose_sigma)));
+            //     graph.add(PriorFactor<Vector>(key_pos, end_conf,  noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
+            //
+            //     // fix goal velocity
+            //     graph.add(PriorFactor<Vector>(key_vel, end_vel, noiseModel::Isotropic::Sigma(arm_model->dof(), fix_sigma)));
+            // }
+            // else
+            {
 
-         std::cout << "Press [ENTER] to continue ... , [y] to autonomous mode" << std::endl;
-         std::cout << "*****************************" << std::endl;
-         char key = getchar();
+                auto target_camera_pose = results.at<Pose3>(symbol('x', i));
+                Eigen::Matrix4d T_cameralink_to_camera_matrix;
+                T_cameralink_to_camera_matrix << 0, 0, 1, 0.02,
+                                                -1, 0, 0, -0.013,
+                                                0, -1, 0, 0.0,  //实际为0.13，改为0.07
+                                                0, 0, 0, 1;
+                bbox_factors[i].visulize(target_camera_pose);
+                Eigen::Matrix4d target_cameralink_pose_matrix = target_camera_pose.matrix().cast<double>()      *    T_cameralink_to_camera_matrix.inverse();
 
-     }
+                Pose3 traj_pose = Pose3(target_cameralink_pose_matrix);
+                Rot3  traj_orien = traj_pose.rotation();
 
-//    // 关节量
-//    bool pub_form = true;
-//    std::vector<double > target_joint_group_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
-//    Vector target_joint_group_positions_eigen;
-//    for(int i=0; i<FootPrints.size(); i++){
-//
-//        setPose(nh, "mrobot", FootPrints[i].position.x, FootPrints[i].position.y, FootPrints[i].position.z, FootPrints[i].orientation.w, FootPrints[i].orientation.x, FootPrints[i].orientation.y, FootPrints[i].orientation.z);
-//
-//        // target_joint_group_positions.clear();
-//        // std::cout<<"开始规划,"<<i<<std::endl;
-//
-//        target_joint_group_positions_eigen = results2.at<Vector>(symbol('x', i));
-//
-//        target_joint_group_positions[0] = (double(target_joint_group_positions_eigen[0]));
-//        target_joint_group_positions[1] = (double(target_joint_group_positions_eigen[1]));
-//        target_joint_group_positions[2] = (double(target_joint_group_positions_eigen[2]));
-//        target_joint_group_positions[3] = (double(target_joint_group_positions_eigen[3]));
-//        target_joint_group_positions[4] = (double(target_joint_group_positions_eigen[4]));
-//        target_joint_group_positions[5] = (double(target_joint_group_positions_eigen[5]));
-//        target_joint_group_positions[6] = (double(target_joint_group_positions_eigen[6]));
-//
-//        std::cout<<"设置joint values, "<<i<<std::endl;
-//        for (int i = 0; i < target_joint_group_positions.size(); i++){
-//            ROS_INFO("   Joint %d: %f", i, target_joint_group_positions[i]);
-//        }
-//        // 设置目标关节量
-//        move_group.setJointValueTarget(target_joint_group_positions);
-//
-//
-//        // plan 和 move
-//        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-//        bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-//        if(success){
-//            std::cout<<"规划成功"<<std::endl;
-//            move_group.execute(my_plan);
-//
-//        }
-//        else
-//            std::cout<<"规划失败"<<std::endl;
-//
-//        std::cout << "Press [any key] to continue ... " << std::endl;
-//        std::cout << "*****************************" << std::endl;
-//        char key = getchar();
-//    }
+                GaussianPriorWorkspacePoseArm factor_pose(key_pos, *arm_model, arm_model->dof()-1, traj_pose, noiseModel::Isotropic::Sigma(6, pose_sigma));
+                graph2.add(factor_pose);
+
+                // GaussianPriorWorkspaceOrientationArm factor_ori(key_pos, *arm_model, arm_model->dof()-1, traj_orien, noiseModel::Isotropic::Sigma(3, orien_sigma));
+                // graph2.add(factor_ori);
+            }
+
+
+        }
+
+
+        Values results2;
+        if(opt_type == LM){
+            LevenbergMarquardtParams parameters;
+            parameters.setVerbosity("ERROR"); // SILENT, TERMINATION, ERROR, VALUES, DELTA, LINEAR
+            // parameters.setAbsoluteErrorTol(1e-12);
+            parameters.setlambdaInitial(1000.0);
+            LevenbergMarquardtOptimizer optimizer(graph2, second_values, parameters);
+            // LevenbergMarquardtOptimizer类的定义
+            // #include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
+            // virtual class LevenbergMarquardtOptimizer : gtsam::NonlinearOptimizer {
+            //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues);
+            //     LevenbergMarquardtOptimizer(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& initialValues, const gtsam::LevenbergMarquardtParams& params);
+            //     double lambda() const;
+            //     void print(string str) const;
+            results2 = optimizer.optimize();
+        }
+        else if(opt_type == GN){
+            GaussNewtonParams parameters;
+            parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR"); SILENT, TERMINATION, ERROR, VALUES, DELTA, LINEAR
+            GaussNewtonOptimizer optimizer(graph2, second_values, parameters);
+            results2 = optimizer.optimize();
+        }
+        else if(opt_type == DOGLEG){
+            DoglegParams parameters;
+            parameters.setVerbosity("ERROR");  //setVerbosity("TERMINATION"); //.setVerbosity("ERROR");
+            DoglegOptimizer optimizer(graph2, second_values, parameters);
+            results2 = optimizer.optimize();
+            // cout_results = optimizer.values();
+        }
+
+
+          // 九、moveit控制及rviz可视化
+
+
+        // 关节量
+        bool pub_form = true;
+        std::vector<double > target_joint_group_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
+        Vector target_joint_group_positions_eigen;
+        for(int i=0; i<FootPrints.size(); i++){
+
+            setPose(nh, "mrobot", FootPrints[i].position.x, FootPrints[i].position.y, FootPrints[i].position.z, FootPrints[i].orientation.w, FootPrints[i].orientation.x, FootPrints[i].orientation.y, FootPrints[i].orientation.z);
+
+            // target_joint_group_positions.clear();
+            // std::cout<<"开始规划,"<<i<<std::endl;
+
+            target_joint_group_positions_eigen = results2.at<Vector>(symbol('x', i));
+
+            target_joint_group_positions[0] = (double(target_joint_group_positions_eigen[0]));
+            target_joint_group_positions[1] = (double(target_joint_group_positions_eigen[1]));
+            target_joint_group_positions[2] = (double(target_joint_group_positions_eigen[2]));
+            target_joint_group_positions[3] = (double(target_joint_group_positions_eigen[3]));
+            target_joint_group_positions[4] = (double(target_joint_group_positions_eigen[4]));
+            target_joint_group_positions[5] = (double(target_joint_group_positions_eigen[5]));
+            target_joint_group_positions[6] = (double(target_joint_group_positions_eigen[6]));
+
+            std::cout<<"设置joint values, "<<i<<std::endl;
+            for (int i = 0; i < target_joint_group_positions.size(); i++){
+                ROS_INFO("   Joint %d: %f", i, target_joint_group_positions[i]);
+            }
+            // 设置目标关节量
+            move_group.setJointValueTarget(target_joint_group_positions);
+
+
+            // plan 和 move
+            moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+            bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+            if(success){
+                std::cout<<"规划成功"<<std::endl;
+                move_group.execute(my_plan);
+
+            }
+            else
+                std::cout<<"规划失败"<<std::endl;
+
+            std::cout << "Press [any key] to continue ... " << std::endl;
+            std::cout << "*****************************" << std::endl;
+            char key = getchar();
+        }
+    }
 
 
     return 0;

@@ -72,13 +72,14 @@
     + BboxEllipsoidFactor： 雅可比链式法则太长
     + BboxPlaneArmLinkFactor： 雅可比推导失败
 
-# 单独对相机轨迹进行优化
+# 单独对相机轨迹进行优化 commit 532dc5e9ec65c29b3dd1657c74a37a9d3a0ebc23
 + 构建BboxCameraFactor
 + 构建HeightCameraFactor，限制相机高度
 
 # 
++ 
 + 待：修改bbox的error，改为让椭球投影到目标bbox内部
-
++ 
 
 # 三维二次曲面 Class ConstrainedDualQuadric
 + 

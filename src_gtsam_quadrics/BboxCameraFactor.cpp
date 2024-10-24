@@ -341,7 +341,10 @@ gtsam::Vector BboxCameraFactor::evaluateError(
     // 如果投影的 DualConic 不是椭圆（例如，圆锥或双曲线），则抛出异常，表示无法计算误差。
     // 误差 ———— 预测的边界框（predictedBounds）和实际测量的边界框（measured_）之间的差异
     // 通过 dualConic.bounds() 或 dualConic.smartBounds() 计算预测的边界框（predictedBounds），该边界框与实际测量值（measured_）之间的差异即为误差。
-    gtsam::Vector4 error = predictedBounds.vector() - measured_.vector();
+    auto new_measured = AdjustingBBox(predictedBounds, measured_);
+    // std::cout<<"[debug] new_measured: "<<new_measured.vector().transpose()<<std::endl;
+    gtsam::Vector4 error = predictedBounds.vector() - new_measured.vector();
+    // gtsam::Vector4 error = predictedBounds.vector() - measured_.vector();
 
 
     // 5. 计算雅可比矩阵：
@@ -363,8 +366,8 @@ gtsam::Vector BboxCameraFactor::evaluateError(
       if (H1) {
         // combine partial derivatives
         *H1 = db_dC * dC_dx;
-        std::cout<<" [debug0] db_dC = "<<std::endl<<db_dC<<std::endl;
-        std::cout<<" [debug0] dC_dx = "<<std::endl<<dC_dx<<std::endl;
+        std::cout<<" [BboxCameraFactor::evaluateError debug] db_dC = "<<std::endl<<db_dC<<std::endl;
+        std::cout<<" [BboxCameraFactor::evaluateError debug] dC_dx = "<<std::endl<<dC_dx<<std::endl;
       }
 
       // calculate derivative of error wrt quadric
