@@ -85,6 +85,7 @@
 #include "gtsam/BboxEllipsoidFactor.h"
 #include "gtsam/BboxPlaneArmLinkFactor.h"
 #include "gtsam_quadrics/geometry/BboxCameraFactor.h"
+#include "gtsam_quadrics/geometry/InnerBboxCameraFactor.h"
 #include "gtsam_quadrics/geometry/HeightCameraFactor.h"
 #include "visualize_arm_tools.h"
 #include "gazebo_rviz_tools.h"
@@ -223,7 +224,7 @@ int main(int argc, char **argv) {
 
     //四、生成FootPrints候选点
     std::vector<geometry_msgs::Pose> FootPrints; //FootPrints候选位姿
-    std::vector<geometry_msgs::Pose> Candidates = GenerateCandidates_ellipse_by_circle(*ob, FootPrints, 3.0, 10, 30);
+    std::vector<geometry_msgs::Pose> Candidates = GenerateCandidates_ellipse_by_circle(*ob, FootPrints, 3.5, 1.0, 10, 300);
 
 
     //五、确定起始位姿和中间差值
@@ -235,10 +236,15 @@ int main(int argc, char **argv) {
     // 六、各因子的启动参数
 
     // bbox和二次曲线
-    double s = 100;
-    gtsam_quadrics::AlignedBox2 gtsam_bbox(0 + s, 0 + s, CameraWidth - s, CameraHeight - s); //预期的物体检测框
+    double s = 150;
+    gtsam_quadrics::AlignedBox2 gtsam_bbox(0 + s, 0 + s*CameraHeight/CameraWidth, CameraWidth - s, CameraHeight - s*CameraHeight/CameraWidth); //预期的物体检测框
     double bbox_sigma = 0.1; // bbox的权重
     double height_sigma = 0.1; // bbox的权重
+
+    double s_inner = 150;
+    gtsam_quadrics::AlignedBox2 gtsam_bbox_inner(0 + s_inner, 0 + s_inner*CameraHeight/CameraWidth, CameraWidth - s_inner, CameraHeight - s_inner*CameraHeight/CameraWidth); //预期的物体检测框
+
+
     //高度
     double height_limit = 1.0;
     double height_error_scale = 10;
@@ -294,8 +300,17 @@ int main(int argc, char **argv) {
                                        RobotPose,
                                        height_limit,
                                        height_error_scale);
-            graph.add(factor2);
+            // graph.add(factor2);
             height_factors.push_back(factor2);
+
+
+            InnerBboxCameraFactor factor3(key_pos,
+                                    bbox_sigma,
+                                    gtsam_bbox_inner,
+                                    ob,
+                                    RobotPose,
+                                    CameraWidth, CameraHeight, Calib);
+            // graph.add(factor3);
         }
     }
 

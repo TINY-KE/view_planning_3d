@@ -18,7 +18,7 @@
 
 #include <gtsam/base/numericalDerivative.h>
 #include <gtsam_quadrics/base/QuadricProjectionException.h>
-#include <gtsam_quadrics/geometry/BboxCameraFactor.h>
+#include <gtsam_quadrics/geometry/OutlierBboxCameraFactor.h>
 #include <gtsam_quadrics/geometry/QuadricCamera.h>
 
 #include <boost/bind/bind.hpp>
@@ -31,7 +31,7 @@ namespace gtsam_quadrics {
 
 
 /* ************************************************************************* */
-gtsam::Vector BboxCameraFactor::getMeasureBounds(
+gtsam::Vector OutlierBboxCameraFactor::getMeasureBounds(
     const gtsam::Pose3& pose,
     gtsam::OptionalMatrixType H1) const {
 
@@ -103,7 +103,7 @@ gtsam::Vector BboxCameraFactor::getMeasureBounds(
     if (NUMERICAL_DERIVATIVE) {
       // std::function<gtsam::Vector(const gtsam::Pose3&,
       //                             const ConstrainedDualQuadric&)>
-      //     funPtr(boost::bind(&BboxCameraFactor::evaluateError, this,
+      //     funPtr(boost::bind(&OutlierBboxCameraFactor::evaluateError, this,
       //                        boost::placeholders::_1, boost::placeholders::_2,
       //                        nullptr, nullptr));
       // if (H1) {
@@ -153,7 +153,7 @@ gtsam::Vector BboxCameraFactor::getMeasureBounds(
 
 
 /* ************************************************************************* */
-gtsam::Vector BboxCameraFactor::getPredictedBounds(
+gtsam::Vector OutlierBboxCameraFactor::getPredictedBounds(
     const gtsam::Pose3& pose,
     gtsam::OptionalMatrixType H1) const {
 
@@ -225,7 +225,7 @@ gtsam::Vector BboxCameraFactor::getPredictedBounds(
     if (NUMERICAL_DERIVATIVE) {
       // std::function<gtsam::Vector(const gtsam::Pose3&,
       //                             const ConstrainedDualQuadric&)>
-      //     funPtr(boost::bind(&BboxCameraFactor::evaluateError, this,
+      //     funPtr(boost::bind(&OutlierBboxCameraFactor::evaluateError, this,
       //                        boost::placeholders::_1, boost::placeholders::_2,
       //                        nullptr, nullptr));
       // if (H1) {
@@ -274,7 +274,7 @@ gtsam::Vector BboxCameraFactor::getPredictedBounds(
 
 
 /* ************************************************************************* */
-gtsam::Vector BboxCameraFactor::evaluateError(
+gtsam::Vector OutlierBboxCameraFactor::evaluateError(
     const gtsam::Pose3& pose,
     gtsam::OptionalMatrixType H1) const {
 
@@ -284,7 +284,7 @@ gtsam::Vector BboxCameraFactor::evaluateError(
   // H1：一个可选的输出参数，用于存储误差相对于 pose 的雅可比矩阵（4x6 矩阵）。
   // H2：一个可选的输出参数，用于存储误差相对于 quadric 的雅可比矩阵（4x9 矩阵）。
 
-  // Quadric_.print("[BboxCameraFactor::evaluateError]: 椭球体信息：");
+  // Quadric_.print("[OutlierBboxCameraFactor::evaluateError]: 椭球体信息：");
 
   // 2.投影和几何检查：
   // 在投影操作之前，首先检查 quadric 是否在相机的后面（isBehind）或者相机是否在 quadric 内部（contains）。如果满足这些条件，投影操作无效，会抛出 QuadricProjectionException 异常。
@@ -342,17 +342,15 @@ gtsam::Vector BboxCameraFactor::evaluateError(
     // 误差 ———— 预测的边界框（predictedBounds）和实际测量的边界框（measured_）之间的差异
     // 通过 dualConic.bounds() 或 dualConic.smartBounds() 计算预测的边界框（predictedBounds），该边界框与实际测量值（measured_）之间的差异即为误差。
     // std::cout<<"[debug] new_measured: "<<new_measured.vector().transpose()<<std::endl;
-
     auto new_measured = AdjustingBBox(predictedBounds, measured_);
-    // gtsam::Vector4 error = computeBoundaryDifferences(predictedBounds.vector(), new_measured.vector());
-    gtsam::Vector4 error = predictedBounds.vector() -  new_measured.vector();
+    gtsam::Vector4 error = computeBoundaryDifferences(predictedBounds.vector(), new_measured.vector());
 
 
     // 5. 计算雅可比矩阵：
     if (NUMERICAL_DERIVATIVE) {
       // std::function<gtsam::Vector(const gtsam::Pose3&,
       //                             const ConstrainedDualQuadric&)>
-      //     funPtr(boost::bind(&BboxCameraFactor::evaluateError, this,
+      //     funPtr(boost::bind(&OutlierBboxCameraFactor::evaluateError, this,
       //                        boost::placeholders::_1, boost::placeholders::_2,
       //                        nullptr, nullptr));
       // if (H1) {
@@ -367,11 +365,9 @@ gtsam::Vector BboxCameraFactor::evaluateError(
       if (H1) {
         // combine partial derivatives
         *H1 = db_dC * dC_dx;
-        // H1->block<2, 6>(2, 0).setZero();
-        H1->block<1, 6>(2, 0) /= 10000.0;
-        H1->block<1, 6>(3, 0) /= 10000.0;
-        std::cout<<" [BboxCameraFactor::evaluateError debug] db_dC = "<<std::endl<<db_dC<<std::endl;
-        std::cout<<" [BboxCameraFactor::evaluateError debug] dC_dx = "<<std::endl<<dC_dx<<std::endl;
+        H1->block<2, 6>(2, 0).setZero();
+        std::cout<<" [OutlierBboxCameraFactor::evaluateError debug] db_dC = "<<std::endl<<db_dC<<std::endl;
+        std::cout<<" [OutlierBboxCameraFactor::evaluateError debug] dC_dx = "<<std::endl<<dC_dx<<std::endl;
       }
 
       // calculate derivative of error wrt quadric
@@ -406,9 +402,9 @@ gtsam::Vector BboxCameraFactor::evaluateError(
 
 
 /* ************************************************************************* */
-void BboxCameraFactor::print(const std::string& s,
+void OutlierBboxCameraFactor::print(const std::string& s,
                               const gtsam::KeyFormatter& keyFormatter) const {
-  cout << s << "BboxCameraFactor(" << keyFormatter(key1())  << endl;
+  cout << s << "OutlierBboxCameraFactor(" << keyFormatter(key1())  << endl;
   measured_.print("    Measured: ");
   cout << "    NoiseModel: ";
   noiseModel()->print();
@@ -416,7 +412,7 @@ void BboxCameraFactor::print(const std::string& s,
 }
 
 /* ************************************************************************* */
-bool BboxCameraFactor::equals(const BboxCameraFactor& other,
+bool OutlierBboxCameraFactor::equals(const OutlierBboxCameraFactor& other,
                                double tol) const {
   bool equal = measured_.equals(other.measured_, tol) &&
                gtsam_calibration_->equals(*other.gtsam_calibration_, tol) &&

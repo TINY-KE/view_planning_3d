@@ -218,6 +218,7 @@ set(SOURCE_GTSAM_QUADRIC_FILES
         ./src_gtsam_quadrics/QuadricCamera.cpp
         ./src_gtsam_quadrics/DualConic.cpp
         ./src_gtsam_quadrics/BboxCameraFactor.cpp
+        ./src_gtsam_quadrics/InnerBboxCameraFactor.cpp
         ./src_gtsam_quadrics/HeightCameraFactor.cpp
 )
 

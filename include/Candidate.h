@@ -448,7 +448,7 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse( MapObject& sdf_obje
 }
 
 
-std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse_by_circle( MapObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, double radius=3 /*短轴*/ , bool forCamera = false , int divide_ = 240){
+std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse_by_circle( MapObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, double radius=3 /*短轴*/ , double camera_height=1.0 /*短轴*/ , bool forCamera = false , int divide_ = 240){
 
     std::vector<geometry_msgs::Pose> candidates;
     // 长轴和短轴
@@ -503,7 +503,7 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse_by_circle( MapObject
         // 相机位姿
         double camera_x = intersection.x;
         double camera_y = intersection.y;
-        double camera_z = 1.0;
+        double camera_z = camera_height;
         double deltaX = object_x - camera_x;
         double deltaY = object_y - camera_y;
         double deltaZ = object_z - camera_z;

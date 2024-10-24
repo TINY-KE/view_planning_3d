@@ -42,7 +42,7 @@ namespace gtsam_quadrics {
      * Calculates the bounds of the dual conic,
      * and compares this to the measured bounding box.
      */
-    class BboxCameraFactor
+    class OutlierBboxCameraFactor
             : public gtsam::NoiseModelFactorN<gtsam::Pose3> {
     public:
         enum MeasurementModel {
@@ -69,13 +69,13 @@ namespace gtsam_quadrics {
         /// @{
 
         /** Default constructor */
-        BboxCameraFactor()
+        OutlierBboxCameraFactor()
             : measured_(0., 0., 0., 0.), measurementModel_(STANDARD) {
         };
 
         /** Constructor from measured box, calbration, dimensions and posekey,
          * quadrickey, noisemodel */
-        BboxCameraFactor(gtsam::Key poseKey,
+        OutlierBboxCameraFactor(gtsam::Key poseKey,
                          double cost_sigma,
                          const AlignedBox2 &measured,
                          MapObject *ob_,
@@ -141,7 +141,7 @@ namespace gtsam_quadrics {
                            gtsam::DefaultKeyFormatter) const override;
 
         /** Returns true if equal keys, measurement, noisemodel and calibration */
-        bool equals(const BboxCameraFactor &other, double tol = 1e-9) const;
+        bool equals(const OutlierBboxCameraFactor &other, double tol = 1e-9) const;
 
     private:
         void GenerateConstrainedDualQuadric(MapObject *object, Eigen::Matrix4f& T_world_baselink) {
@@ -257,6 +257,6 @@ namespace gtsam_quadrics {
 /** \cond PRIVATE */
 // Add to testable group
 // template <>
-// struct gtsam::traits<gtsam_quadrics::BboxCameraFactor>
-//     : public gtsam::Testable<gtsam_quadrics::BboxCameraFactor> {};
+// struct gtsam::traits<gtsam_quadrics::OutlierBboxCameraFactor>
+//     : public gtsam::Testable<gtsam_quadrics::OutlierBboxCameraFactor> {};
 /** \endcond */

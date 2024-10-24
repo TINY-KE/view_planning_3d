@@ -76,7 +76,14 @@
 + 构建BboxCameraFactor
 + 构建HeightCameraFactor，限制相机高度
 
-# 
+# 完全实现了对相机位姿的优化，可以用于论文展示
++ 缩小了measured_bbox到150
++ 修改BboxCameraFactor中的偏导，只优化pyr，对xyz的偏导设置为0
+    H1->block<1, 6>(2, 0) /= 10000.0;
+    H1->block<1, 6>(3, 0) /= 10000.0;
++ 更新到一个专门的分支“for-paper”
+
+#
 + 
 + 待：修改bbox的error，改为让椭球投影到目标bbox内部
 + 

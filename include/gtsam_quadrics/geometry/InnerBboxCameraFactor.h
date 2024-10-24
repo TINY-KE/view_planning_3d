@@ -42,7 +42,7 @@ namespace gtsam_quadrics {
      * Calculates the bounds of the dual conic,
      * and compares this to the measured bounding box.
      */
-    class BboxCameraFactor
+    class InnerBboxCameraFactor
             : public gtsam::NoiseModelFactorN<gtsam::Pose3> {
     public:
         enum MeasurementModel {
@@ -69,13 +69,13 @@ namespace gtsam_quadrics {
         /// @{
 
         /** Default constructor */
-        BboxCameraFactor()
+        InnerBboxCameraFactor()
             : measured_(0., 0., 0., 0.), measurementModel_(STANDARD) {
         };
 
         /** Constructor from measured box, calbration, dimensions and posekey,
          * quadrickey, noisemodel */
-        BboxCameraFactor(gtsam::Key poseKey,
+        InnerBboxCameraFactor(gtsam::Key poseKey,
                          double cost_sigma,
                          const AlignedBox2 &measured,
                          MapObject *ob_,
@@ -141,7 +141,7 @@ namespace gtsam_quadrics {
                            gtsam::DefaultKeyFormatter) const override;
 
         /** Returns true if equal keys, measurement, noisemodel and calibration */
-        bool equals(const BboxCameraFactor &other, double tol = 1e-9) const;
+        bool equals(const InnerBboxCameraFactor &other, double tol = 1e-9) const;
 
     private:
         void GenerateConstrainedDualQuadric(MapObject *object, Eigen::Matrix4f& T_world_baselink) {
@@ -237,10 +237,10 @@ namespace gtsam_quadrics {
             double y_max_meas = measured_[3];
 
             // Compute the differences
-            double x_min_diff = (x_min_pred < x_min_meas) ? (x_min_pred - x_min_meas) : 0.0;
-            double y_min_diff = (y_min_pred < y_min_meas) ? (y_min_pred - y_min_meas) : 0.0;
-            double x_max_diff = (x_max_pred > x_max_meas) ? (x_max_pred - x_max_meas) : 0.0;
-            double y_max_diff = (y_max_pred > y_max_meas) ? (y_max_pred - y_max_meas) : 0.0;
+            double x_min_diff = (x_min_pred > x_min_meas) ? (x_min_meas - x_min_pred) : 0.0;
+            double y_min_diff = (y_min_pred > y_min_meas) ? (y_min_meas - y_min_pred) : 0.0;
+            double x_max_diff = (x_max_pred < x_max_meas) ? (x_max_pred - x_max_meas) : 0.0;
+            double y_max_diff = (y_max_pred < y_max_meas) ? (y_max_pred - y_max_meas) : 0.0;
 
             // Output the differences
             gtsam::Vector4 error;
@@ -257,6 +257,6 @@ namespace gtsam_quadrics {
 /** \cond PRIVATE */
 // Add to testable group
 // template <>
-// struct gtsam::traits<gtsam_quadrics::BboxCameraFactor>
-//     : public gtsam::Testable<gtsam_quadrics::BboxCameraFactor> {};
+// struct gtsam::traits<gtsam_quadrics::InnerBboxCameraFactor>
+//     : public gtsam::Testable<gtsam_quadrics::InnerBboxCameraFactor> {};
 /** \endcond */
