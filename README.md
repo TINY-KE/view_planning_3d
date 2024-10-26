@@ -76,15 +76,21 @@
 + 构建BboxCameraFactor
 + 构建HeightCameraFactor，限制相机高度
 
-# 完全实现了对相机位姿的优化，可以用于论文展示
+# 完全实现了对相机位姿的优化，可以用于论文展示  commit 6748adf34ca383a13cb42392cd2ea9527bd5281e
 + 缩小了measured_bbox到150
 + 修改BboxCameraFactor中的偏导，只优化pyr，对xyz的偏导设置为0
     H1->block<1, 6>(2, 0) /= 10000.0;
     H1->block<1, 6>(3, 0) /= 10000.0;
 + 更新到一个专门的分支“for-paper”
 
-#
+# 实现了椭球体相机位姿+机械臂min关节移动的two-step优化，可以用于论文展示
++ 在wam_bboxcamera.cpp中添加了机械臂min关节移动的第二步优化
 + 
+
+
+
++ 待：重构BboxPlaneArmLink的雅可比
++ 待：在BboxCameraFactor中添加通过config计算bbox，并可视化
 + 待：修改bbox的error，改为让椭球投影到目标bbox内部
 + 
 

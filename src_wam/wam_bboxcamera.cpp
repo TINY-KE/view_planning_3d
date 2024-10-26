@@ -354,7 +354,7 @@ int main(int argc, char **argv) {
     }
 
 
-    bool twice_op = false;
+    bool twice_op = true;
     if (!twice_op) {
         // 关节量
         std::vector<double> target_joint_group_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
@@ -426,10 +426,10 @@ int main(int argc, char **argv) {
         // end_conf = (Vector(7) << 0,0,0,0,0,0,0).finished();
 
         double total_time_step = FootPrints.size()-1;
-        double total_time_sec = 2 * (FootPrints.size()-1);
+        double total_time_sec = 1 * (FootPrints.size()-1);
         double check_inter = 5;
         // 使用直线插值
-        gtsam::Values second_values = initArmTrajStraightLine_my(start_conf, end_conf, total_time_step);
+        gtsam::Values second_values = initArmTrajStraightLine(start_conf, end_conf, total_time_step);
 
 
         // 八、设置第二步优化的参数
@@ -440,6 +440,7 @@ int main(int argc, char **argv) {
         double pose_sigma = 1e-2; //固定的位姿，包括初始的位姿
         double orien_sigma = 1e-2;  //过程中的方向。 TODO: 为什么是其他噪声模型的100倍？？？
         // 机械臂之间的关节尽可能的小
+        double delta_t = total_time_sec / total_time_step;
         Eigen::MatrixXd Qc = 1 * Eigen::MatrixXd::Identity(arm_model->dof(), arm_model->dof());
         noiseModel::Gaussian::shared_ptr Qc_model = noiseModel::Gaussian::Covariance(Qc);// noiseModel是命名空间，Gaussian是类，Covariance是类的成员函数
 
@@ -489,6 +490,15 @@ int main(int argc, char **argv) {
                 // graph2.add(factor_ori);
             }
 
+            if(i>0){
+                // 初始化变量
+                Key key_pos1 = symbol('x', i-1);
+                Key key_pos2 = symbol('x', i);
+                Key key_vel1 = symbol('v', i-1);
+                Key key_vel2 = symbol('v', i);
+
+                graph2.add(GaussianProcessPriorLinear(key_pos1, key_vel1, key_pos2, key_vel2, delta_t, Qc_model));
+            }
 
         }
 
@@ -560,12 +570,12 @@ int main(int argc, char **argv) {
             moveit::planning_interface::MoveGroupInterface::Plan my_plan;
             bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
             if(success){
-                std::cout<<"规划成功"<<std::endl;
+                std::cout<<"Joint规划成功"<<std::endl;
                 move_group.execute(my_plan);
 
             }
             else
-                std::cout<<"规划失败"<<std::endl;
+                std::cout<<"Joint规划失败"<<std::endl;
 
             std::cout << "Press [any key] to continue ... " << std::endl;
             std::cout << "*****************************" << std::endl;
