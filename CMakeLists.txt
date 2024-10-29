@@ -266,22 +266,20 @@ target_link_libraries(CONVENIENCE_LIB_NAME
 #        ${GTSAM_LIBRARIES} gpmp2
 #        ${CONVENIENCE_LIB_NAME}
 #)
-#add_executable(TestBboxCameraFactor
-#        src_example/TestBboxCameraFactor.cpp
+#add_executable(TestPlaneArmLinkFactor
+#        src_example/TestPlaneArmLinkFactor.cpp
 #
 #)
-#target_link_libraries(TestBboxCameraFactor
-#        ${catkin_LIBRARIES} ${EIGEN3_LIBS}  ${OpenCV_LIBS}
-#        utils
-#        Polygon
-#        # ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
-#        Boost::filesystem
-#        Boost::system
-#        ${GTSAM_LIBRARIES} gpmp2
-#        ${CONVENIENCE_LIB_NAME}
-#        ${OpenCV_LIBS}
+#target_link_libraries(TestPlaneArmLinkFactor
+#        ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME
 #)
 
+add_executable(TestCameraXaxisHorizontal src_example/TestCameraXaxisHorizontal.cpp
+        #         ${SOURCE_LZW_QUADRIC_FILES}
+        #         ${SOURCE_GTSAM_QUADRIC_FILES}
+)
+target_link_libraries(TestCameraXaxisHorizontal
+        ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
 
 # 四、GTSAM与WAM结合
 
@@ -298,9 +296,18 @@ target_link_libraries(CONVENIENCE_LIB_NAME
 # add_executable(wam_gpmp src_wam/wam_gpmp.cpp   )
 # target_link_libraries(wam_gpmp   ${CONVENIENCE_LIB_NAME})  #${Boost_LIBRARIES}
 
- add_executable(wam_bboxcamera src_wam/wam_bboxcamera.cpp
-#         ${SOURCE_LZW_QUADRIC_FILES}
-#         ${SOURCE_GTSAM_QUADRIC_FILES}
- )
- target_link_libraries(wam_bboxcamera
-         ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
+# add_executable(wam_bboxcamera src_wam/wam_bboxcamera.cpp
+##         ${SOURCE_LZW_QUADRIC_FILES}
+##         ${SOURCE_GTSAM_QUADRIC_FILES}
+# )
+# target_link_libraries(wam_bboxcamera
+#         ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
+
+
+add_executable(wam_numericalDerivative src_wam/wam_numericalDerivative.cpp
+        #         ${SOURCE_LZW_QUADRIC_FILES}
+        #         ${SOURCE_GTSAM_QUADRIC_FILES}
+)
+target_link_libraries(wam_numericalDerivative
+        ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
+

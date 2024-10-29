@@ -191,14 +191,14 @@ namespace gtsam_quadrics {
                 double new_ymin = measured_bbox.ymin() + (measured_height - new_height) / 2;
                 double new_ymax = new_ymin + new_height;
                 gtsam_quadrics::AlignedBox2 new_measured_bbox (measured_bbox.xmin(), new_ymin, measured_bbox.xmax(), new_ymax);
-                std::cout<<"[debug] new_measured_bbox: "<<new_measured_bbox.vector().transpose()<<std::endl;
+                // std::cout<<"[debug] new_measured_bbox: "<<new_measured_bbox.vector().transpose()<<std::endl;
                 return new_measured_bbox;
             } else {
                 double new_width = measured_height * predicted_width / predicted_height;
                 double new_xmin = measured_bbox.xmin() + (measured_width - new_width) / 2;
                 double new_xmax = new_xmin + new_width;
                 gtsam_quadrics::AlignedBox2 new_measured_bbox (new_xmin, measured_bbox.ymin(), new_xmax, measured_bbox.ymax());
-                std::cout<<"[debug] new_measured_bbox: "<<new_measured_bbox.vector().transpose()<<std::endl;
+                // std::cout<<"[debug] new_measured_bbox: "<<new_measured_bbox.vector().transpose()<<std::endl;
                 return new_measured_bbox;
             }
 
@@ -209,16 +209,16 @@ namespace gtsam_quadrics {
             cv::Mat image = cv::Mat::zeros(miImageRows+board*2, miImageCols+board*2, CV_8UC3);
             cv::Rect FOV_cvmat(board, board, miImageCols, miImageRows);
             Eigen::Vector4d measure_bbox = getMeasureBounds ( conf );
-            std::cout<<"[debug] measure_bbox: "<<measure_bbox.transpose()<<std::endl;
+            // std::cout<<"[debug] measure_bbox: "<<measure_bbox.transpose()<<std::endl;
             cv::Rect measure_bbox_cvmat(measure_bbox[0]+board, measure_bbox[1]+board, measure_bbox[2]-measure_bbox[0], measure_bbox[3]-measure_bbox[1]);
             Eigen::Vector4d predict_bbox = getPredictedBounds ( conf );
-            std::cout<<"[debug] predict_bbox: "<<predict_bbox.transpose()<<std::endl;
+            // std::cout<<"[debug] predict_bbox: "<<predict_bbox.transpose()<<std::endl;
             cv::Rect predict_bbox_cvmat(predict_bbox[0]+board, predict_bbox[1]+board, predict_bbox[2]-predict_bbox[0], predict_bbox[3]-predict_bbox[1]);
             cv::rectangle(image, FOV_cvmat, cv::Scalar(255, 255, 255), 2);
             cv::rectangle(image, measure_bbox_cvmat, cv::Scalar(255, 0, 0), 2);
             cv::rectangle(image, predict_bbox_cvmat, cv::Scalar(0, 255, 0), 2);
             auto error = evaluateError(conf);
-            std::cout<<"[debug] error: "<<error.transpose()<<std::endl;
+            // std::cout<<"[debug] error: "<<error.transpose()<<std::endl;
             cv::imshow("Bounding Boxes", image);
             cv::waitKey(100);
         }

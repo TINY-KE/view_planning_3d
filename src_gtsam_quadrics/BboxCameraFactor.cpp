@@ -370,8 +370,8 @@ gtsam::Vector BboxCameraFactor::evaluateError(
         // H1->block<2, 6>(2, 0).setZero();
         H1->block<1, 6>(2, 0) /= 10000.0;
         H1->block<1, 6>(3, 0) /= 10000.0;
-        std::cout<<" [BboxCameraFactor::evaluateError debug] db_dC = "<<std::endl<<db_dC<<std::endl;
-        std::cout<<" [BboxCameraFactor::evaluateError debug] dC_dx = "<<std::endl<<dC_dx<<std::endl;
+        // std::cout<<" [BboxCameraFactor::evaluateError debug] db_dC = "<<std::endl<<db_dC<<std::endl;
+        // std::cout<<" [BboxCameraFactor::evaluateError debug] dC_dx = "<<std::endl<<dC_dx<<std::endl;
       }
 
       // calculate derivative of error wrt quadric
