@@ -57,7 +57,7 @@
      int miImageCols; // = Config::Get<int>("Camera.width");
      int miImageRows; // = Config::Get<int>("Camera.height");
      Matrix3d mCalib;
-     double mDepth = 3.0;   //预期的相机视场长度
+     double mDepth = 5.0;   //预期的相机视场长度  1.0用于截图
      Eigen::Matrix4f mRobotPose;
 
 
@@ -277,7 +277,9 @@ private:
 
 
             // 2. 生成相机坐标系下的三维点
-            Eigen::Vector4d temp_bbox(10, 10, miImageCols-10, miImageRows-10);
+            double s = 145;
+            Eigen::Vector4d temp_bbox(0 + s, 0 + s * miImageRows / miImageCols, miImageCols - s,
+                                                   miImageRows - s * miImageRows / miImageCols);
 
             Eigen::Vector4d bbox = temp_bbox;
 

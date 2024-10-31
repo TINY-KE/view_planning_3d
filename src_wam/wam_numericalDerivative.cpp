@@ -224,9 +224,19 @@ int main(int argc, char **argv) {
 
 
     //四、生成FootPrints候选点
+    //高度
+    double radius = 3.5;
+    if (argc >= 4) {
+        radius = std::stof(argv[3]);
+    }
+    double camera_height = 1.0;
+    if (argc >= 5) {
+        camera_height = std::stof(argv[4]);
+    }
     std::vector<geometry_msgs::Pose> FootPrints; //FootPrints候选位姿
-    std::vector<geometry_msgs::Pose> Candidates = GenerateCandidates_ellipse_by_circle(
-        *ob, FootPrints, 3.5, 1.0, 10, 300);
+    std::vector<geometry_msgs::Pose> Candidates =
+        // GenerateCandidates_ellipse_by_circle(*ob, FootPrints, radius, camera_height, false, 300);
+        GenerateCandidates_ellipse(*ob, FootPrints, radius, camera_height, false, 300);
 
 
     //五、确定起始位姿和中间差值
@@ -245,16 +255,11 @@ int main(int argc, char **argv) {
                                                  CameraHeight - s_inner * CameraHeight / CameraWidth); //预期的物体检测框
 
 
-    //高度
-    double height_limit = 1.0;
-    double height_error_scale = 10;
-    if (argc == 3) {
-        height_error_scale = std::stof(argv[2]);
-    }
+
 
     // 六. 构建图
     // % algo settings
-    std::vector<HeightCameraFactor> height_factors;
+    std::vector<BboxEllipsoidFactor<ArmModel>> bbox_factors;
     std::vector<BboxPlaneArmLinkFactor<ArmModel> > lowplane_factors;
 
 
@@ -322,7 +327,7 @@ int main(int argc, char **argv) {
                         CameraWidth, CameraHeight,
                         Calib);
                 graph2.add(factor_ellipsoid_factor);
-
+                bbox_factors.push_back(factor_ellipsoid_factor);
 
                 BboxPlaneArmLinkFactor<ArmModel> factor_planearm(
                         key_pos,
@@ -356,7 +361,7 @@ int main(int argc, char **argv) {
 
 
         int opt_type = LM;
-        if (argc == 2) {
+        if (argc > 2) {
             double k = std::stof(argv[1]);
             if (k == 1)
                 opt_type = LM;
@@ -397,6 +402,11 @@ int main(int argc, char **argv) {
 
         // 九、moveit控制及rviz可视化
 
+        //高度
+        double use_visulize = 0;
+        if (argc > 3) {
+            use_visulize = std::stof(argv[2]);
+        }
 
         // 关节量
         bool pub_form = true;
@@ -410,8 +420,14 @@ int main(int argc, char **argv) {
             // target_joint_group_positions.clear();
             // std::cout<<"开始规划,"<<i<<std::endl;
 
-            target_joint_group_positions_eigen = results2.at<Vector>(symbol('x', i));
 
+
+            target_joint_group_positions_eigen = results2.at<Vector>(symbol('x', i));
+            if(use_visulize) {
+                bbox_factors[i].visulize(target_joint_group_positions_eigen, "adjust bbox");
+                Vector target_joint_group_positions_eigen_init = second_values.at<Vector>(symbol('x', i));
+                bbox_factors[i].visulize(target_joint_group_positions_eigen_init, "old bbox");
+            }
             target_joint_group_positions[0] = (double(target_joint_group_positions_eigen[0]));
             target_joint_group_positions[1] = (double(target_joint_group_positions_eigen[1]));
             target_joint_group_positions[2] = (double(target_joint_group_positions_eigen[2]));

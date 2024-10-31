@@ -145,7 +145,8 @@ namespace gpmp2 {
             ) const;
 
         void visulize(
-            const typename Robot::Pose &conf
+            const typename Robot::Pose &conf,
+            const string name = "Bounding Boxes"
         ) const;
 
         
@@ -718,7 +719,7 @@ namespace gpmp2 {
 
 
     template<class ROBOT>
-    void BboxEllipsoidFactor<ROBOT>::visulize(const typename Robot::Pose &conf) const {
+    void BboxEllipsoidFactor<ROBOT>::visulize(const typename Robot::Pose &conf, const string name) const {
         double board = 200;
         cv::Mat image = cv::Mat::zeros(miImageRows+board*2, miImageCols+board*2, CV_8UC3);
         cv::Rect FOV_cvmat(board, board, miImageCols, miImageRows);
@@ -733,7 +734,7 @@ namespace gpmp2 {
         cv::rectangle(image, predict_bbox_cvmat, cv::Scalar(0, 255, 0), 2);
         auto error = evaluateError(conf);
         // std::cout<<"[debug] error: "<<error.transpose()<<std::endl;
-        // cv::imshow("Bounding Boxes", image);
+        cv::imshow(name, image);
         cv::waitKey(100);
     }
 

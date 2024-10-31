@@ -87,7 +87,7 @@
 + 在wam_bboxcamera.cpp中添加了机械臂min关节移动的第二步优化
 + 
 
-#  一步优化，自动求导，用于论文展示
+#  一步优化，自动求导，用于论文展示  commit 19c726136bcd006f8eef3b7af9d2ee9d2509b7ac
 + wam_numericalDerivative.cpp
   + BboxEllipsoidFactor
   + BboxPlaneArmLinkFactor
