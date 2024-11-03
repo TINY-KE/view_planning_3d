@@ -86,7 +86,9 @@
 #include "Obstacles.h"
 #include "ConverterTools.h"
 #include "gazebo_rviz_tools.h"
-
+#include "visualize_arm_tools.h"
+#include "gazebo_rviz_tools.h"
+#include <thread>
 using namespace std;
 using namespace gtsam;
 using namespace gpmp2;
@@ -115,15 +117,89 @@ enum opt_type {
 int main(int argc, char** argv){
     ros::init(argc, argv, "gpmp_wam", ros::init_options::AnonymousName);
     ros::NodeHandle nh;
-    Visualize_Tools vis_tools(nh, "wam/base_link");
-    ros::Rate loop_rate(2);  // 设置发布频率
+    ros::Rate loop_rate(2); // 设置发布频率
+    // 启动movegroup
+    // 创建一个异步的自旋线程（spinning thread）
+    ros::AsyncSpinner spinner(1);
+    spinner.start();
+    moveit::planning_interface::MoveGroupInterface move_group("arm");
+    std::string end_effector_link = move_group.getEndEffectorLink();
+    ROS_INFO_NAMED("WAM_arm", "End effector link: %s", end_effector_link.c_str());
+
+    ROS_INFO_NAMED("WAM_arm", "Planning frame: %s", move_group.getPlanningFrame().c_str());
+    std::string pose_reference_frame = "/wam/base_link";
+    // std::string pose_reference_frame="world";
+    move_group.setPoseReferenceFrame(pose_reference_frame);
+    ROS_INFO_NAMED("WAM_arm", "New Pose Reference frame: %s", move_group.getPoseReferenceFrame().c_str());
 
 
-    SdfObject ob( 3, 0, 0.5, 
-                2.5, 2, 1, 
-                0, 0, 0);
+
+    //二、生成物体、机械臂、
+    // 水平视场角66.5，  垂直53.1度
+    // （1）生成物体
+    double lenth = 2.5, width = 2, height = 1.5;
+    if (argc >= 6) {
+        lenth = std::stof(argv[3]);
+        width = std::stof(argv[4]);
+        height = std::stof(argv[5]);
+    }
+    double x = 3, y = 0, z = height/2.0;
+    double yaw = 0;
+    if (argc >= 7) {
+        yaw = std::stof(argv[6]);
+    }
+    MapObject *ob = new MapObject();
+    ob->Update_Twobj(x, y, z, yaw);
+    ob->Update_object_size(lenth, width, height);
+    ob->Update_corner();
+    //（2）生成机械臂
+    ArmModel *arm_model = generateArm("WAMArm");
+    //（3）生成相机参数
+    int CameraWidth = 640;
+    int CameraHeight = 480;
+    float fx = 554.254691191187;
+    float fy = 554.254691191187;
+    float cx = 320.5;
+    float cy = 240.5;
+    Eigen::Matrix3d Calib;
+    Calib << fx, 0, cx,
+            0, fy, cy,
+            0, 0, 1;
+    // （4）生成最佳视场
+    // // 水平视场角35，  垂直26.4度
+    double FovDecrease = 120;
+    // // 水平视场角39.4，  垂直27.6度
+    // double FovDecrease = 150;
+
+    // 计算视场角
+    double theta_x_rad = 2 * std::atan((CameraWidth - FovDecrease*2) / (2 * fx));
+    double theta_y_rad = 2 * std::atan((CameraHeight - 2*FovDecrease*CameraHeight/CameraWidth) / (2 * fy));
+    //  只用横向视场角度计算
+    double FOV_radius = (ob->mCuboid3D.width+ob->mCuboid3D.lenth) / 4.0
+                    /  sin(theta_x_rad/2.0);
+
+    // 三、可视化线程
+    string default_frame = "wam/base_link";
+
+    Visualize_Tools *vis_tools = new Visualize_Tools(nh, default_frame);
+    std::thread *mptVisualizeTools;
+    mptVisualizeTools = new std::thread(&Visualize_Tools::Run, vis_tools);
+    vis_tools->addMapObject(ob);
+
+    Visualize_Arm_Tools vis_arm_tools(nh, *arm_model, move_group, CameraWidth, CameraHeight, Calib, default_frame);
+    std::thread *mptVisualizeArmTools;
+    mptVisualizeArmTools = new std::thread(&Visualize_Arm_Tools::Run, vis_arm_tools);
+    vis_arm_tools.setFOVDecrease(FovDecrease);
+
+
+    //四、生成FootPrints候选点
+
     std::vector<geometry_msgs::Pose> FootPrints;
-    std::vector<geometry_msgs::Pose>  Candidates = GenerateCandidates_ellipse_by_circle(ob, FootPrints, 3.5);
+    double radius = FOV_radius;
+    double camera_height = 1.0;
+    int linear_interpolation_nums = 0;
+//    std::vector<geometry_msgs::Pose>  Candidates = GenerateCandidates_ellipse_by_circle(ob, FootPrints, 3.5);
+    std::vector<geometry_msgs::Pose>  Candidates = GenerateCandidates_circle_linear(*ob, FootPrints, linear_interpolation_nums, radius, camera_height, 0, 0, false, 300);
 
     // while(ros::ok()){
     //     for(int i=0; i<Candidates.size(); i++){
@@ -314,20 +390,6 @@ int main(int argc, char** argv){
 
 
     //  六、moveit控制及rviz可视化
-    
-    // 启动movegroup
-    // 创建一个异步的自旋线程（spinning thread）
-	ros::AsyncSpinner spinner(1);
-	spinner.start();
-    moveit::planning_interface::MoveGroupInterface move_group("arm");
-    std::string end_effector_link=move_group.getEndEffectorLink();
-	ROS_INFO_NAMED("WAM_arm", "End effector link: %s", end_effector_link.c_str());
-    	
-    ROS_INFO_NAMED("WAM_arm", "Planning frame: %s", move_group.getPlanningFrame().c_str());
-    std::string pose_reference_frame="/wam/base_link";
-    // std::string pose_reference_frame="world";
-    move_group.setPoseReferenceFrame(pose_reference_frame);
-	ROS_INFO_NAMED("WAM_arm", "New Pose Reference frame: %s", move_group.getPoseReferenceFrame().c_str());
 
     // move_group.setGoalJointTolerance(0.01);
     // move_group.setPlannerId("RRTstar");

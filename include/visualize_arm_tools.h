@@ -31,7 +31,7 @@
  typedef gpmp2::ArmModel Robot;
  class Visualize_Arm_Tools {
  public:
-     Visualize_Arm_Tools(ros::NodeHandle& nh, const Robot& robot, moveit::planning_interface::MoveGroupInterface& move_group, int width, int height, Matrix3d calib, std::string default_frame )
+     Visualize_Arm_Tools(ros::NodeHandle& nh, const Robot& robot, moveit::planning_interface::MoveGroupInterface& move_group, int width, int height, Eigen::Matrix3d calib, std::string default_frame )
        : default_frame_(default_frame), move_group_(move_group), robot_(robot),
                 miImageCols(width),
                 miImageRows(height),
@@ -56,14 +56,21 @@
      // 图像宽度和高度
      int miImageCols; // = Config::Get<int>("Camera.width");
      int miImageRows; // = Config::Get<int>("Camera.height");
-     Matrix3d mCalib;
-     double mDepth = 5.0;   //预期的相机视场长度  1.0用于截图
+     Eigen::Matrix3d mCalib;
+     double mDepth = 6.0;   //预期的相机视场长度  1.0用于截图
+     double mFOV_decrease = 145;
      Eigen::Matrix4f mRobotPose;
 
 
 public:
      void setRobotPose(Eigen::Matrix4f& robot_pose) {
          mRobotPose = robot_pose;
+     }
+     void setFOVDepth(double mDepth_) {
+         mDepth = mDepth_;
+     }
+     void setFOVDecrease(double mFOV_decrease_) {
+         mFOV_decrease = mFOV_decrease_;
      }
 
  public:
@@ -277,7 +284,7 @@ private:
 
 
             // 2. 生成相机坐标系下的三维点
-            double s = 145;
+            double s = mFOV_decrease;
             Eigen::Vector4d temp_bbox(0 + s, 0 + s * miImageRows / miImageCols, miImageCols - s,
                                                    miImageRows - s * miImageRows / miImageCols);
 
@@ -297,10 +304,10 @@ private:
             // |    |
             // 3----4
 
-            Vector2d corner1(x1, y1);
-            Vector2d corner2(x2, y1);
-            Vector2d corner3(x1, y2);
-            Vector2d corner4(x2, y2);
+            Eigen::Vector2d corner1(x1, y1);
+            Eigen::Vector2d corner2(x2, y1);
+            Eigen::Vector2d corner3(x1, y2);
+            Eigen::Vector2d corner4(x2, y2);
 
             // 相机坐标系下的三维点
             auto corner1_3d = transformPointToWorld(T_world_2_c, pixelToCamera(corner1));
@@ -401,6 +408,7 @@ private:
 
             
         }
+
 
  };
 

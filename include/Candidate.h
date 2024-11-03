@@ -114,135 +114,6 @@ class Candidate{
 
 
 
-std::vector<Candidate> GenerateCandidates1( MapObject& sdf_object, geometry_msgs::Pose& robot_footprint_pose, double radius=3 , double pitch=0.5){
-
-    // 相机的目标位姿
-    double footprint_x = robot_footprint_pose.position.x;
-    double footprint_y = robot_footprint_pose.position.y;
-    double footprint_z = robot_footprint_pose.position.z;
-    
-    double camera_x = footprint_x;
-    double camera_y = footprint_y;
-    double camera_z = 1.0;
-
-    // 物体的位姿
-    double object_x = sdf_object.mCuboid3D.cuboidCenter.x();
-    double object_y = sdf_object.mCuboid3D.cuboidCenter.y();
-    double object_z = sdf_object.mCuboid3D.cuboidCenter.z();
-    
-    // 计算相机的朝向
-    double deltaX = object_x - camera_x;
-    double deltaY = object_y - camera_y;
-    double delta_yaw = std::atan2(deltaY, deltaX);
-    double deltaZ = object_z - camera_z;
-    double delta_pitch = std::atan2(deltaZ, std::sqrt(deltaX*deltaX + deltaY*deltaY));
-
-    tf::Quaternion q = tf::createQuaternionFromRPY(0, -1*delta_pitch, delta_yaw);
-
-    //计算T_camera_object
-    geometry_msgs::Pose T_world_camera;
-
-    T_world_camera.position.x = camera_x;
-    T_world_camera.position.y = camera_y;
-    T_world_camera.position.z = camera_z;
-    
-    T_world_camera.orientation.x = q.x();
-    T_world_camera.orientation.y = q.y(); 
-    T_world_camera.orientation.z = q.z();
-    T_world_camera.orientation.w = q.w(); 
-    
-    // target_pose = calculateRelativePose(chassis_pose,target_pose);
-
-    // std::cout<<"calculateRelativePose"
-    //     <<", x:"<<target_pose.position.x
-    //     <<", y:"<<target_pose.position.y
-    //     <<", z:"<<target_pose.position.z
-    //     <<std::endl;
-    
-
-
-    // std::vector<Candidate> candidates;
-    // Eigen::Vector3d start(0,0,0);
-    // Eigen::Vector3d end(1,1,1);
-    // Candidate candidate(start, end);
-    // candidates.push_back(candidate);
-    // return candidates;
-
-
-
-}
-
-
-
-
-std::vector<geometry_msgs::Pose> GenerateCandidates_circle( MapObject& sdf_object, double radius=3 ){
-
-    std::vector<geometry_msgs::Pose> candidates;
-    
-    double angle = 0;
-    // 物体的位姿
-    double object_x = sdf_object.mCuboid3D.cuboidCenter.x();
-    double object_y = sdf_object.mCuboid3D.cuboidCenter.y();
-    double object_z = sdf_object.mCuboid3D.cuboidCenter.z();
-
-    for(int i=0; i<18; i++){
-
-        // 相机的目标位姿
-        angle = i*10/180.0*M_PI ;
-        double footprint_x = radius*cos(angle)+object_x;
-        double footprint_y = radius*sin(angle)+object_y;
-        double footprint_z = 0.0;
-
-        double camera_x = footprint_x;
-        double camera_y = footprint_y;
-        double camera_z = 1.0;
-
-        double deltaX = object_x - camera_x;
-        double deltaY = object_y - camera_y;
-        double delta_yaw = std::atan2(deltaY, deltaX);  // -1*M_PI_2;
-        double deltaZ = object_z - camera_z;
-        double delta_pitch = std::atan2(deltaZ, std::sqrt(deltaX*deltaX + deltaY*deltaY));
-
-        // 相机的目标位姿[todo: 引入当前的机器人位姿]
-        // double footprint_x = robot_footprint_pose.position.x;
-        // double footprint_y = robot_footprint_pose.position.y;
-        // double footprint_z = robot_footprint_pose.position.z;
-        
-        // double camera_x = footprint_x;
-        // double camera_y = footprint_y;
-        // double camera_z = 1.0;
-        
-        // 计算candidate在foot_print中的位姿
-        tf::Quaternion q = tf::createQuaternionFromRPY(0, -1*delta_pitch, delta_yaw);
-
-        geometry_msgs::Pose T_footprint_camera;
-
-        T_footprint_camera.position.x = camera_x - footprint_x;
-        T_footprint_camera.position.y = camera_y - footprint_y;
-        T_footprint_camera.position.z = camera_z - footprint_z;
-        
-        T_footprint_camera.orientation.x = q.x();
-        T_footprint_camera.orientation.y = q.y(); 
-        T_footprint_camera.orientation.z = q.z();
-        T_footprint_camera.orientation.w = q.w(); 
-
-        std::cout<<"calculateRelativePose"
-            <<", delta_yaw:"<< delta_yaw
-            <<", delta_pitch:"<< delta_pitch
-            <<", x:"<<T_footprint_camera.position.x
-            <<", y:"<<T_footprint_camera.position.y
-            <<", z:"<<T_footprint_camera.position.z
-            <<std::endl;
-        
-
-        candidates.push_back(T_footprint_camera);
-
-    }
-    
-    return candidates;
-
-}
-
 struct Ellipse {
     double a; // 椭圆长轴
     double b; // 椭圆短轴
@@ -269,7 +140,7 @@ double magnitude(const Point& v) {
 double calculateAngle(const Ellipse& ellipse, const Point& A) {
     // 计算 AC 向量
     Point AC = { A.x - ellipse.xc, A.y - ellipse.yc };
-    
+
     // 计算法线方向向量 (n)
     Point n = { (A.x - ellipse.xc) / (ellipse.a * ellipse.a),
                 (A.y - ellipse.yc) / (ellipse.b * ellipse.b) };
@@ -335,7 +206,7 @@ double calculateAngleWithXAxis(const Ellipse& ellipse, const Point& A) {
     // 计算法线方向向量 (n)
     Point n = { (A.x - ellipse.xc) / (ellipse.a * ellipse.a),
                 (A.y - ellipse.yc) / (ellipse.b * ellipse.b) };
-    
+
     // 切线方向向量是法线方向的垂直向量
     Point t = { -n.y, n.x };
 
@@ -354,6 +225,360 @@ double calculateAngleWithXAxis(const Ellipse& ellipse, const Point& A) {
     }
 
     return angleInDegrees; // 转换为度数
+}
+
+
+
+std::vector<geometry_msgs::Pose> GenerateCandidates_rotate( MapObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, double radius=3 /*半径*/ , double camera_height = 1.0, double init_robot_x=0, double init_robot_y=0, bool forCamera = false , int rotate_divides = 30 ){
+
+    std::vector<geometry_msgs::Pose> candidates;
+
+    // 物体的位姿
+    double object_x = sdf_object.mCuboid3D.cuboidCenter.x();
+    double object_y = sdf_object.mCuboid3D.cuboidCenter.y();
+    double object_z = sdf_object.mCuboid3D.cuboidCenter.z();
+    // double object_z = 0;
+
+    std::vector<Point> InterS;
+
+    Ellipse ellipse = { radius, radius, sdf_object.mCuboid3D.cuboidCenter.x(), sdf_object.mCuboid3D.cuboidCenter.y(), sdf_object.mCuboid3D.rotY };
+
+    double angle_init = std::atan2( init_robot_y-sdf_object.mCuboid3D.cuboidCenter.y() , init_robot_x-sdf_object.mCuboid3D.cuboidCenter.x() );
+
+    double circle_start_x = radius*cos(angle_init)+object_x;
+    double circle_start_y = radius*sin(angle_init)+object_y;
+
+
+    // (2) 原地左旋转90度 部分
+    // double rotate_mini = 5*M_PI/180;
+    // int rotate_nums = M_PI_2/rotate_mini;
+    int rotate_nums = rotate_divides;
+    for(int i=rotate_nums; i>0; i--){
+
+        double t = 1-static_cast<double>(i) / rotate_nums; // 归一化参数
+        double delta_yaw = t*M_PI_2;
+        double footprint_x = circle_start_x;
+        double footprint_y = circle_start_y;
+        double footprint_z = 0.0;
+        tf::Quaternion q_footprint = tf::createQuaternionFromRPY(0, 0, angle_init+M_PI + delta_yaw);
+        geometry_msgs::Pose T_world_footprint;
+        T_world_footprint.position.x = footprint_x;
+        T_world_footprint.position.y = footprint_y;
+        T_world_footprint.position.z = footprint_z;
+        T_world_footprint.orientation.x = q_footprint.x();
+        T_world_footprint.orientation.y = q_footprint.y();
+        T_world_footprint.orientation.z = q_footprint.z();
+        T_world_footprint.orientation.w = q_footprint.w();
+        RobotPoses.push_back(T_world_footprint);
+
+
+        // 相机位姿
+        double camera_x = footprint_x;
+        double camera_y = footprint_y;
+        double camera_z = camera_height;
+        double deltaX = object_x - camera_x;
+        double deltaY = object_y - camera_y;
+        double deltaZ = object_z - camera_z;
+        double delta_pitch = std::atan2(deltaZ, std::sqrt(deltaX*deltaX + deltaY*deltaY));
+
+        // 计算candidate在foot_print中的位姿
+        tf::Quaternion q_c = tf::createQuaternionFromRPY(0, -1*delta_pitch, -1*delta_yaw);
+        geometry_msgs::Pose T_footprint_cameralink;
+        T_footprint_cameralink.position.x = 0.0;
+        T_footprint_cameralink.position.y = 0;
+        T_footprint_cameralink.position.z = camera_z - footprint_z;
+        T_footprint_cameralink.orientation.x = q_c.x();
+        T_footprint_cameralink.orientation.y = q_c.y();
+        T_footprint_cameralink.orientation.z = q_c.z();
+        T_footprint_cameralink.orientation.w = q_c.w();
+
+        candidates.push_back(T_footprint_cameralink );
+    }
+
+    return candidates;
+
+}
+
+
+
+
+std::vector<geometry_msgs::Pose> GenerateCandidates_circle_linear( MapObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, int &linear_interpolation_nums, double radius=3 /*半径*/ , double camera_height = 1.0, double init_robot_x=0, double init_robot_y=0, bool forCamera = false , int rotate_divides = 30, int circle_divides = 240 ){
+
+    std::vector<geometry_msgs::Pose> candidates;
+    linear_interpolation_nums = 0;  //直线差值的数量
+    // 物体的位姿
+    double object_x = sdf_object.mCuboid3D.cuboidCenter.x();
+    double object_y = sdf_object.mCuboid3D.cuboidCenter.y();
+    double object_z = sdf_object.mCuboid3D.cuboidCenter.z();
+    // double object_z = 0;
+
+    std::vector<Point> InterS;
+
+    Ellipse ellipse = { radius, radius, sdf_object.mCuboid3D.cuboidCenter.x(), sdf_object.mCuboid3D.cuboidCenter.y(), sdf_object.mCuboid3D.rotY };
+
+    double angle_init = std::atan2( init_robot_y-sdf_object.mCuboid3D.cuboidCenter.y() , init_robot_x-sdf_object.mCuboid3D.cuboidCenter.x() );
+
+    double circle_start_x = radius*cos(angle_init)+object_x;
+    double circle_start_y = radius*sin(angle_init)+object_y;
+
+    // (1) 直线部分
+    // double line_end_x = circle_start_x;
+    // double line_end_y = circle_start_y;
+    // double line_distance_mini = 0.03;
+    // int distance_nums = sqrt(line_end_x*line_end_x+line_end_y*line_end_y)/line_distance_mini;
+    // Eigen::Vector2d start(init_robot_x, init_robot_y);  // 起点
+    // Eigen::Vector2d end(line_end_x, line_end_y);  // 终点
+    // Eigen::Vector2d direction = end - start;
+    // for(int i=distance_nums; i>0; i--){
+    //
+    //     double t = 1-static_cast<double>(i) / distance_nums; // 归一化参数
+    //     Eigen::Vector2d now_point = start + t * direction; // 插值计算
+    //     double footprint_x = now_point.x();
+    //     double footprint_y = now_point.y();
+    //     double footprint_z = 0.0;
+    //     tf::Quaternion q_footprint = tf::createQuaternionFromRPY(0, 0, angle_init+M_PI);
+    //     geometry_msgs::Pose T_world_footprint;
+    //     T_world_footprint.position.x = footprint_x;
+    //     T_world_footprint.position.y = footprint_y;
+    //     T_world_footprint.position.z = footprint_z;
+    //     T_world_footprint.orientation.x = q_footprint.x();
+    //     T_world_footprint.orientation.y = q_footprint.y();
+    //     T_world_footprint.orientation.z = q_footprint.z();
+    //     T_world_footprint.orientation.w = q_footprint.w();
+    //     RobotPoses.push_back(T_world_footprint);
+    //
+    //
+    //     // 相机位姿
+    //     double camera_x = footprint_x;
+    //     double camera_y = footprint_y;
+    //     double camera_z = camera_height;
+    //     double deltaX = object_x - camera_x;
+    //     double deltaY = object_y - camera_y;
+    //     double deltaZ = object_z - camera_z;
+    //     double delta_pitch = std::atan2(deltaZ, std::sqrt(deltaX*deltaX + deltaY*deltaY));
+    //
+    //     // 计算candidate在foot_print中的位姿
+    //     tf::Quaternion q_c = tf::createQuaternionFromRPY(0, -1*delta_pitch, 0);
+    //     geometry_msgs::Pose T_footprint_cameralink;
+    //     T_footprint_cameralink.position.x = 0.0;
+    //     T_footprint_cameralink.position.y = 0;
+    //     T_footprint_cameralink.position.z = camera_z - footprint_z;
+    //     T_footprint_cameralink.orientation.x = q_c.x();
+    //     T_footprint_cameralink.orientation.y = q_c.y();
+    //     T_footprint_cameralink.orientation.z = q_c.z();
+    //     T_footprint_cameralink.orientation.w = q_c.w();
+    //
+    //     candidates.push_back(T_footprint_cameralink );
+    //
+    //     linear_interpolation_nums ++;
+    // }
+
+    // (2) 原地左旋转90度 部分
+    // double rotate_mini = 5*M_PI/180;
+    // int rotate_nums = M_PI_2/rotate_mini;
+    int rotate_nums = rotate_divides;
+    for(int i=rotate_nums; i>0; i--){
+
+        double t = 1-static_cast<double>(i) / rotate_nums; // 归一化参数
+        double delta_yaw = t*M_PI_2;
+        double footprint_x = circle_start_x;
+        double footprint_y = circle_start_y;
+        double footprint_z = 0.0;
+        tf::Quaternion q_footprint = tf::createQuaternionFromRPY(0, 0, angle_init+M_PI + delta_yaw);
+        geometry_msgs::Pose T_world_footprint;
+        T_world_footprint.position.x = footprint_x;
+        T_world_footprint.position.y = footprint_y;
+        T_world_footprint.position.z = footprint_z;
+        T_world_footprint.orientation.x = q_footprint.x();
+        T_world_footprint.orientation.y = q_footprint.y();
+        T_world_footprint.orientation.z = q_footprint.z();
+        T_world_footprint.orientation.w = q_footprint.w();
+        RobotPoses.push_back(T_world_footprint);
+
+
+        // 相机位姿
+        double camera_x = footprint_x;
+        double camera_y = footprint_y;
+        double camera_z = camera_height;
+        double deltaX = object_x - camera_x;
+        double deltaY = object_y - camera_y;
+        double deltaZ = object_z - camera_z;
+        double delta_pitch = std::atan2(deltaZ, std::sqrt(deltaX*deltaX + deltaY*deltaY));
+
+        // 计算candidate在foot_print中的位姿
+        tf::Quaternion q_c = tf::createQuaternionFromRPY(0, -1*delta_pitch, -1*delta_yaw);
+        geometry_msgs::Pose T_footprint_cameralink;
+        T_footprint_cameralink.position.x = 0.0;
+        T_footprint_cameralink.position.y = 0;
+        T_footprint_cameralink.position.z = camera_z - footprint_z;
+        T_footprint_cameralink.orientation.x = q_c.x();
+        T_footprint_cameralink.orientation.y = q_c.y();
+        T_footprint_cameralink.orientation.z = q_c.z();
+        T_footprint_cameralink.orientation.w = q_c.w();
+
+        candidates.push_back(T_footprint_cameralink );
+    }
+
+
+
+    // (3) 绕圆部分
+    int divide = circle_divides;
+    double Max_angle_range = 2*M_PI;
+    double miniA = Max_angle_range/divide;
+    for(int i=divide; i>0; i--){
+
+        double angle = angle_init + i*miniA;
+
+
+        // 底盘的位置 通过圆计算
+        double footprint_x = radius*cos(angle)+object_x;
+        double footprint_y = radius*sin(angle)+object_y;
+        Point intersection{footprint_x, footprint_y};
+        double footprint_z = 0.0;
+        double delta_yaw_footprint = calculateAngleWithXAxis(ellipse, intersection);  // 椭圆上切线与x轴的夹角
+        tf::Quaternion q_footprint = tf::createQuaternionFromRPY(0, 0, delta_yaw_footprint/180*M_PI);
+        geometry_msgs::Pose T_world_footprint;
+        T_world_footprint.position.x = footprint_x;
+        T_world_footprint.position.y = footprint_y;
+        T_world_footprint.position.z = footprint_z;
+        T_world_footprint.orientation.x = q_footprint.x();
+        T_world_footprint.orientation.y = q_footprint.y();
+        T_world_footprint.orientation.z = q_footprint.z();
+        T_world_footprint.orientation.w = q_footprint.w();
+        RobotPoses.push_back(T_world_footprint);
+
+
+        // 相机位姿
+        double camera_x = intersection.x;
+        double camera_y = intersection.y;
+        double camera_z = camera_height;
+        double deltaX = object_x - camera_x;
+        double deltaY = object_y - camera_y;
+        double deltaZ = object_z - camera_z;
+        double delta_pitch = std::atan2(deltaZ, std::sqrt(deltaX*deltaX + deltaY*deltaY));
+        double yaw = calculateAngle(ellipse, intersection);
+        double delta_yaw = yaw;  // -1*M_PI_2;
+
+
+        // 计算candidate在foot_print中的位姿
+        tf::Quaternion q_c = tf::createQuaternionFromRPY(0, -1*delta_pitch, -1* delta_yaw);
+        geometry_msgs::Pose T_footprint_cameralink;
+        T_footprint_cameralink.position.x = 0;
+        T_footprint_cameralink.position.y = 0.5;
+        T_footprint_cameralink.position.z = camera_z - footprint_z;
+        T_footprint_cameralink.orientation.x = q_c.x();
+        T_footprint_cameralink.orientation.y = q_c.y();
+        T_footprint_cameralink.orientation.z = q_c.z();
+        T_footprint_cameralink.orientation.w = q_c.w();
+
+        candidates.push_back(T_footprint_cameralink );
+
+    }
+
+    return candidates;
+
+}
+
+
+
+
+
+std::vector<geometry_msgs::Pose> GenerateCandidates_circle( MapObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, double radius=3 /*半径*/ , double camera_height = 1.0, double init_robot_x=0, double init_robot_y=0, bool forCamera = false , int divide_ = 240 ){
+
+    std::vector<geometry_msgs::Pose> candidates;
+
+    // 物体的位姿
+    double object_x = sdf_object.mCuboid3D.cuboidCenter.x();
+    double object_y = sdf_object.mCuboid3D.cuboidCenter.y();
+    double object_z = sdf_object.mCuboid3D.cuboidCenter.z();
+    // double object_z = 0;
+
+    std::vector<Point> InterS;
+
+    Ellipse ellipse = { radius, radius, sdf_object.mCuboid3D.cuboidCenter.x(), sdf_object.mCuboid3D.cuboidCenter.y(), sdf_object.mCuboid3D.rotY };
+
+    double angle_init = std::atan2( init_robot_y-sdf_object.mCuboid3D.cuboidCenter.y() , init_robot_x-sdf_object.mCuboid3D.cuboidCenter.x() );
+
+
+
+    // (3) 绕圆部分
+    int divide = divide_;
+    double Max_angle_range = 2*M_PI;
+    double miniA = Max_angle_range/divide;
+    for(int i=divide; i>0; i--){
+
+        double angle = angle_init + i*miniA;
+
+
+        // 底盘的位置 通过圆计算
+        double footprint_x = radius*cos(angle)+object_x;
+        double footprint_y = radius*sin(angle)+object_y;
+        Point intersection{footprint_x, footprint_y};
+        double footprint_z = 0.0;
+        double delta_yaw_footprint = calculateAngleWithXAxis(ellipse, intersection);  // 椭圆上切线与x轴的夹角
+        tf::Quaternion q_footprint = tf::createQuaternionFromRPY(0, 0, delta_yaw_footprint/180*M_PI);
+        geometry_msgs::Pose T_world_footprint;
+        T_world_footprint.position.x = footprint_x;
+        T_world_footprint.position.y = footprint_y;
+        T_world_footprint.position.z = footprint_z;
+        T_world_footprint.orientation.x = q_footprint.x();
+        T_world_footprint.orientation.y = q_footprint.y();
+        T_world_footprint.orientation.z = q_footprint.z();
+        T_world_footprint.orientation.w = q_footprint.w();
+        RobotPoses.push_back(T_world_footprint);
+
+
+        // 相机位姿
+        double camera_x = intersection.x;
+        double camera_y = intersection.y;
+        double camera_z = camera_height;
+        double deltaX = object_x - camera_x;
+        double deltaY = object_y - camera_y;
+        double deltaZ = object_z - camera_z;
+        double delta_pitch = std::atan2(deltaZ, std::sqrt(deltaX*deltaX + deltaY*deltaY));
+        double yaw = calculateAngle(ellipse, intersection);
+        double delta_yaw = yaw;  // -1*M_PI_2;
+
+
+        // 计算candidate在foot_print中的位姿
+        tf::Quaternion q_c = tf::createQuaternionFromRPY(0, -1*delta_pitch, -1* delta_yaw);
+        geometry_msgs::Pose T_footprint_cameralink;
+        T_footprint_cameralink.position.x = 0;
+        T_footprint_cameralink.position.y = 0.5;
+        T_footprint_cameralink.position.z = camera_z - footprint_z;
+        T_footprint_cameralink.orientation.x = q_c.x();
+        T_footprint_cameralink.orientation.y = q_c.y();
+        T_footprint_cameralink.orientation.z = q_c.z();
+        T_footprint_cameralink.orientation.w = q_c.w();
+
+
+
+        std::cout<<"calculateRelativePose"
+            <<", delta_roll: 0"
+            <<", delta_yaw:"<< -1* delta_yaw/M_PI*180
+            <<", delta_pitch:"<< -1*delta_pitch/M_PI*180
+            <<", qx"<< T_footprint_cameralink.orientation.x
+            <<", qy"<< T_footprint_cameralink.orientation.y
+            <<", qz"<< T_footprint_cameralink.orientation.z
+            <<", qw"<< T_footprint_cameralink.orientation.w
+
+            <<std::endl;
+
+
+        Eigen::Matrix4d T_footprint_cameralink_matrix = Converter::geometryPosetoMatrix4d(T_footprint_cameralink);
+        Eigen::Matrix4d T_cameralink_to_camera_matrix;
+        T_cameralink_to_camera_matrix << 0, 0, 1, 0.02,
+                                        -1, 0, 0, -0.013,
+                                        0, -1, 0, 0.0,  //实际为0.13，改为0.07
+                                        0, 0, 0, 1;
+
+        geometry_msgs::Pose T_footprint_camera = Converter::Matrix4dtoGeometryPose(T_footprint_cameralink_matrix*T_cameralink_to_camera_matrix);
+        candidates.push_back(T_footprint_camera );
+
+    }
+    
+    return candidates;
+
 }
 
 std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse( MapObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, double radius=3 /*短轴*/ , double camera_height = 1.0, bool forCamera = false , int divide_ = 240 ){

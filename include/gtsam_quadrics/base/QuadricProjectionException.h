@@ -8,6 +8,8 @@
  * See LICENSE for the license information
 
  * -------------------------------------------------------------------------- */
+#ifndef QuadricProjectionException_H
+#define QuadricProjectionException_H
 
 /**
  * @file QuadricProjectionException.h
@@ -48,3 +50,5 @@ class QuadricProjectionException
 };
 
 }  // namespace gtsam_quadrics
+
+#endif

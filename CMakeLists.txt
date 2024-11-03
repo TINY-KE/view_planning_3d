@@ -220,6 +220,7 @@ set(SOURCE_GTSAM_QUADRIC_FILES
         ./src_gtsam_quadrics/BboxCameraFactor.cpp
         ./src_gtsam_quadrics/InnerBboxCameraFactor.cpp
         ./src_gtsam_quadrics/HeightCameraFactor.cpp
+        test.cpp
 )
 
 
@@ -274,12 +275,12 @@ target_link_libraries(CONVENIENCE_LIB_NAME
 #        ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME
 #)
 
-add_executable(TestCameraXaxisHorizontal src_example/TestCameraXaxisHorizontal.cpp
-        #         ${SOURCE_LZW_QUADRIC_FILES}
-        #         ${SOURCE_GTSAM_QUADRIC_FILES}
-)
-target_link_libraries(TestCameraXaxisHorizontal
-        ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
+#add_executable(TestCameraXaxisHorizontal src_example/TestCameraXaxisHorizontal.cpp
+#        #         ${SOURCE_LZW_QUADRIC_FILES}
+#        #         ${SOURCE_GTSAM_QUADRIC_FILES}
+#)
+#target_link_libraries(TestCameraXaxisHorizontal
+#        ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
 
 # 四、GTSAM与WAM结合
 
@@ -290,7 +291,7 @@ target_link_libraries(TestCameraXaxisHorizontal
 
 # message(STATUS "gpmp_wam_getfromik")
 # add_executable(wam_getfromik src_wam/wam_getfromik_debug.cpp )
-# target_link_libraries(wam_getfromik   ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS})  #${Boost_LIBRARIES}
+# target_link_libraries(wam_getfromik  ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
 
 # message(STATUS "my_wam_gpmp")
 # add_executable(wam_gpmp src_wam/wam_gpmp.cpp   )
@@ -311,3 +312,17 @@ add_executable(wam_numericalDerivative src_wam/wam_numericalDerivative.cpp
 target_link_libraries(wam_numericalDerivative
         ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
 
+#add_executable(test  test.cpp
+#        #         ${SOURCE_LZW_QUADRIC_FILES}
+#        #         ${SOURCE_GTSAM_QUADRIC_FILES}
+#)
+#target_link_libraries(test
+#        ${catkin_LIBRARIES} ${EIGEN3_LIBS}  )
+
+
+#add_executable(wam_rotate src_wam/wam_rotate.cpp
+#        #         ${SOURCE_LZW_QUADRIC_FILES}
+#        #         ${SOURCE_GTSAM_QUADRIC_FILES}
+#)
+#target_link_libraries(wam_rotate
+#        ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )

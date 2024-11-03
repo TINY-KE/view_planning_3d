@@ -168,9 +168,9 @@ gtsam::Values initArmTrajStraightLine_my(const Vector &init_conf,
     return init_values;
 }
 
-gtsam::Values initArmTrajStraightLine_3(const Vector &line_conf,
-                                        const Vector &circle_conf,
-                                        int line_divides, int rotate_divides, int circle_divides) {
+gtsam::Values initArmTrajStraightLine_3(const Vector& line_conf,
+                                      const Vector& circle_conf,
+                                      int line_divides, int rotate_divides, int circle_divides) {
     Values init_values;
 
     int i = 0;
@@ -179,17 +179,17 @@ gtsam::Values initArmTrajStraightLine_3(const Vector &line_conf,
     for (; i < line_divides; i++) {
         Vector conf;
         // conf =  (Vector(7) << 0,0,0,0,0,0,0).finished();
-        conf = line_conf;
+        conf =  line_conf;
         init_values.insert(Symbol('x', i), conf);
     }
 
     // rotate pose
-    for (; i < line_divides + rotate_divides; i++) {
+    for (; i < line_divides+rotate_divides; i++) {
         Vector conf;
 
         conf =
-                static_cast<double>(i - line_divides) / static_cast<double>(rotate_divides) * circle_conf +
-                (1.0 - static_cast<double>(i - line_divides) / static_cast<double>(rotate_divides)) *
+            static_cast<double>(i-line_divides) / static_cast<double>(rotate_divides) * circle_conf +
+            (1.0 - static_cast<double>(i-line_divides) / static_cast<double>(rotate_divides)) *
                 line_conf;
 
         init_values.insert(Symbol('x', i), conf);
@@ -197,129 +197,20 @@ gtsam::Values initArmTrajStraightLine_3(const Vector &line_conf,
 
 
     // third pose
-    for (; i <= line_divides + rotate_divides + circle_divides; i++) {
+    for (; i <= line_divides+rotate_divides+circle_divides; i++) {
         Vector conf;
         conf = circle_conf;
         init_values.insert(Symbol('x', i), conf);
     }
 
     // init vel as avg vel
-    Vector avg_vel = (circle_conf - line_conf) / static_cast<double>(line_divides + rotate_divides + circle_divides);
-    for (size_t i = 0; i <= line_divides + rotate_divides + circle_divides; i++)
+    Vector avg_vel = (circle_conf - line_conf) / static_cast<double>(line_divides+rotate_divides+circle_divides);
+    for (size_t i = 0; i <= line_divides+rotate_divides+circle_divides; i++)
         init_values.insert(Symbol('v', i), avg_vel);
 
     return init_values;
 }
 
-#include <tf/transform_datatypes.h>
-
-void rotate_90degrees(ros::NodeHandle &n, moveit::planning_interface::MoveGroupInterface &move_group,
-                      geometry_msgs::Pose pose, bool left, double rotate_divides = 30) {
-    for(int i=0; i<rotate_divides; i++)
-    {
-
-        if (left) {
-            cout << "Rotate left 90 degrees" << endl;
-
-            double angle_radians = M_PI_2 / rotate_divides;
-
-            // 获取原来的姿态（四元数）
-            tf::Quaternion q(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
-
-            // 将四元数转换为欧拉角
-            // 将四元数转换为旋转矩阵
-            tf::Matrix3x3 m(q);
-
-            // 提取欧拉角（Yaw）
-            double roll, pitch, yaw;
-            m.getRPY(roll, pitch, yaw);
-
-            // 逆时针旋转
-            yaw -= M_PI_2 - angle_radians*i;
-
-            // 将新的欧拉角转换回四元数
-            tf::Quaternion new_q = tf::createQuaternionFromRPY(roll, pitch, yaw);
-
-            // 创建新的 pose
-            geometry_msgs::Pose pose_new = pose;
-            pose_new.orientation.x = new_q.x();
-            pose_new.orientation.y = new_q.y();
-            pose_new.orientation.z = new_q.z();
-            pose_new.orientation.w = new_q.w();
-
-            setPose(n, "mrobot", pose_new.position.x, pose_new.position.y, pose_new.position.z,
-                    pose_new.orientation.w, pose_new.orientation.x, pose_new.orientation.y,
-                    pose_new.orientation.z);
-
-            std::vector<double> target_joint_group_positions = {0-angle_radians*i, 0, 0, 0.17, 0, 0, 0};;
-            // std::cout<<" target_joint_group_positions:";
-            // std::copy(target_joint_group_positions.begin(), target_joint_group_positions.end(), std::ostream_iterator<double>(std::cout, " "));
-            // std::cout<<std::endl;
-            move_group.setJointValueTarget(target_joint_group_positions);
-            // plan 和 move
-            moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-            bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-            if (success) {
-                std::cout << "Rotate left 90 degrees -- Joint规划成功" << std::endl;
-                move_group.execute(my_plan);
-            } else
-                std::cout << "Rotate left 90 degrees -- Joint规划失败" << std::endl;
-
-        } else {
-            cout << "Rotate right 90 degrees" << endl;
-
-            double angle_radians = M_PI_2 / rotate_divides;
-
-            // 获取原来的姿态（四元数）
-            tf::Quaternion q(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
-
-            // 将四元数转换为欧拉角
-            // 将四元数转换为旋转矩阵
-            tf::Matrix3x3 m(q);
-
-            // 提取欧拉角（Yaw）
-            double roll, pitch, yaw;
-            m.getRPY(roll, pitch, yaw);
-
-            // 逆时针旋转
-            yaw += M_PI_2 -  angle_radians*i;
-
-            // 将新的欧拉角转换回四元数
-            tf::Quaternion new_q = tf::createQuaternionFromRPY(roll, pitch, yaw);
-
-            // 创建新的 pose
-            geometry_msgs::Pose pose_new = pose;
-            pose_new.orientation.x = new_q.x();
-            pose_new.orientation.y = new_q.y();
-            pose_new.orientation.z = new_q.z();
-            pose_new.orientation.w = new_q.w();
-
-            setPose(n, "mrobot", pose_new.position.x, pose_new.position.y, pose_new.position.z,
-                    pose_new.orientation.w, pose_new.orientation.x, pose_new.orientation.y,
-                    pose_new.orientation.z);
-            std::vector<double> target_joint_group_positions = {0+angle_radians*i, 0, 0, 0.17, 0, 0, 0};;
-            move_group.setJointValueTarget(target_joint_group_positions);
-            // std::cout<<" target_joint_group_positions:";
-            // std::copy(target_joint_group_positions.begin(), target_joint_group_positions.end(), std::ostream_iterator<double>(std::cout, " "));
-            // std::cout<<std::endl;
-            move_group.setJointValueTarget(target_joint_group_positions);
-            // plan 和 move
-            moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-            bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-            if (success) {
-                std::cout << "Rotate right 90 degrees -- Joint规划成功" << std::endl;
-                move_group.execute(my_plan);
-            } else
-                std::cout << "Rotate right 90 degrees -- Joint规划失败" << std::endl;
-
-        }
-
-        // std::cout << "Press [any key] to continue ... " << std::endl;
-        // std::cout << "*****************************" << std::endl;
-        // char key = getchar();
-
-    }
-}
 
 int main(int argc, char **argv) {
     //  一、创建ROS和movegroup
@@ -349,7 +240,7 @@ int main(int argc, char **argv) {
         width = std::stof(argv[4]);
         height = std::stof(argv[5]);
     }
-    double x = 3, y = 0, z = height / 2.0;
+    double x = 3, y = 0, z = height/2.0;
     double yaw = 0;
     if (argc >= 7) {
         yaw = std::stof(argv[6]);
@@ -377,11 +268,11 @@ int main(int argc, char **argv) {
     // // 水平视场角39.4，  垂直27.6度
     // double FovDecrease = 150;
     // 计算视场角
-    double theta_x_rad = 2 * std::atan((CameraWidth - FovDecrease * 2) / (2 * fx));
-    double theta_y_rad = 2 * std::atan((CameraHeight - 2 * FovDecrease * CameraHeight / CameraWidth) / (2 * fy));
+    double theta_x_rad = 2 * std::atan((CameraWidth - FovDecrease*2) / (2 * fx));
+    double theta_y_rad = 2 * std::atan((CameraHeight - 2*FovDecrease*CameraHeight/CameraWidth) / (2 * fy));
     //  只用横向视场角度计算
-    double FOV_radius = (ob->mCuboid3D.width + ob->mCuboid3D.lenth) / 4.0
-                        / sin(theta_x_rad / 2.0);
+    double FOV_radius = (ob->mCuboid3D.width+ob->mCuboid3D.lenth) / 4.0
+                    /  sin(theta_x_rad/2.0);
 
 
     // 三、可视化线程
@@ -400,27 +291,29 @@ int main(int argc, char **argv) {
 
     //四、生成FootPrints候选点
     //高度
-    int rotate_divides = 90;
-    int circle_divides = 240;
+    int rotate_divides = 45;
+    int circle_divides = 0;
     double radius = FOV_radius;
     double camera_height = 1.0;
     int linear_interpolation_nums = 0;
     std::vector<geometry_msgs::Pose> FootPrints; //FootPrints候选位姿
     std::vector<geometry_msgs::Pose> Candidates =
-            // GenerateCandidates_ellipse_by_circle(*ob, FootPrints, radius, camera_height, false, 300);
-            // GenerateCandidates_ellipse(*ob, FootPrints, radius, camera_height, false, 300);
-            GenerateCandidates_circle(*ob, FootPrints, radius, camera_height, 0, 0, false, 300);
-    //        GenerateCandidates_circle_linear(*ob, FootPrints, linear_interpolation_nums, radius, camera_height, 0, 0, false, rotate_divides, circle_divides);
-    vis_arm_tools.setFOVDepth(radius + std::max(ob->mCuboid3D.width, ob->mCuboid3D.lenth));
+        // GenerateCandidates_ellipse_by_circle(*ob, FootPrints, radius, camera_height, false, 300);
+        // GenerateCandidates_ellipse(*ob, FootPrints, radius, camera_height, false, 300);
+        // GenerateCandidates_circle(*ob, FootPrints, radius, camera_height, 0, 0, false, 300);
+        GenerateCandidates_rotate(*ob, FootPrints, radius, camera_height, 0, 0, false, rotate_divides);
+    vis_arm_tools.setFOVDepth(radius+std::max(ob->mCuboid3D.width,ob->mCuboid3D.lenth));
 
-    bool turn_left = true;
-    rotate_90degrees(nh,move_group, FootPrints[0], turn_left, rotate_divides);
+
+
 
     // 六. 构建图
     // % algo settings
-    std::vector<BboxEllipsoidFactor<ArmModel> > bbox_factors;
+    std::vector<BboxEllipsoidFactor<ArmModel>> bbox_factors;
     std::vector<BboxPlaneArmLinkFactor<ArmModel> > lowplane_factors;
-    std::vector<CentorEllipsoidFactor<ArmModel> > centor_factors; {
+    std::vector<CentorEllipsoidFactor<ArmModel> > centor_factors;
+
+    {
         // 七、第二步优化
         int type_start = 0;
         gtsam::Vector start_conf, end_conf;
@@ -441,17 +334,17 @@ int main(int argc, char **argv) {
         // start_conf = (Vector(7) << 0,0,0,0,0,0,0).finished();
         // end_conf = (Vector(7) << 0,0,0,0,0,0,0).finished();
 
-        // 用零优化
-        start_conf = (Vector(7) << -1.59, 0, 0, 0.17, 0, 0, 0).finished();
-        end_conf = (Vector(7) << -1.59, 0, 0, 0.17, 0, 0, 0).finished();
+        // 用于直线转身
+        start_conf = (Vector(7) << 0, 0, 0, 0, 0, 0, 0).finished();
+        end_conf = (Vector(7) << -0.159, 0, 0, 0, 0, 0, 0).finished();
 
 
         double total_time_step = FootPrints.size() - 1;
         double total_time_sec = 1 * (FootPrints.size() - 1);
         double check_inter = 5;
         // 使用直线插值
-        gtsam::Values second_values = initArmTrajStraightLine(start_conf, end_conf, total_time_step);
-        //        gtsam::Values second_values = initArmTrajStraightLine_3(start_conf, end_conf, 0, rotate_divides, circle_divides);
+        // gtsam::Values second_values = initArmTrajStraightLine(start_conf, end_conf, total_time_step);
+        gtsam::Values second_values = initArmTrajStraightLine_3(start_conf, end_conf, 0, rotate_divides, circle_divides);
 
 
         // 八、设置第二步优化的参数
@@ -477,89 +370,41 @@ int main(int argc, char **argv) {
         double centor_sigma = 0.0001;
 
         NonlinearFactorGraph graph2;
-        for (int i = 0; i < FootPrints.size(); i++) {
-            // for (int i = 0; i < linear_interpolation_nums; i++) {
+        for (int i = 0; i <= FootPrints.size(); i++) {
+        // for (int i = 0; i < linear_interpolation_nums; i++) {
             Key key_pos = symbol('x', i);
             Key key_vel = symbol('v', i);
 
 
-            if (i < linear_interpolation_nums) {
-                Eigen::Matrix4f CameraLinkPose;
-                CameraLinkPose = Converter::geometryPosetoMatrix4d(Candidates[i]).cast<float>();
-                // Eigen::Matrix4d T_cameralink_to_camera_matrix;
-                // T_cameralink_to_camera_matrix <<
-                //          0, 0, 1, 0.02,
-                //         -1, 0, 0, -0.013,
-                //         0, -1, 0, 0.0, //实际为0.13，改为0.07
-                //         0, 0, 0, 1;
-                //
-                // // 可视化bbox，用以验证第一轮优化的结果是否准确
-                // // bbox_factors[i].visulize(target_camera_pose);
-                //
-                // Eigen::Matrix4d target_cameralink_pose_matrix =
-                //         CameraPose.matrix().cast<double>() * T_cameralink_to_camera_matrix.inverse();
-
-                Pose3 traj_pose = Pose3(CameraLinkPose.cast<double>());
-                // Eigen::Matrix3d R = CameraLinkPose.block<3, 3>(0, 0);
-                // Eigen::Vector3d rpy = R.eulerAngles(2, 1, 0); // ZYX 顺序
-                //
-                // // 输出 RPY
-                // std::cout << "T_b_clink Roll: " << rpy(2)/M_PI*180 << "\n";
-                // std::cout << "T_b_clink Pitch: " << rpy(1)/M_PI*180 << "\n";
-                // std::cout << "T_b_clink Yaw: " << rpy(0)/M_PI*180 << "\n";
-
-                // GaussianPriorWorkspacePoseArm factor_pose(key_pos, *arm_model, arm_model->dof() - 1, traj_pose,
-                //                                           noiseModel::Isotropic::Sigma(6, pose_sigma));
-                // graph2.add(factor_pose);
-
-                auto traj_orien = traj_pose.rotation();
-                GaussianPriorWorkspaceOrientationArm factor_ori(key_pos, *arm_model, arm_model->dof() - 1, traj_orien,
-                                                                noiseModel::Isotropic::Sigma(3, orien_sigma));
-                graph2.add(factor_ori);
-
-
-                // Eigen::Matrix4f RobotPose = Eigen::Matrix4f::Identity();
-                // RobotPose = Converter::geometryPosetoMatrix4d(FootPrints[i]).cast<float>();
-                // CentorEllipsoidFactor<ArmModel> factor_ellipsoid_factor(key_pos, *arm_model,
-                //         centor_sigma,
-                //         gtsam_bbox,
-                //         ob,
-                //         RobotPose,
-                //         CameraWidth, CameraHeight,
-                //         Calib);
-                // graph2.add(factor_ellipsoid_factor);
-                // centor_factors.push_back(factor_ellipsoid_factor);
-            } else {
-                Eigen::Matrix4f RobotPose = Eigen::Matrix4f::Identity();
-                RobotPose = Converter::geometryPosetoMatrix4d(FootPrints[i]).cast<float>();
-                BboxEllipsoidFactor<ArmModel> factor_ellipsoid_factor(key_pos, *arm_model,
-                                                                      bbox_sigma,
-                                                                      gtsam_bbox,
-                                                                      ob,
-                                                                      RobotPose,
-                                                                      CameraWidth, CameraHeight,
-                                                                      Calib);
-                graph2.add(factor_ellipsoid_factor);
-                bbox_factors.push_back(factor_ellipsoid_factor);
-            }
-
+            Eigen::Matrix4f RobotPose = Eigen::Matrix4f::Identity();
+            RobotPose = Converter::geometryPosetoMatrix4d(FootPrints[i]).cast<float>();
+            BboxEllipsoidFactor<ArmModel> factor_ellipsoid_factor(key_pos, *arm_model,
+                    bbox_sigma,
+                    gtsam_bbox,
+                    ob,
+                    RobotPose,
+                    CameraWidth, CameraHeight,
+                    Calib);
+            graph2.add(factor_ellipsoid_factor);
+            bbox_factors.push_back(factor_ellipsoid_factor);
 
             BboxPlaneArmLinkFactor<ArmModel> factor_planearm(
-                key_pos,
-                *arm_model,
-                obs_sigma,
-                epsilon_dist,
-                CameraWidth, CameraHeight,
-                Calib
-            );
+                    key_pos,
+                    *arm_model,
+                    obs_sigma,
+                    epsilon_dist,
+                    CameraWidth, CameraHeight,
+                    Calib
+                );
             graph2.add(factor_planearm);
 
             CameraXaxisHorizontal<ArmModel> factor_xaxis(
-                key_pos,
-                *arm_model,
-                xaxis_sigma
-            );
+                    key_pos,
+                    *arm_model,
+                    xaxis_sigma
+                );
             graph2.add(factor_xaxis);
+
 
 
             if (i > 0) {
@@ -635,16 +480,16 @@ int main(int argc, char **argv) {
             // std::cout<<"开始规划,"<<i<<std::endl;
 
 
+
             target_joint_group_positions_eigen = results2.at<Vector>(symbol('x', i));
             // if(i<linear_interpolation_nums) {
             //     Vector err = centor_factors[i].evaluateError(target_joint_group_positions_eigen);
             //     std::cout<<"Centor Error: "<<err<<std::endl;
             // }
-            if (use_visulize && i >= linear_interpolation_nums) {
+            if(use_visulize && i>=linear_interpolation_nums) {
                 Vector target_joint_group_positions_eigen_init = second_values.at<Vector>(symbol('x', i));
-                bbox_factors[i - linear_interpolation_nums].visulize(target_joint_group_positions_eigen_init,
-                                                                     "old bbox");
-                bbox_factors[i - linear_interpolation_nums].visulize(target_joint_group_positions_eigen, "adjust bbox");
+                bbox_factors[i-linear_interpolation_nums].visulize(target_joint_group_positions_eigen_init, "old bbox");
+                bbox_factors[i-linear_interpolation_nums].visulize(target_joint_group_positions_eigen, "adjust bbox");
             }
             target_joint_group_positions[0] = (double(target_joint_group_positions_eigen[0]));
             target_joint_group_positions[1] = (double(target_joint_group_positions_eigen[1]));
