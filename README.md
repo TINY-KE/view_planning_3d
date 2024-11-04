@@ -100,7 +100,7 @@
   + GaussianProcessPriorLinear
 
 
-#  rotate通过固定的步骤实现
+#  rotate通过固定的步骤实现  commit 46db35feccbb19fb98a71fe007bde66c98851919
     + rotate通过固定的步骤实现
     + 修改start_conf和end_conf，从而远离机械臂活动范围的边缘
 
