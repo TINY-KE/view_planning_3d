@@ -211,116 +211,6 @@ gtsam::Values initArmTrajStraightLine_3(const Vector &line_conf,
     return init_values;
 }
 
-#include <tf/transform_datatypes.h>
-
-void rotate_90degrees(ros::NodeHandle &n, moveit::planning_interface::MoveGroupInterface &move_group,
-                      geometry_msgs::Pose pose, bool left, double rotate_divides = 30) {
-    for(int i=0; i<rotate_divides; i++)
-    {
-
-        if (left) {
-            cout << "Rotate left 90 degrees" << endl;
-
-            double angle_radians = M_PI_2 / rotate_divides;
-
-            // 获取原来的姿态（四元数）
-            tf::Quaternion q(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
-
-            // 将四元数转换为欧拉角
-            // 将四元数转换为旋转矩阵
-            tf::Matrix3x3 m(q);
-
-            // 提取欧拉角（Yaw）
-            double roll, pitch, yaw;
-            m.getRPY(roll, pitch, yaw);
-
-            // 逆时针旋转
-            yaw -= M_PI_2 - angle_radians*i;
-
-            // 将新的欧拉角转换回四元数
-            tf::Quaternion new_q = tf::createQuaternionFromRPY(roll, pitch, yaw);
-
-            // 创建新的 pose
-            geometry_msgs::Pose pose_new = pose;
-            pose_new.orientation.x = new_q.x();
-            pose_new.orientation.y = new_q.y();
-            pose_new.orientation.z = new_q.z();
-            pose_new.orientation.w = new_q.w();
-
-            setPose(n, "mrobot", pose_new.position.x, pose_new.position.y, pose_new.position.z,
-                    pose_new.orientation.w, pose_new.orientation.x, pose_new.orientation.y,
-                    pose_new.orientation.z);
-
-            std::vector<double> target_joint_group_positions = {0-angle_radians*i, 0, 0, 0.17, 0, 0, 0};;
-            // std::cout<<" target_joint_group_positions:";
-            // std::copy(target_joint_group_positions.begin(), target_joint_group_positions.end(), std::ostream_iterator<double>(std::cout, " "));
-            // std::cout<<std::endl;
-            move_group.setJointValueTarget(target_joint_group_positions);
-            // plan 和 move
-            moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-            bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-            if (success) {
-                std::cout << "Rotate left 90 degrees -- Joint规划成功" << std::endl;
-                move_group.execute(my_plan);
-            } else
-                std::cout << "Rotate left 90 degrees -- Joint规划失败" << std::endl;
-
-        } else {
-            cout << "Rotate right 90 degrees" << endl;
-
-            double angle_radians = M_PI_2 / rotate_divides;
-
-            // 获取原来的姿态（四元数）
-            tf::Quaternion q(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
-
-            // 将四元数转换为欧拉角
-            // 将四元数转换为旋转矩阵
-            tf::Matrix3x3 m(q);
-
-            // 提取欧拉角（Yaw）
-            double roll, pitch, yaw;
-            m.getRPY(roll, pitch, yaw);
-
-            // 逆时针旋转
-            yaw += M_PI_2 -  angle_radians*i;
-
-            // 将新的欧拉角转换回四元数
-            tf::Quaternion new_q = tf::createQuaternionFromRPY(roll, pitch, yaw);
-
-            // 创建新的 pose
-            geometry_msgs::Pose pose_new = pose;
-            pose_new.orientation.x = new_q.x();
-            pose_new.orientation.y = new_q.y();
-            pose_new.orientation.z = new_q.z();
-            pose_new.orientation.w = new_q.w();
-
-            setPose(n, "mrobot", pose_new.position.x, pose_new.position.y, pose_new.position.z,
-                    pose_new.orientation.w, pose_new.orientation.x, pose_new.orientation.y,
-                    pose_new.orientation.z);
-            std::vector<double> target_joint_group_positions = {0+angle_radians*i, 0, 0, 0.17, 0, 0, 0};;
-            move_group.setJointValueTarget(target_joint_group_positions);
-            // std::cout<<" target_joint_group_positions:";
-            // std::copy(target_joint_group_positions.begin(), target_joint_group_positions.end(), std::ostream_iterator<double>(std::cout, " "));
-            // std::cout<<std::endl;
-            move_group.setJointValueTarget(target_joint_group_positions);
-            // plan 和 move
-            moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-            bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-            if (success) {
-                std::cout << "Rotate right 90 degrees -- Joint规划成功" << std::endl;
-                move_group.execute(my_plan);
-            } else
-                std::cout << "Rotate right 90 degrees -- Joint规划失败" << std::endl;
-
-        }
-
-        // std::cout << "Press [any key] to continue ... " << std::endl;
-        // std::cout << "*****************************" << std::endl;
-        // char key = getchar();
-
-    }
-}
-
 int main(int argc, char **argv) {
     //  一、创建ROS和movegroup
     ros::init(argc, argv, "gpmp_wam", ros::init_options::AnonymousName);
@@ -409,7 +299,7 @@ int main(int argc, char **argv) {
     std::vector<geometry_msgs::Pose> Candidates =
             // GenerateCandidates_ellipse_by_circle(*ob, FootPrints, radius, camera_height, false, 300);
             // GenerateCandidates_ellipse(*ob, FootPrints, radius, camera_height, false, 300);
-            GenerateCandidates_circle(*ob, FootPrints, radius, camera_height, 0, 0, false, 300);
+            GenerateCandidates_circle(*ob, FootPrints, radius, camera_height, 3, -3, false, 300);
     //        GenerateCandidates_circle_linear(*ob, FootPrints, linear_interpolation_nums, radius, camera_height, 0, 0, false, rotate_divides, circle_divides);
     vis_arm_tools.setFOVDepth(radius + std::max(ob->mCuboid3D.width, ob->mCuboid3D.lenth));
 
