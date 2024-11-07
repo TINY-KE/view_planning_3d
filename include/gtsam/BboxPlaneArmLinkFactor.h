@@ -19,7 +19,7 @@
 #include <iostream>
 #include <vector>
 
-#include "core/Plane.h"
+#include "plane/Plane.h"
 #include <gtsam/base/numericalDerivative.h>
 
 

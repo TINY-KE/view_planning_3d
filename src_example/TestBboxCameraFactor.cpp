@@ -2,7 +2,7 @@
 #include <cmath>
 #include <vector>
 #include "MapObject.h"
-#include "core/Plane.h"
+#include "plane/Plane.h"
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 #include <geometry_msgs/Point.h>

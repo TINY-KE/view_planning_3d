@@ -23,7 +23,6 @@
 
 
 class KeyFrame;
-class Map;
 class Frame;
 
 
@@ -52,16 +51,6 @@ public:
     Eigen::Vector3d corner_6;
     Eigen::Vector3d corner_7;
     Eigen::Vector3d corner_8;
-
-    // 8 vertices (without rotation).
-    Eigen::Vector3d corner_1_w;
-    Eigen::Vector3d corner_2_w;
-    Eigen::Vector3d corner_3_w;
-    Eigen::Vector3d corner_4_w;
-    Eigen::Vector3d corner_5_w;
-    Eigen::Vector3d corner_6_w;
-    Eigen::Vector3d corner_7_w;
-    Eigen::Vector3d corner_8_w;
 
     Eigen::Vector3d cuboidCenter;       // the center of the Cube, not the center of mass of the object
     float x_min, x_max, y_min, y_max, z_min, z_max;     // the boundary in XYZ direction.
@@ -102,6 +91,9 @@ public:
     void Update_Twobj(double x, double y, double z, double yaw);                // 原UpdateObjPose  更新物体在世界下的坐标
     void Update_object_size(double lenth, double width, double height)   ;   //更新物体的尺寸
     void Update_corner();
+
+    bool explored = false;
+
 };
 
 

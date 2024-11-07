@@ -5,7 +5,6 @@
 #include <Eigen/Dense>
 #include <vector>
 #include "MapObject.h"
-#include "gazebo_rviz_tools.h"
 #include <tf/tf.h>
 #include "tf/transform_datatypes.h"
 #include <eigen3/Eigen/Core>
@@ -553,16 +552,15 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_circle( MapObject& sdf_objec
 
 
 
-        std::cout<<"calculateRelativePose"
-            <<", delta_roll: 0"
-            <<", delta_yaw:"<< -1* delta_yaw/M_PI*180
-            <<", delta_pitch:"<< -1*delta_pitch/M_PI*180
-            <<", qx"<< T_footprint_cameralink.orientation.x
-            <<", qy"<< T_footprint_cameralink.orientation.y
-            <<", qz"<< T_footprint_cameralink.orientation.z
-            <<", qw"<< T_footprint_cameralink.orientation.w
-
-            <<std::endl;
+        // std::cout<<"calculateRelativePose"
+        //     <<", delta_roll: 0"
+        //     <<", delta_yaw:"<< -1* delta_yaw/M_PI*180
+        //     <<", delta_pitch:"<< -1*delta_pitch/M_PI*180
+        //     <<", qx"<< T_footprint_cameralink.orientation.x
+        //     <<", qy"<< T_footprint_cameralink.orientation.y
+        //     <<", qz"<< T_footprint_cameralink.orientation.z
+        //     <<", qw"<< T_footprint_cameralink.orientation.w
+        //     <<std::endl;
 
 
         Eigen::Matrix4d T_footprint_cameralink_matrix = Converter::geometryPosetoMatrix4d(T_footprint_cameralink);

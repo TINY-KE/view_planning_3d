@@ -20,6 +20,12 @@
   start_conf = (Vector(7) << 2.43078, -0.627707, 0.13426, 1.70191, -0.10452, -1.27042, 2.40398).finished();
   2.5282849221837402, 1.2592057759932551, 2.5160061763920627, -0.004919911137748478, -0.2684379731147075, -1.32252597005819, 1.5
 
++ 发布物体
+
+rosrun view_planning pub_object_debug 1    3 0 0.75 0 0 0     2.6 3 1.5
+
+
+
 # 利用椭圆+圆+moveit ik，实现环绕观测 commit 72c828759ba615f3a0c04c02b9d2e436e54966b6
 + gpmp_wam_Reproduce_Matlab
     cpp复现matlab机械臂手臂朝上
@@ -100,22 +106,45 @@
   + GaussianProcessPriorLinear
 
 
-#  rotate通过固定的步骤实现  commit 46db35feccbb19fb98a71fe007bde66c98851919
+# rotate通过固定的步骤实现  commit 46db35feccbb19fb98a71fe007bde66c98851919
     + rotate通过固定的步骤实现
     + 修改start_conf和end_conf，从而远离机械臂活动范围的边缘
 
+# 多线程，多物体，键盘控制  
+    + 将地图、可视化工具、 候选点初值生成、 gpmp视点规划器，各封装成一个Class 
+    + 构建一个发布object topic的程序  
+        +  rosrun view_planning pub_object_debug 1    3 0 0.75 0 0 0     2.6 3 1.5
+        +  rosrun view_planning pub_object_debug 2    3 0 0.75 0 0 0  2.6 3 1.5            0 10 0.75 0 0 0  2 5 3.5
+    + 发布环视的起点
+    + 键盘wafx控制底盘。s保存相机真值。两步回车确定开始planning、抵达起点
+    + 根据距离，判断是否是新物体，从而添加进map
+    + 根据距离，从map中选择用于View planning的物体对象
+    + 检查物体的长宽比是否小于1.25，如果是的话，则修改小的一方
+    
+    + 待：移动完之后，更新键盘中的机器人位置
 
-# 直线旋转绕圈的问题思考
-+ 应该是初值不对
-+ 初值生成也要分阶段
-+ 原地旋转分30段
-+ 
+# 修改
+    
+    + 待：sdf的可视化
+
+#
+    + 待：去掉各因子项中计算误差时的冗余部分、
+
+
+
+
+
+
+
+
+
+
 
 + 待：重构BboxPlaneArmLink的雅可比
 + 待：在BboxCameraFactor中添加通过config计算bbox，并可视化
 + 待：修改bbox的error，改为让椭球投影到目标bbox内部
 + 
-
+z
 # 三维二次曲面 Class ConstrainedDualQuadric
 + 
 

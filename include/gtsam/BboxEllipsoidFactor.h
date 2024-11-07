@@ -182,7 +182,7 @@ namespace gpmp2 {
             Eigen::Matrix4d T_world_object = Converter::cvMattoMatrix4d(matrix);
             Eigen::Matrix4d T_baselink_object = T_world_baselink.cast<double>().inverse() * T_world_object;
             Eigen::Vector3d translation = T_baselink_object.block<3, 1>(0, 3);
-            std::cout<<"GenerateConstrainedDualQuadric 物体的位置：" << translation.transpose()<<std::endl;
+            // std::cout<<"GenerateConstrainedDualQuadric 物体的位置：" << translation.transpose()<<std::endl;
             // 二、物体的尺寸
             double lenth = object->mCuboid3D.lenth;
             double width = object->mCuboid3D.width;

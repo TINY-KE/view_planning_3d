@@ -183,25 +183,28 @@ include_directories(
 
 
 # 一、LZW模块相关
-add_subdirectory(src_object/Polygon)
-
-add_library(utils SHARED
-        src_object/utils/matrix_utils.cpp
-        src_object/utils/dataprocess_utils.cpp
-        src_object/utils/file_operate.cpp
-)
-
-target_link_libraries(utils
-        ${OpenCV_LIBS}
-)
+#add_subdirectory(src_object/Polygon)
+#
+#add_library(utils SHARED
+#        src_object/utils/matrix_utils.cpp
+#        src_object/utils/dataprocess_utils.cpp
+#        src_object/utils/file_operate.cpp
+#)
+#
+#target_link_libraries(utils
+#        ${OpenCV_LIBS}
+#)
 
 find_package(Boost REQUIRED COMPONENTS filesystem system)
 
 
 set(SOURCE_LZW_QUADRIC_FILES
-        src_object/MapObject.cpp
-        src_object/Converter.cc
-        src_object/core/Plane.cpp
+        src/plane/Plane.cpp
+        src/Converter.cc
+        src/Map.cpp
+        src/MapObject.cpp
+        src/TeleopMobile.cpp
+        src/Viewer.cpp
         #      src_object/core/ConstrainPlane.cpp
         #      src_object/core/Ellipsoid.cpp
 )
@@ -220,7 +223,8 @@ set(SOURCE_GTSAM_QUADRIC_FILES
         ./src_gtsam_quadrics/BboxCameraFactor.cpp
         ./src_gtsam_quadrics/InnerBboxCameraFactor.cpp
         ./src_gtsam_quadrics/HeightCameraFactor.cpp
-        test.cpp
+        src_ros/pub_object_debug.cpp
+        include/TeleopMobile.h
 )
 
 
@@ -305,12 +309,12 @@ target_link_libraries(CONVENIENCE_LIB_NAME
 #         ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
 
 
-add_executable(wam_numericalDerivative src_wam/wam_numericalDerivative.cpp
-        #         ${SOURCE_LZW_QUADRIC_FILES}
-        #         ${SOURCE_GTSAM_QUADRIC_FILES}
-)
-target_link_libraries(wam_numericalDerivative
-        ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
+#add_executable(wam_numericalDerivative src_wam/wam_numericalDerivative.cpp
+#        #         ${SOURCE_LZW_QUADRIC_FILES}
+#        #         ${SOURCE_GTSAM_QUADRIC_FILES}
+#)
+#target_link_libraries(wam_numericalDerivative
+#        ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
 
 #add_executable(test  test.cpp
 #        #         ${SOURCE_LZW_QUADRIC_FILES}
@@ -326,3 +330,21 @@ target_link_libraries(wam_numericalDerivative
 #)
 #target_link_libraries(wam_rotate
 #        ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
+
+
+
+
+
+
+
+# 系统版本
+add_executable(QF-ASLAM src_ros/QF-ASLAM.cpp
+        #         ${SOURCE_LZW_QUADRIC_FILES}
+        #         ${SOURCE_GTSAM_QUADRIC_FILES}
+)
+target_link_libraries(QF-ASLAM
+        ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
+
+
+add_executable(pub_object_debug src_ros/pub_object_debug.cpp)
+target_link_libraries(pub_object_debug ${catkin_LIBRARIES})

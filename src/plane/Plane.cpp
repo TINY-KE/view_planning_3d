@@ -1,4 +1,4 @@
-#include "include/core/Plane.h"
+#include "include/plane/Plane.h"
 
 namespace g2o
 {

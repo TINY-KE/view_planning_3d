@@ -1,7 +1,6 @@
 #ifndef VIEW_PLANNING_CONVERTERTOOLS_H
 #define VIEW_PLANNING_CONVERTERTOOLS_H
 
-
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -11,17 +10,11 @@
 #include <tf2/LinearMath/Transform.h>
 #include <geometry_msgs/TransformStamped.h>
 
-
 #include<Eigen/Dense>
 #include <tf2/convert.h>
 #include <geometry_msgs/Pose.h>
 #include <tf2/transform_datatypes.h> // Include if needed
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Transform.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-
-// #include"Thirdparty/g2o/g2o/types/types_six_dof_expmap.h"
-// #include"Thirdparty/g2o/g2o/types/types_seven_dof_expmap.h"
 
 #include<opencv2/core/core.hpp>
 #include<opencv2/features2d/features2d.hpp>
@@ -29,7 +22,6 @@
 
 #include <gtsam/base/Matrix.h>
 
-//eigen cv的convert
 
 // 用于计算Y轴水平、x轴指向目标点的坐标系(在我的工作中是相机Candidate坐标系)，在world中的位姿
 geometry_msgs::Pose ZeroRoll_Pose_of_TwoPoints_in_world(const Eigen::Vector3d& start_point_in_world, const Eigen::Vector3d& end_point_in_world) {
