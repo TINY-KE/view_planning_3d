@@ -603,6 +603,80 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_circle( MapObject& sdf_objec
 
 }
 
+
+std::vector<double> GenerateCandidates_circle_onlyfordirect( MapObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, double radius=3 /*半径*/ , double camera_height = 1.0, double init_robot_x=0, double init_robot_y=0, bool forCamera = false , int divide_ = 240, bool Clockwise = true ){
+
+    std::vector<double> direct_yaws;
+
+    // 物体的位姿
+    double object_x = sdf_object.mCuboid3D.cuboidCenter.x();
+    double object_y = sdf_object.mCuboid3D.cuboidCenter.y();
+    double object_z = sdf_object.mCuboid3D.cuboidCenter.z();
+    // double object_z = 0;
+
+    std::vector<Point> InterS;
+
+    Ellipse ellipse = { radius, radius, sdf_object.mCuboid3D.cuboidCenter.x(), sdf_object.mCuboid3D.cuboidCenter.y(), sdf_object.mCuboid3D.rotY };
+
+    double angle_init = std::atan2( init_robot_y-sdf_object.mCuboid3D.cuboidCenter.y() , init_robot_x-sdf_object.mCuboid3D.cuboidCenter.x() );
+
+
+
+    // (3) 绕圆部分
+    int divide = divide_;
+    double Max_angle_range = 2*M_PI;
+    double miniA = Max_angle_range/divide;
+    for(int i=divide; i>0; i--){
+
+        // if(!Clockwise)
+        //     i = divide - i; // 逆时针
+
+        double angle = angle_init + i*miniA;
+        if(!Clockwise)
+            angle = angle_init - i*miniA; // 逆时针
+
+        // 底盘的位置 通过圆计算
+        double footprint_x = radius*cos(angle)+object_x;
+        double footprint_y = radius*sin(angle)+object_y;
+        Point intersection{footprint_x, footprint_y};
+        double footprint_z = 0.0;
+        double delta_yaw_footprint = calculateAngleWithXAxis(ellipse, intersection);  // 椭圆上切线与x轴的夹角
+        tf::Quaternion q_footprint = tf::createQuaternionFromRPY(0, 0, delta_yaw_footprint/180*M_PI);
+        if(!Clockwise)  // 逆时针
+            q_footprint = tf::createQuaternionFromRPY(0, 0, delta_yaw_footprint/180*M_PI + M_PI);
+        geometry_msgs::Pose T_world_footprint;
+        T_world_footprint.position.x = footprint_x;
+        T_world_footprint.position.y = footprint_y;
+        T_world_footprint.position.z = footprint_z;
+        T_world_footprint.orientation.x = q_footprint.x();
+        T_world_footprint.orientation.y = q_footprint.y();
+        T_world_footprint.orientation.z = q_footprint.z();
+        T_world_footprint.orientation.w = q_footprint.w();
+        RobotPoses.push_back(T_world_footprint);
+
+
+        // 相机位姿
+        double camera_x = intersection.x;
+        double camera_y = intersection.y;
+        double camera_z = camera_height;
+        double deltaX = object_x - camera_x;
+        double deltaY = object_y - camera_y;
+        double deltaZ = object_z - camera_z;
+        double delta_pitch = std::atan2(deltaZ, std::sqrt(deltaX*deltaX + deltaY*deltaY));
+        double yaw = calculateAngle(ellipse, intersection);
+        double delta_yaw = yaw;  // -1*M_PI_2;
+        direct_yaws.push_back(delta_yaw);
+
+
+        
+    }
+    
+    return direct_yaws;
+
+}
+
+
+
 std::vector<geometry_msgs::Pose> GenerateCandidates_ellipse( MapObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, double radius=3 /*短轴*/ , double camera_height = 1.0, bool forCamera = false , int divide_ = 240 ){
 
     std::vector<geometry_msgs::Pose> candidates;

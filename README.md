@@ -142,8 +142,11 @@ rosrun view_planning QF-ASLAM
 # 修正Visualize_Arm_Tools中最佳视场无法使用API控制的错误  commit 730d4a5cba923c0501959fd76f591d60cd990719 
     + 已完成
 
-# 实现绕物体逆时针和MOVEIT_planning
+# 实现绕物体逆时针和MOVEIT_planning  commit f81225a1ff4db7eb9d074aef25c1a402818f0434
     + 已完成
+
+# 对比对象改用direct方法
+    + 相机始终平视
 
 
 # 修改

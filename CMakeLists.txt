@@ -148,11 +148,11 @@ target_link_libraries(QF-ASLAM
         ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
 
 # MOVEIT系统版本
-add_executable(MOVEIT-ASLAM src_ros/MOVEIT-ASLAM.cpp
+add_executable(Direct-ASLAM src_ros/Direct-ASLAM.cpp
         #         ${SOURCE_LZW_QUADRIC_FILES}
         #         ${SOURCE_GTSAM_QUADRIC_FILES}
 )
-target_link_libraries(MOVEIT-ASLAM
+target_link_libraries(Direct-ASLAM
         ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
 
 

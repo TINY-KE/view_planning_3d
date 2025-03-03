@@ -69,7 +69,7 @@ using namespace std;
 #define KEYCODE_z 0x7A  // a, to speed up angular velocity
 #define KEYCODE_c 0x63  // d, to speed down angular velocity
 
-#define KEYCODE_s 0x73  // s, stop
+#define KEYCODE_s 0x73  // to save traj node
 
 #define KEYCODE_j 0x6A  // to save traj node
 #define KEYCODE_k 0x6B  // show traj node
@@ -105,12 +105,15 @@ class TeleopMobile  //声明TeleopTurle类
 public:
   TeleopMobile(ros::NodeHandle& nh_, double x_, double y_, double  z_, double roll_, double pitch_, double yaw_);  //构造函数
   void Run();
+  void change_yaw(double angele);
+  void set_xy(double x, double y);
 
 private:
   void client_call(bool print_state = false);
   void load_traj_node();
   void clear_current_node();
   void set_state(Vector6d& state);
+  
   void show_traj();
   ros::NodeHandle nh;
   double v_linear, v_angular, l_scale_, a_scale_;

@@ -251,6 +251,15 @@ void TeleopMobile::set_state(Vector6d &state) {
     client_call();
 }
 
+void TeleopMobile::change_yaw(double angele) {
+    yaw += angele;
+}
+
+void TeleopMobile::set_xy(double x_, double y_) {
+    x = x_;
+    y = y_;
+}
+
 void TeleopMobile::show_traj() {
     // start_time = ros::Time::now();
     // int split_num = 1000;

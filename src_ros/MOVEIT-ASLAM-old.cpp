@@ -195,11 +195,21 @@ int main(int argc, char **argv) {
         bool first_stage = true;
         // rotate_90degrees_left(nh, move_group, FootPrints[0], first_stage, rotate_divides);
         rotate_90degrees_right(nh, move_group, FootPrints[0], first_stage, rotate_divides);
+        teleop_mobile_tool->change_yaw(-1*M_PI_2);
+        teleop_mobile_tool->set_xy(FootPrints[0].position.x, FootPrints[0].position.y);
 
 
         // 九、moveit控制及rviz可视化
-
         for (int i = 0; i < FootPrints.size(); i++) {
+            
+            // 等待用户输入 `n` 继续
+            while(1){
+                char key;
+                read(kfd, &key, 1);
+                if (key == KEYCODE_SPACE)
+                    break;
+            }
+
             setPose(nh, "mrobot", FootPrints[i].position.x, FootPrints[i].position.y, FootPrints[i].position.z,
                     FootPrints[i].orientation.w, FootPrints[i].orientation.x, FootPrints[i].orientation.y,
                     FootPrints[i].orientation.z);
@@ -226,8 +236,8 @@ int main(int argc, char **argv) {
         first_stage = false;
         // rotate_90degrees_left(nh, move_group, FootPrints[0], first_stage, rotate_divides);
         rotate_90degrees_right(nh, move_group, FootPrints[0], first_stage, rotate_divides);
-
-            
+        teleop_mobile_tool->change_yaw(M_PI_2);
+        teleop_mobile_tool->set_xy(FootPrints[0].position.x, FootPrints[0].position.y);
         
 
     }
