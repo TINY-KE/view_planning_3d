@@ -1,3 +1,19 @@
+# 2月14日备注使用方法
++ 启动gazebo和moveit
+    source ws_gazebo_moveit/devel/setup.bash   &&  roslaunch wam_arm_moveit wam_kinectv1_bringup_moveit_onlyrobot.launch 
++ 可以接受Aslam物体的系统，可以接受ros发送来的物体信息，敲下回车后，会对离自己最近的物体开始规划，
+rosrun view_planning QF-ASLAM
++ 发布物体信息
+        +  rosrun view_planning pub_object_debug 1    3 0 0.75 0 0 0     2.6 3 1.5
+        +  rosrun view_planning pub_object_debug 2    3 0 0.75 0 0 0  2.6 3 1.5            0 10 0.75 0 0 0  2 5 3.5
+
+        +  rosrun view_planning pub_object_debug 1    3.5 0 0.75 0 0 0     2.6 3 1.5       #大床
+
++ 获取相机坐标系在world中的真值
+    rosrun tf tf_echo /world /camera_rgb_optical_frame
+
+
+
 # 常用指令
 + 启动gazebo和moveit
     source ws_gazebo_moveit/devel/setup.bash   &&  roslaunch wam_arm_moveit wam_kinectv1_bringup_moveit_onlyrobot.launch 
@@ -21,10 +37,10 @@
   2.5282849221837402, 1.2592057759932551, 2.5160061763920627, -0.004919911137748478, -0.2684379731147075, -1.32252597005819, 1.5
 
 + 发布物体
-
 rosrun view_planning pub_object_debug 1    3 0 0.75 0 0 0     2.6 3 1.5
 
-
++ 可以接受slam物体的系统
+rosrun view_planning QF-ASLAM
 
 # 利用椭圆+圆+moveit ik，实现环绕观测 commit 72c828759ba615f3a0c04c02b9d2e436e54966b6
 + gpmp_wam_Reproduce_Matlab
@@ -110,7 +126,7 @@ rosrun view_planning pub_object_debug 1    3 0 0.75 0 0 0     2.6 3 1.5
     + rotate通过固定的步骤实现
     + 修改start_conf和end_conf，从而远离机械臂活动范围的边缘
 
-# 多线程，多物体，键盘控制  
+# 多线程，多物体，键盘控制   commit c7a76882c361706afc25f054bf900f652ad6ab78
     + 将地图、可视化工具、 候选点初值生成、 gpmp视点规划器，各封装成一个Class 
     + 构建一个发布object topic的程序  
         +  rosrun view_planning pub_object_debug 1    3 0 0.75 0 0 0     2.6 3 1.5
@@ -123,11 +139,15 @@ rosrun view_planning pub_object_debug 1    3 0 0.75 0 0 0     2.6 3 1.5
     
     + 待：移动完之后，更新键盘中的机器人位置
 
-# 修改
-    
-    + 待：sdf的可视化
+# 修正Visualize_Arm_Tools中最佳视场无法使用API控制的错误
+    + 已完成
 
-#
+# 修改3dvp中的旋转方向
+    + 
+
+
+# 修改
+    + 待：sdf的可视化
     + 待：去掉各因子项中计算误差时的冗余部分、
 
 

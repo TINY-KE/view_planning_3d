@@ -106,8 +106,10 @@ int main(int argc, char **argv) {
             0, 0, 1;
     // (3) 规划轨迹中差值的数量
     int circle_divides = 240;
-    // （4）最佳视场
-    int FovDecrease = 120;
+    // （4）最佳视场的横向减小值
+    int FovDecrease = 120;    //这里可能得设置为145.因为之前的程序一直没设置成功 
+    // int FovDecrease = 20;  //为了可视化效果好，减小   
+    double FOVDepth = 4.0; // 1.0用于截图， 6.0用于建图
     // 地图
     ObjectMap *map = new ObjectMap(nh);
     std::thread *mptMap;
@@ -126,9 +128,11 @@ int main(int argc, char **argv) {
     mptVisualizeTools = new std::thread(&Visualize_Tools::Run, vis_tools);
 
     Visualize_Arm_Tools vis_arm_tools(nh, *arm_model, move_group, CameraWidth, CameraHeight, Calib, default_frame);
+    vis_arm_tools.setFOVDecrease(FovDecrease);
+    vis_arm_tools.setFOVDepth(FOVDepth);
     std::thread *mptVisualizeArmTools;
     mptVisualizeArmTools = new std::thread(&Visualize_Arm_Tools::Run, vis_arm_tools);
-    vis_arm_tools.setFOVDecrease(FovDecrease);
+    
 
 
     //四、生成ViewPlanning
@@ -179,71 +183,74 @@ int main(int argc, char **argv) {
 
         // 确认是否抵达起点
         key = '!';
-        read(kfd, &key, 1);
-
-        if (key == KEYCODE_ENTER) {
-            // 六、原地旋转
-            int rotate_divides = 90;
-            bool turn_left = true;
-            rotate_90degrees(nh, move_group, FootPrints[0], turn_left, rotate_divides);
-
-
-            // 九、moveit控制及rviz可视化
-
-            //高度
-            double use_visulize = 1;
-            std::vector<double> target_joint_group_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
-            Vector target_joint_group_positions_eigen;
-            for (int i = 0; i < FootPrints.size(); i++) {
-                setPose(nh, "mrobot", FootPrints[i].position.x, FootPrints[i].position.y, FootPrints[i].position.z,
-                        FootPrints[i].orientation.w, FootPrints[i].orientation.x, FootPrints[i].orientation.y,
-                        FootPrints[i].orientation.z);
-
-                // target_joint_group_positions.clear();
-                // std::cout<<"开始运动执行,"<<i<<std::endl;
+        while(1){
+            read(kfd, &key, 1);
+            if (key == KEYCODE_ENTER)
+                break;
+        }
+         
+        // 六、原地旋转
+        int rotate_divides = 90;
+        bool turn_left = true;
+        rotate_90degrees(nh, move_group, FootPrints[0], turn_left, rotate_divides);
 
 
-                target_joint_group_positions_eigen = arm_results.at<Vector>(symbol('x', i));
+        // 九、moveit控制及rviz可视化
 
-                if (use_visulize) {
-                    view_planning.visualize(i, target_joint_group_positions_eigen);
-                }
+        //高度
+        double use_visulize = 1;
+        std::vector<double> target_joint_group_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
+        Vector target_joint_group_positions_eigen;
+        for (int i = 0; i < FootPrints.size(); i++) {
+            setPose(nh, "mrobot", FootPrints[i].position.x, FootPrints[i].position.y, FootPrints[i].position.z,
+                    FootPrints[i].orientation.w, FootPrints[i].orientation.x, FootPrints[i].orientation.y,
+                    FootPrints[i].orientation.z);
 
-                target_joint_group_positions[0] = (double(target_joint_group_positions_eigen[0]));
-                target_joint_group_positions[1] = (double(target_joint_group_positions_eigen[1]));
-                target_joint_group_positions[2] = (double(target_joint_group_positions_eigen[2]));
-                target_joint_group_positions[3] = (double(target_joint_group_positions_eigen[3]));
-                target_joint_group_positions[4] = (double(target_joint_group_positions_eigen[4]));
-                target_joint_group_positions[5] = (double(target_joint_group_positions_eigen[5]));
-                target_joint_group_positions[6] = (double(target_joint_group_positions_eigen[6]));
+            // target_joint_group_positions.clear();
+            // std::cout<<"开始运动执行,"<<i<<std::endl;
 
-                std::cout << "设置joint values, " << i << std::endl;
-                for (int j = 0; j < target_joint_group_positions.size(); j++) {
-                    ROS_INFO("   Joint %d: %f", j, target_joint_group_positions[j]);
-                }
-                // 设置目标关节量
-                move_group.setJointValueTarget(target_joint_group_positions);
 
-                // plan 和 move
-                moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-                bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-                if (success) {
-                    std::cout << "Joint运动执行成功" << std::endl;
-                    move_group.execute(my_plan);
-                } else
-                    std::cout << "Joint运动执行失败" << std::endl;
+            target_joint_group_positions_eigen = arm_results.at<Vector>(symbol('x', i));
+
+            if (use_visulize) {
+                view_planning.visualize(i, target_joint_group_positions_eigen);
             }
 
-            // 标记物体已经explore完毕
-            target_object->explored = true;
+            target_joint_group_positions[0] = (double(target_joint_group_positions_eigen[0]));
+            target_joint_group_positions[1] = (double(target_joint_group_positions_eigen[1]));
+            target_joint_group_positions[2] = (double(target_joint_group_positions_eigen[2]));
+            target_joint_group_positions[3] = (double(target_joint_group_positions_eigen[3]));
+            target_joint_group_positions[4] = (double(target_joint_group_positions_eigen[4]));
+            target_joint_group_positions[5] = (double(target_joint_group_positions_eigen[5]));
+            target_joint_group_positions[6] = (double(target_joint_group_positions_eigen[6]));
 
-            // 转身回来
-            rotate_divides = 90;
-            turn_left = false;
-            rotate_90degrees(nh, move_group, FootPrints[0], turn_left, rotate_divides);
+            std::cout << "设置joint values, " << i << std::endl;
+            for (int j = 0; j < target_joint_group_positions.size(); j++) {
+                ROS_INFO("   Joint %d: %f", j, target_joint_group_positions[j]);
+            }
+            // 设置目标关节量
+            move_group.setJointValueTarget(target_joint_group_positions);
+
+            // plan 和 move
+            moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+            bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+            if (success) {
+                std::cout << "Joint运动执行成功" << std::endl;
+                move_group.execute(my_plan);
+            } else
+                std::cout << "Joint运动执行失败" << std::endl;
+        }
+
+        // 标记物体已经explore完毕
+        target_object->explored = true;
+
+        // 转身回来
+        rotate_divides = 90;
+        turn_left = false;
+        rotate_90degrees(nh, move_group, FootPrints[0], turn_left, rotate_divides);
 
             
-        }
+        
 
     }
 

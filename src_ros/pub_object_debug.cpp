@@ -5,7 +5,7 @@
 #include <std_msgs/Float32MultiArray.h>
 #include <vector>
 #include <sstream>
-
+    
 int main(int argc, char **argv)
 {
     // 初始化ROS节点

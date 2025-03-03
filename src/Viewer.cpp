@@ -597,6 +597,7 @@ std::vector<std::vector<geometry_msgs::Point> > Visualize_Arm_Tools::GenerateBbo
 
     // 2. 生成相机坐标系下的三维点
     double s = mFOV_decrease;
+    // std::cout<<"[debug] mFOV_decrease: "<<mFOV_decrease<<std::endl;
     Eigen::Vector4d temp_bbox(0 + s, 0 + s * miImageRows / miImageCols, miImageCols - s,
                               miImageRows - s * miImageRows / miImageCols);
 
