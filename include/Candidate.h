@@ -482,7 +482,7 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_circle_linear( MapObject& sd
 
 
 
-std::vector<geometry_msgs::Pose> GenerateCandidates_circle( MapObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, double radius=3 /*半径*/ , double camera_height = 1.0, double init_robot_x=0, double init_robot_y=0, bool forCamera = false , int divide_ = 240 ){
+std::vector<geometry_msgs::Pose> GenerateCandidates_circle( MapObject& sdf_object, std::vector<geometry_msgs::Pose> & RobotPoses, double radius=3 /*半径*/ , double camera_height = 1.0, double init_robot_x=0, double init_robot_y=0, bool forCamera = false , int divide_ = 240, bool Clockwise = true ){
 
     std::vector<geometry_msgs::Pose> candidates;
 
@@ -506,8 +506,12 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_circle( MapObject& sdf_objec
     double miniA = Max_angle_range/divide;
     for(int i=divide; i>0; i--){
 
-        double angle = angle_init + i*miniA;
+        // if(!Clockwise)
+        //     i = divide - i; // 逆时针
 
+        double angle = angle_init + i*miniA;
+        if(!Clockwise)
+            angle = angle_init - i*miniA; // 逆时针
 
         // 底盘的位置 通过圆计算
         double footprint_x = radius*cos(angle)+object_x;
@@ -516,6 +520,8 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_circle( MapObject& sdf_objec
         double footprint_z = 0.0;
         double delta_yaw_footprint = calculateAngleWithXAxis(ellipse, intersection);  // 椭圆上切线与x轴的夹角
         tf::Quaternion q_footprint = tf::createQuaternionFromRPY(0, 0, delta_yaw_footprint/180*M_PI);
+        if(!Clockwise)  // 逆时针
+            q_footprint = tf::createQuaternionFromRPY(0, 0, delta_yaw_footprint/180*M_PI + M_PI);
         geometry_msgs::Pose T_world_footprint;
         T_world_footprint.position.x = footprint_x;
         T_world_footprint.position.y = footprint_y;
@@ -539,8 +545,20 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_circle( MapObject& sdf_objec
         double delta_yaw = yaw;  // -1*M_PI_2;
 
 
+
+        // [重要] 以下计算的Candidate位姿，并没有用到。当前程序直接用的机械臂关节角度，作为优化初始值
         // 计算candidate在foot_print中的位姿
         tf::Quaternion q_c = tf::createQuaternionFromRPY(0, -1*delta_pitch, -1* delta_yaw);
+        if(!Clockwise) { // 逆时针c
+            q_c = tf::createQuaternionFromRPY(0, -1*delta_pitch, M_PI - delta_yaw);
+            // std::cout<<"calculateRelativePose: "<< M_PI - delta_yaw     <<std::endl;
+        }
+        // if(!Clockwise)  // 逆时针c
+        // {
+        //     tf::Quaternion q_fix;
+        //     q_fix.setRPY(0, 0, M_PI);  // 额外绕 Z 轴旋转 180°
+        //     q_c = q_c * q_fix;  // 组合旋转
+        // }
         geometry_msgs::Pose T_footprint_cameralink;
         T_footprint_cameralink.position.x = 0;
         T_footprint_cameralink.position.y = 0.5;
@@ -562,17 +580,23 @@ std::vector<geometry_msgs::Pose> GenerateCandidates_circle( MapObject& sdf_objec
         //     <<", qw"<< T_footprint_cameralink.orientation.w
         //     <<std::endl;
 
+        bool use_CameraOpticalFrame = false;
 
-        Eigen::Matrix4d T_footprint_cameralink_matrix = Converter::geometryPosetoMatrix4d(T_footprint_cameralink);
-        Eigen::Matrix4d T_cameralink_to_camera_matrix;
-        T_cameralink_to_camera_matrix << 0, 0, 1, 0.02,
-                                        -1, 0, 0, -0.013,
-                                        0, -1, 0, 0.0,  //实际为0.13，改为0.07
-                                        0, 0, 0, 1;
+        if(!use_CameraOpticalFrame){
+            candidates.push_back(T_footprint_cameralink );
+        }
+        else{
+            Eigen::Matrix4d T_footprint_CameraLink_matrix = Converter::geometryPosetoMatrix4d(T_footprint_cameralink);
+            Eigen::Matrix4d T_CameraLink_to_CameraOpticalFrame_matrix;
+            T_CameraLink_to_CameraOpticalFrame_matrix << 0, 0, 1, 0.02,
+                                            -1, 0, 0, -0.013,
+                                            0, -1, 0, 0.0,  //实际为0.13，改为0.07
+                                            0, 0, 0, 1;
 
-        geometry_msgs::Pose T_footprint_camera = Converter::Matrix4dtoGeometryPose(T_footprint_cameralink_matrix*T_cameralink_to_camera_matrix);
-        candidates.push_back(T_footprint_camera );
-
+            geometry_msgs::Pose T_footprint_CameraOpticalFrame = Converter::Matrix4dtoGeometryPose(T_footprint_CameraLink_matrix*T_CameraLink_to_CameraOpticalFrame_matrix);
+            candidates.push_back(T_footprint_CameraOpticalFrame );
+        }
+        
     }
     
     return candidates;

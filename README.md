@@ -139,11 +139,11 @@ rosrun view_planning QF-ASLAM
     
     + 待：移动完之后，更新键盘中的机器人位置
 
-# 修正Visualize_Arm_Tools中最佳视场无法使用API控制的错误
+# 修正Visualize_Arm_Tools中最佳视场无法使用API控制的错误  commit 730d4a5cba923c0501959fd76f591d60cd990719 
     + 已完成
 
-# 修改3dvp中的旋转方向
-    + 
+# 实现绕物体逆时针和MOVEIT_planning
+    + 已完成
 
 
 # 修改

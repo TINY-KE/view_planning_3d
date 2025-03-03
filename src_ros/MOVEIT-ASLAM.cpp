@@ -179,7 +179,8 @@ int main(int argc, char **argv) {
 
         Values arm_results;
         std::vector<geometry_msgs::Pose> FootPrints;
-        view_planning.planning(target_object, robot_pose_x, robot_pose_y, arm_results, FootPrints);  //计算FootPrints
+        std::vector<geometry_msgs::Pose> CameraLinkCandidates;
+        view_planning.planning_for_moveit(target_object, robot_pose_x, robot_pose_y, arm_results, FootPrints, CameraLinkCandidates);  //计算FootPrints
 
         // 确认是否抵达起点
         key = '!';
@@ -198,48 +199,23 @@ int main(int argc, char **argv) {
 
         // 九、moveit控制及rviz可视化
 
-        //高度
-        double use_visulize = 1;
-        std::vector<double> target_joint_group_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};;
-        Vector target_joint_group_positions_eigen;
         for (int i = 0; i < FootPrints.size(); i++) {
             setPose(nh, "mrobot", FootPrints[i].position.x, FootPrints[i].position.y, FootPrints[i].position.z,
                     FootPrints[i].orientation.w, FootPrints[i].orientation.x, FootPrints[i].orientation.y,
                     FootPrints[i].orientation.z);
 
-            // target_joint_group_positions.clear();
-            // std::cout<<"开始运动执行,"<<i<<std::endl;
-
-
-            target_joint_group_positions_eigen = arm_results.at<Vector>(symbol('x', i));
-
-            if (use_visulize) {
-                view_planning.visualize(i, target_joint_group_positions_eigen);
-            }
-
-            target_joint_group_positions[0] = (double(target_joint_group_positions_eigen[0]));
-            target_joint_group_positions[1] = (double(target_joint_group_positions_eigen[1]));
-            target_joint_group_positions[2] = (double(target_joint_group_positions_eigen[2]));
-            target_joint_group_positions[3] = (double(target_joint_group_positions_eigen[3]));
-            target_joint_group_positions[4] = (double(target_joint_group_positions_eigen[4]));
-            target_joint_group_positions[5] = (double(target_joint_group_positions_eigen[5]));
-            target_joint_group_positions[6] = (double(target_joint_group_positions_eigen[6]));
-
-            std::cout << "设置joint values, " << i << std::endl;
-            for (int j = 0; j < target_joint_group_positions.size(); j++) {
-                ROS_INFO("   Joint %d: %f", j, target_joint_group_positions[j]);
-            }
-            // 设置目标关节量
-            move_group.setJointValueTarget(target_joint_group_positions);
+            
+            // 设置机械臂末端位姿
+            move_group.setPoseTarget(CameraLinkCandidates[i]);
 
             // plan 和 move
             moveit::planning_interface::MoveGroupInterface::Plan my_plan;
             bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
             if (success) {
-                std::cout << "Joint运动执行成功" << std::endl;
+                std::cout << "EndPose运动执行成功" << std::endl;
                 move_group.execute(my_plan);
             } else
-                std::cout << "Joint运动执行失败" << std::endl;
+                std::cout << "EndPose运动执行失败" << std::endl;
         }
 
         // 标记物体已经explore完毕

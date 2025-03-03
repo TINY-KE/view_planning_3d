@@ -194,7 +194,15 @@ void ObjectMap::save_traj_node(string traj_save_path) {
     f << std::fixed;
 
     for (const auto &node: traj_node) {
-        f << node.transpose().matrix() << std::endl;
+        // f << node.transpose().matrix() << std::endl;
+        f << setprecision(6) << node[0] << setprecision(7) 
+            << " " << node[1]
+            << " " << node[2]
+            << " " << node[3]
+            << " " << node[4]
+            << " " << node[5]
+            << " " << node[6]
+            << " " << node[7] << endl;
     }
 
     f.close();

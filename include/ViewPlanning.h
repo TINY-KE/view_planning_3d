@@ -102,11 +102,12 @@ public:
                             / sin(theta_x_rad / 2.0);
 
         std::vector<geometry_msgs::Pose> FootPrints; //FootPrints候选位姿
+        bool Clockwise = false;  //绕着物体顺时针旋转，还是逆时针旋转
         std::vector<geometry_msgs::Pose> Candidates =
                 // GenerateCandidates_ellipse_by_circle(*ob, FootPrints, radius, camera_height, false, 300);
                 // GenerateCandidates_ellipse(*ob, FootPrints, radius, camera_height, false, 300);
                 GenerateCandidates_circle(*mp_target_obj, FootPrints, FOV_radius, mCameraPoseHeight, robot_pose_x,
-                                          robot_pose_y, false, mCircleDivides);
+                                          robot_pose_y, false, mCircleDivides, Clockwise);
         // GenerateCandidates_circle_linear(*ob, FootPrints, linear_interpolation_nums, radius, camera_height, 0, 0, false, rotate_divides, circle_divides);
         return_FootPrints = FootPrints;
 
@@ -136,8 +137,15 @@ public:
         // end_conf = (Vector(7) << 0,0,0,0,0,0,0).finished();
 
         // 用零优化
-        start_conf = (Vector(7) << -1.59, 0, 0, 0.17, 0, 0, 0).finished();
-        end_conf = (Vector(7) << -1.59, 0, 0, 0.17, 0, 0, 0).finished();
+        if(Clockwise){
+            start_conf = (Vector(7) << -1.59, 0, 0, 0.17, 0, 0, 0).finished();
+            end_conf = (Vector(7) << -1.59, 0, 0, 0.17, 0, 0, 0).finished();
+        }
+        else{
+            start_conf = (Vector(7) << 1.59, 0, 0, 0.17, 0, 0, 0).finished();
+            end_conf = (Vector(7) << 1.59, 0, 0, 0.17, 0, 0, 0).finished();
+        }
+        
 
 
         double total_time_step = FootPrints.size() - 1;
@@ -252,6 +260,35 @@ public:
         Eigen::Vector3d nbv(FootPrints[0].position.x,FootPrints[0].position.y,FootPrints[0].position.z);
         vis_tools->visualize_point(nbv, "world", 0, 100);
     }
+
+
+
+    void planning_for_moveit(MapObject *mp_target_obj, double robot_pose_x, double robot_pose_y, Values &return_arm_results, std::vector<geometry_msgs::Pose> & return_FootPrints, std::vector<geometry_msgs::Pose> & return_CameraLink_Candidates) {
+        // 计算视场角
+        float fx = mCalib(0, 0);
+        float fy = mCalib(1, 1);
+        float cx = mCalib(0, 2);
+        float cy = mCalib(1, 2);
+        double theta_x_rad = 2 * std::atan((mCameraWidth - mFovDecrease * 2) / (2 * fx));
+        double theta_y_rad = 2 * std::atan((mCameraHeight - 2 * mFovDecrease * mCameraHeight / mCameraWidth) / (2 * fy));
+        //  只用横向视场角度计算
+        double FOV_radius = (mp_target_obj->mCuboid3D.width + mp_target_obj->mCuboid3D.lenth) / 4.0
+                            / sin(theta_x_rad / 2.0);
+
+        std::vector<geometry_msgs::Pose> FootPrints; //FootPrints候选位姿
+        bool Clockwise = false;  //绕着物体顺时针旋转，还是逆时针旋转
+        std::vector<geometry_msgs::Pose> CameraLink_Candidates =
+                // GenerateCandidates_ellipse_by_circle(*ob, FootPrints, radius, camera_height, false, 300);
+                // GenerateCandidates_ellipse(*ob, FootPrints, radius, camera_height, false, 300);
+                GenerateCandidates_circle(*mp_target_obj, FootPrints, FOV_radius, mCameraPoseHeight, robot_pose_x,
+                                          robot_pose_y, false, mCircleDivides, Clockwise);
+        // GenerateCandidates_circle_linear(*ob, FootPrints, linear_interpolation_nums, radius, camera_height, 0, 0, false, rotate_divides, circle_divides);
+        return_FootPrints = FootPrints;
+        return_CameraLink_Candidates = CameraLink_Candidates;
+        Eigen::Vector3d nbv(FootPrints[0].position.x,FootPrints[0].position.y,FootPrints[0].position.z);
+        vis_tools->visualize_point(nbv, "world", 0, 100);
+    }
+
 };
 
 
