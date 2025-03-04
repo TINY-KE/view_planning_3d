@@ -1,14 +1,20 @@
 # 2月14日备注使用方法
 + 启动gazebo和moveit
     source ws_gazebo_moveit/devel/setup.bash   &&  roslaunch wam_arm_moveit wam_kinectv1_bringup_moveit_onlyrobot.launch 
+    source ws_gazebo_moveit/devel/setup.bash   &&  roslaunch wam_arm_moveit wam_kinectv1_bringup_moveit_bedroom.launch 
+source ws_gazebo_moveit/devel/setup.bash   &&  roslaunch wam_arm_moveit wam_kinectv1_bringup_moveit_livingroom.launch 
 + 可以接受Aslam物体的系统，可以接受ros发送来的物体信息，敲下回车后，会对离自己最近的物体开始规划，
-rosrun view_planning QF-ASLAM
+rosrun view_planning QF-ASLAM 0 
 + 发布物体信息
         +  rosrun view_planning pub_object_debug 1    3 0 0.75 0 0 0     2.6 3 1.5
         +  rosrun view_planning pub_object_debug 2    3 0 0.75 0 0 0  2.6 3 1.5            0 10 0.75 0 0 0  2 5 3.5
 
         +  rosrun view_planning pub_object_debug 1    3.5 0 0.75 0 0 0     2.6 3 1.5       #大床
-
+        + bedroom:  rosrun view_planning pub_object_debug 2    3.5 0 0.75 0 0 0  2.6 3 1.5       3.7 -4 0.6 0 0 0  1.2 2.3 1.2
+        + living room:  rosrun view_planning pub_object_debug 3    2 0 0.6 0 0 0  1.4 1.4 1.4       1.5 -2.5 0.6 0 0 0  1.4 1.4 1.4    4 -2.5 0.6 0 0 0  1 2 1.3
+        + SUV:  rosrun view_planning pub_object_debug 1    5 0 1.2 0 0 0  3 6 2.4 
+ 
+75
 + 获取相机坐标系在world中的真值
     rosrun tf tf_echo /world /camera_rgb_optical_frame
 
@@ -153,9 +159,14 @@ rosrun view_planning QF-ASLAM
     + 待：sdf的可视化
     + 待：去掉各因子项中计算误差时的冗余部分、
 
+# 针对suv场景，
+    + SUV场景下，视场角缩小了50.  
+    + 修改底盘圆轨迹的scale
+    + 设定direct模式下机械臂为{direct_yaws[i], 0, 0, 0, 0, 0, 0};
+    + 【重要】：以上参数要记得改回去
 
-
-
+# 保存底盘轨迹
+    + 
 
 
 

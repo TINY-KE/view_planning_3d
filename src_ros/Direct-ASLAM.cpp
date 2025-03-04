@@ -108,6 +108,8 @@ int main(int argc, char **argv) {
     int circle_divides = 240;
     // （4）最佳视场的横向减小值
     int FovDecrease = 120;    //这里可能得设置为145.因为之前的程序一直没设置成功 
+    if(argc>1)
+        FovDecrease = atoi(argv[1]);
     // int FovDecrease = 20;  //为了可视化效果好，减小   
     double FOVDepth = 4.0; // 1.0用于截图， 6.0用于建图
     // 地图
@@ -214,6 +216,7 @@ int main(int argc, char **argv) {
             // move_group.setPoseTarget(CameraLinkCandidates[i]);
 
             // end_conf = (Vector(7) << M_PI_2+i*yaw_divide, 0, 0, 0.17, 0, 0, 0).finished();
+            // target_joint_group_positions = {direct_yaws[i], 0, 0, 0.3, 0, 0, 0};
             target_joint_group_positions = {direct_yaws[i], 0, 0, 0, 0, 0, 0};
             move_group.setJointValueTarget(target_joint_group_positions);
             

@@ -103,10 +103,13 @@ public:
 
         std::vector<geometry_msgs::Pose> FootPrints; //FootPrints候选位姿
         bool Clockwise = false;  //绕着物体顺时针旋转，还是逆时针旋转
+
+        // 相比于planning_for_direct，旋转半径要更小
+        double scale = 1;
         std::vector<geometry_msgs::Pose> Candidates =
                 // GenerateCandidates_ellipse_by_circle(*ob, FootPrints, radius, camera_height, false, 300);
                 // GenerateCandidates_ellipse(*ob, FootPrints, radius, camera_height, false, 300);
-                GenerateCandidates_circle(*mp_target_obj, FootPrints, FOV_radius, mCameraPoseHeight, robot_pose_x,
+                GenerateCandidates_circle(*mp_target_obj, FootPrints, FOV_radius*scale, mCameraPoseHeight, robot_pose_x,
                                           robot_pose_y, false, mCircleDivides, Clockwise);
         // GenerateCandidates_circle_linear(*ob, FootPrints, linear_interpolation_nums, radius, camera_height, 0, 0, false, rotate_divides, circle_divides);
         return_FootPrints = FootPrints;
@@ -302,10 +305,11 @@ public:
         double FOV_radius = (mp_target_obj->mCuboid3D.width + mp_target_obj->mCuboid3D.lenth) / 4.0
                             / sin(theta_x_rad / 2.0);
 
+        double scale = 1.05;
         std::vector<geometry_msgs::Pose> FootPrints; //FootPrints候选位姿
         bool Clockwise = false;  //绕着物体顺时针旋转，还是逆时针旋转
         std::vector<double> direct_yaws =
-                GenerateCandidates_circle_onlyfordirect(*mp_target_obj, FootPrints, FOV_radius, mCameraPoseHeight, robot_pose_x,
+                GenerateCandidates_circle_onlyfordirect(*mp_target_obj, FootPrints, FOV_radius*scale, mCameraPoseHeight, robot_pose_x,
                                           robot_pose_y, false, mCircleDivides, Clockwise);
         return_FootPrints = FootPrints;
         return_direct_yaws = direct_yaws;

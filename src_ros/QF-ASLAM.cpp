@@ -108,6 +108,8 @@ int main(int argc, char **argv) {
     int circle_divides = 240;
     // （4）最佳视场的横向减小值
     int FovDecrease = 120;    //这里可能得设置为145.因为之前的程序一直没设置成功 
+    if(argc>1)
+        FovDecrease = atoi(argv[1]);
     // int FovDecrease = 20;  //为了可视化效果好，减小   
     double FOVDepth = 4.0; // 1.0用于截图， 6.0用于建图
     // 地图
@@ -140,8 +142,6 @@ int main(int argc, char **argv) {
 
 
     while (ros::ok()) {
-        // std::cout << "Press [any key] to start a view-planning... " << std::endl;
-        // std::cout << "*****************************" << std::endl;
 
         char key;
         read(kfd, &key, 1);
@@ -154,11 +154,12 @@ int main(int argc, char **argv) {
         if (key != KEYCODE_ENTER)
             continue;
 
-        std::cout << "Start a view-planning... " << std::endl;
+        std::cout << "Try to find an unexplored target object  ... " << std::endl;
         // 五、生成FootPrints候选点
         auto objects = map->getMapObjects();
 
         MapObject *target_object;
+        bool get_target = false;
         double min_dis = 10000;
         geometry_msgs::Pose robot_pose = getPose(nh, "mrobot");
         double robot_pose_x = robot_pose.position.x, robot_pose_y = robot_pose.position.y;
@@ -173,13 +174,22 @@ int main(int argc, char **argv) {
             if(dis<min_dis) {
                 min_dis = dis;
                 target_object = ob;
+                get_target = true;
             }
         }
 
+        if(!get_target) {
+            std::cout<<"No unexplored target object found!"<<std::endl;
+            continue;
+        }
+
+        std::cout<<"Target object found! Start Planning. "<<std::endl;
 
         Values arm_results;
         std::vector<geometry_msgs::Pose> FootPrints;
         view_planning.planning(target_object, robot_pose_x, robot_pose_y, arm_results, FootPrints);  //计算FootPrints
+        
+        std::cout<<"Planning End. Go to start point using keybord (w x a d)"<<std::endl;
 
         // 确认是否抵达起点
         key = '!';
