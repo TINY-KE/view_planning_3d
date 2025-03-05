@@ -177,6 +177,43 @@ void ObjectMap::add_traj_node() {
     // printf("Save traj node\n");
 }
 
+void ObjectMap::add_baselink_traj_node() {
+    // 利用tf获取
+    tf::StampedTransform transform;
+    try {
+        // 等待直到可以获取到 /camera_rgb_optical_frame 相对于 /world 的变换
+        listener.waitForTransform("/world", "/wam/base_link", ros::Time(0), ros::Duration(3.0));
+        listener.lookupTransform("/world", "/wam/base_link", ros::Time(0), transform);
+
+        // 获取平移和旋转信息
+        double x = transform.getOrigin().x();
+        double y = transform.getOrigin().y();
+        double z = transform.getOrigin().z();
+
+        tf::Quaternion q = transform.getRotation();
+        double qx = q.x();
+        double qy = q.y();
+        double qz = q.z();
+        double qw = q.w();
+
+        // 打印获取到的位姿信息
+        // ROS_INFO("[add_traj_node] Translation: [%f, %f, %f]", x, y, z);
+        // ROS_INFO("[add_traj_node] Rotation (Quaternion): [%f, %f, %f, %f]", qx, qy, qz, qw);
+
+        ros::Time timestamp = ros::Time::now();
+        double ros_timestamp = timestamp.toSec(); // 将时间戳转换为秒
+
+        // 存储位姿 (平移 + 四元数) 到 Eigen::Matrix 中
+        Eigen::Matrix<double, 8, 1> state;
+        //  ICL-NUIM dataset:  timestamp tx ty tz qx qy qz qw
+        state << ros_timestamp, x, y, z, qx, qy, qz, qw; // 这里只存储平移和四元数的前三个分量（qw 不需要存储在这里）
+
+        baselink_traj_node.push_back(state);
+    } catch (tf::TransformException &ex) {
+        ROS_ERROR("%s", ex.what());
+    }
+    // printf("Save traj node\n");
+}
 
 void ObjectMap::save_traj_node(string traj_save_path) {
     // 将轨迹节点存储到文本文件中
@@ -209,6 +246,39 @@ void ObjectMap::save_traj_node(string traj_save_path) {
     ROS_INFO("Saved Camera trajectory node.");
 }
 
+
+void ObjectMap::save_baselink_traj_node(string traj_save_path) {
+
+    string baselink_traj_save_name = "baselink_" + traj_save_name;
+    // 将轨迹节点存储到文本文件中
+    string full_path = traj_save_path + baselink_traj_save_name;
+    std::cout << std::endl << "Saving baselink trajectory to " << full_path << " ..." <<
+            std::endl;
+
+    std::ofstream f;
+    f.open((traj_save_path + baselink_traj_save_name).c_str(), std::ios::out | std::ios::app);
+    if (!f.is_open()) {
+        std::cerr << "Failed to open file: " << full_path << std::endl;
+        return;
+    }
+
+    f << std::fixed;
+
+    for (const auto &node: baselink_traj_node) {
+        // f << node.transpose().matrix() << std::endl;
+        f << setprecision(6) << node[0] << setprecision(7) 
+            << " " << node[1]
+            << " " << node[2]
+            << " " << node[3]
+            << " " << node[4]
+            << " " << node[5]
+            << " " << node[6]
+            << " " << node[7] << endl;
+    }
+
+    f.close();
+    ROS_INFO("Saved Camera trajectory node.");
+}
 
 
 bool ObjectMap::isSameObject(const MapObject* obj1_center, const MapObject* obj2_center) {

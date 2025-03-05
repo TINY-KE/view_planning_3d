@@ -105,7 +105,7 @@ public:
         bool Clockwise = false;  //绕着物体顺时针旋转，还是逆时针旋转
 
         // 相比于planning_for_direct，旋转半径要更小
-        double scale = 1;
+        double scale = 0.85;
         std::vector<geometry_msgs::Pose> Candidates =
                 // GenerateCandidates_ellipse_by_circle(*ob, FootPrints, radius, camera_height, false, 300);
                 // GenerateCandidates_ellipse(*ob, FootPrints, radius, camera_height, false, 300);
@@ -305,7 +305,7 @@ public:
         double FOV_radius = (mp_target_obj->mCuboid3D.width + mp_target_obj->mCuboid3D.lenth) / 4.0
                             / sin(theta_x_rad / 2.0);
 
-        double scale = 1.05;
+        double scale = 0.95;
         std::vector<geometry_msgs::Pose> FootPrints; //FootPrints候选位姿
         bool Clockwise = false;  //绕着物体顺时针旋转，还是逆时针旋转
         std::vector<double> direct_yaws =

@@ -159,13 +159,15 @@ rosrun view_planning QF-ASLAM
     + 待：sdf的可视化
     + 待：去掉各因子项中计算误差时的冗余部分、
 
-# 针对suv场景，
+# 针对suv场景，调参
     + SUV场景下，视场角缩小了50.  
-    + 修改底盘圆轨迹的scale
+    + 修改底盘圆轨迹的scale:  
+        planning:  scale = 1;
+        planning_for_direct:   scale = 1.05
     + 设定direct模式下机械臂为{direct_yaws[i], 0, 0, 0, 0, 0, 0};
     + 【重要】：以上参数要记得改回去
 
-# 保存底盘轨迹
+# 实现保存底盘轨迹
     + 
 
 

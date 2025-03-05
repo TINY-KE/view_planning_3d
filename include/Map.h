@@ -78,6 +78,7 @@ private:
     std::string traj_save_name = "cam_traj.txt";
 
     std::vector<Eigen::Matrix<double, 8, 1>, Eigen::aligned_allocator<Eigen::Matrix<double, 8, 1>>> traj_node;
+    std::vector<Eigen::Matrix<double, 8, 1>, Eigen::aligned_allocator<Eigen::Matrix<double, 8, 1>>> baselink_traj_node;
 
 
     std::string generateFileName() ;
@@ -85,9 +86,11 @@ private:
     bool fileExists(const std::string &filename);
 
     void add_traj_node() ;
+    void add_baselink_traj_node();
 
 public:
     void save_traj_node(string traj_save_path) ;
+    void save_baselink_traj_node(string traj_save_path) ;
 
 private:
     bool isSameObject(const MapObject* obj1_center, const MapObject* obj2_center);

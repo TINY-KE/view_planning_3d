@@ -216,8 +216,8 @@ int main(int argc, char **argv) {
             // move_group.setPoseTarget(CameraLinkCandidates[i]);
 
             // end_conf = (Vector(7) << M_PI_2+i*yaw_divide, 0, 0, 0.17, 0, 0, 0).finished();
-            // target_joint_group_positions = {direct_yaws[i], 0, 0, 0.3, 0, 0, 0};
-            target_joint_group_positions = {direct_yaws[i], 0, 0, 0, 0, 0, 0};
+            target_joint_group_positions = {direct_yaws[i], 0, 0, 0.3, 0, 0, 0};
+            // target_joint_group_positions = {direct_yaws[i], 0, 0, 0, 0, 0, 0};
             move_group.setJointValueTarget(target_joint_group_positions);
             
             // plan 和 move

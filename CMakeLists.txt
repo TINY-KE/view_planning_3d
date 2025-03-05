@@ -155,6 +155,14 @@ add_executable(Direct-ASLAM src_ros/Direct-ASLAM.cpp
 target_link_libraries(Direct-ASLAM
         ${catkin_LIBRARIES} ${EIGEN3_LIBS} ${GTSAM_LIBRARIES} gpmp2 ${OpenCV_LIBS}  CONVENIENCE_LIB_NAME )
 
+# 从rosbag中保存baselink位置
+add_executable(save_baselink_tra_from_rosbag src_ros/save_baselink_tra_from_rosbag.cpp
+        #         ${SOURCE_LZW_QUADRIC_FILES}
+        #         ${SOURCE_GTSAM_QUADRIC_FILES}
+)
+target_link_libraries(save_baselink_tra_from_rosbag
+        ${catkin_LIBRARIES} ${EIGEN3_LIBS}  )
+
 
 add_executable(pub_object_debug src_ros/pub_object_debug.cpp)
 target_link_libraries(pub_object_debug ${catkin_LIBRARIES})
