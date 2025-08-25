@@ -141,12 +141,12 @@ public:
 
         // 用零优化
         if(Clockwise){
-            start_conf = (Vector(7) << -1.59, 0, 0, 0.17, 0, 0, 0).finished();
-            end_conf = (Vector(7) << -1.59, 0, 0, 0.17, 0, 0, 0).finished();
+            start_conf = (Vector(7) << -1.59, 0, 0, 0.3, 0, 0, 0).finished();
+            end_conf = (Vector(7) << -1.59, 0, 0, 0.3, 0, 0, 0).finished();
         }
         else{
-            start_conf = (Vector(7) << 1.59, 0, 0, 0.17, 0, 0, 0).finished();
-            end_conf = (Vector(7) << 1.59, 0, 0, 0.17, 0, 0, 0).finished();
+            start_conf = (Vector(7) << 1.59, 0, 0, 0.3, 0, 0, 0).finished();
+            end_conf = (Vector(7) << 1.59, 0, 0, 0.3, 0, 0, 0).finished();  //0.17
         }
         
 

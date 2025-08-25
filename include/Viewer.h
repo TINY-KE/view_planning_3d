@@ -33,7 +33,7 @@ class Visualize_Tools{
             candidate_pub = nh.advertise<visualization_msgs::Marker>("/candidate", 10);
             publisher_object = nh.advertise<visualization_msgs::Marker>("object", 1000);
             publisher_ellipsoid = nh.advertise<visualization_msgs::Marker>("ellipsoid", 1000);
-            point_pub = nh.advertise<visualization_msgs::Marker>("/point", 10);
+            point_pub = nh.advertise<visualization_msgs::Marker>("/nbv_point", 10);
             bbox_plane_pub = nh.advertise<visualization_msgs::Marker>("bbox_plane", 1);
             normal_plane_pub = nh.advertise<visualization_msgs::Marker>("normal_plane", 1);
         }

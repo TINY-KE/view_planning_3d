@@ -1,8 +1,9 @@
 # 2月14日备注使用方法
-+ 启动gazebo和moveit
++ (wam机器人平台)启动gazebo和moveit
     source ws_gazebo_moveit/devel/setup.bash   &&  roslaunch wam_arm_moveit wam_kinectv1_bringup_moveit_onlyrobot.launch 
     source ws_gazebo_moveit/devel/setup.bash   &&  roslaunch wam_arm_moveit wam_kinectv1_bringup_moveit_bedroom.launch 
 source ws_gazebo_moveit/devel/setup.bash   &&  roslaunch wam_arm_moveit wam_kinectv1_bringup_moveit_livingroom.launch 
+
 + 可以接受Aslam物体的系统，可以接受ros发送来的物体信息，敲下回车后，会对离自己最近的物体开始规划，
 rosrun view_planning QF-ASLAM 0 
 + 发布物体信息
@@ -11,10 +12,25 @@ rosrun view_planning QF-ASLAM 0
 
         +  rosrun view_planning pub_object_debug 1    3.5 0 0.75 0 0 0     2.6 3 1.5       #大床
         + bedroom:  rosrun view_planning pub_object_debug 2    3.5 0 0.75 0 0 0  2.6 3 1.5       3.7 -4 0.6 0 0 0  1.2 2.3 1.2
+        + bedroom 实机演示:  rosrun view_planning pub_object_debug 2    3.5 0 0.7 0 0 0  2.6 3 1.5       3.7 -4 0.6 0 0 0  1 2.3 1.2
+        rosrun view_planning pub_object_debug 2      3.4 0 0.5 0 0 0  1.8 2  1.2     3.5 0 0.75 0 0 0  2.6 3 1.5
+        rosrun view_planning pub_object_debug 1      3.4 0 0.5 0 0 0  1.8 2.5  1.2
+        rosrun view_planning pub_object_debug 1      3.5 -4 0.4 0 0 0  3.4 3 1.2
+
         + living room:  rosrun view_planning pub_object_debug 3    2 0 0.6 0 0 0  1.4 1.4 1.4       1.5 -2.5 0.6 0 0 0  1.4 1.4 1.4    4 -2.5 0.6 0 0 0  1 2 1.3
+        + living room 无花瓶:  rosrun view_planning pub_object_debug 3    2 0 0.6 0 0 0  1.4 1.4 1.4       1.5 -2.5 0.6 0 0 0  1.4 1.4 1.4    4 -2.5 0.25 0 0 0  1 2 0.5
         + SUV:  rosrun view_planning pub_object_debug 1    5 0 1.2 0 0 0  3 6 2.4 
- 
-75
+
++ (kinect平台)启动gazebo和moveit
+    source devel/setup.bash && roslaunch sim_env test_demo.launch 
+
++ 实机环境中五个物体群
+黄桌子：    rosrun view_planning pub_object_debug 1      1.5, 1.95, 0.472255, 0, 0, 0, 1.4, 1, 1.1
+电视桌：    rosrun view_planning pub_object_debug 1      4.0, 2.1, 0.8, 0, 0, 0, 1.5, 0.6, 0.8
+圆桌子：    rosrun view_planning pub_object_debug 1      5.55, 1.430089, 0.58, 0, 0, 0, 1.2, 1.6, 1.2
+沙发：     rosrun view_planning pub_object_debug 1      4.2, -0.5, 0.530371, 0, 0, 0, 1.9, 1.2, 1.15
+床：       rosrun view_planning pub_object_debug 1      -5.1, -2.5, 0.520094, 0, 0, 0, 1.8, 1.9, 1.4
+
 + 获取相机坐标系在world中的真值
     rosrun tf tf_echo /world /camera_rgb_optical_frame
 
@@ -167,7 +183,7 @@ rosrun view_planning QF-ASLAM
     + 设定direct模式下机械臂为{direct_yaws[i], 0, 0, 0, 0, 0, 0};
     + 【重要】：以上参数要记得改回去
 
-# 实现保存底盘轨迹
+# `实现保存底盘轨迹`
     + 
 
 
